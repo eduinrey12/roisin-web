@@ -11,7 +11,7 @@ export interface Product {
   description: string;
   basePrice: string;
   images: { url: string; altText: string; isPrimary: boolean }[];
-  variants: { sku: string; price: string }[];
+  variants: { id: string; sku: string; price: string }[];
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';

@@ -10,8 +10,10 @@ export default function CheckoutPage() {
   const [regions, setRegions] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
-    address: '', city: '', province: '', regionId: ''
+    address: '', city: '', province: '', regionId: '', couponCode: ''
   });
+  const [couponError, setCouponError] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -21,11 +23,31 @@ export default function CheckoutPage() {
       .then(data => setRegions(data));
   }, []);
 
+  const handleApplyCoupon = async () => {
+    if (!formData.couponCode) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/promotions/coupons/${formData.couponCode}`);
+      if (!res.ok) {
+        const error = await res.json();
+        setCouponError(error.message || 'Cupón inválido');
+        setAppliedCoupon(null);
+      } else {
+        const data = await res.json();
+        setAppliedCoupon(data);
+        setCouponError('');
+      }
+    } catch (err) {
+      console.error(err);
+      setCouponError('Error al validar cupón');
+    }
+  };
+
   const selectedRegion = regions.find(r => r.id === formData.regionId);
   const shippingCost = selectedRegion ? selectedRegion.baseRate : 0;
   
   const subtotal = cart?.items?.reduce((acc: number, item: any) => acc + (item.quantity * item.variant.price), 0) || 0;
-  const total = subtotal + shippingCost;
+  const discount = appliedCoupon ? subtotal * (appliedCoupon.discountPercentage / 100) : 0;
+  const total = subtotal - discount + shippingCost;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +130,12 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Descuento ({appliedCoupon.code} - {appliedCoupon.discountPercentage}%)</span>
+                  <span>-${discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span>Envío</span>
                 <span>{shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'Calculando...'}</span>
@@ -117,6 +145,16 @@ export default function CheckoutPage() {
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
+
+            <div className="mt-4 pt-4 border-t">
+              <label className="text-sm font-medium mb-2 block">Código de Descuento</label>
+              <div className="flex gap-2">
+                <input type="text" placeholder="Ej: VERANO20" className="flex-1 px-3 py-2 border rounded" value={formData.couponCode} onChange={e => setFormData({...formData, couponCode: e.target.value.toUpperCase()})} />
+                <button type="button" onClick={handleApplyCoupon} className="px-4 bg-gray-200 text-black rounded font-medium hover:bg-gray-300">Aplicar</button>
+              </div>
+              {couponError && <p className="text-red-500 text-xs mt-1">{couponError}</p>}
+            </div>
+
             <button 
               form="checkout-form" 
               type="submit" 

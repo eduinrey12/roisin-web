@@ -1,6 +1,7 @@
 import { getProductBySlug } from '@/lib/api/catalog';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import AddToCartButton from '@/components/AddToCartButton';
 
 export default async function ProductDetailPage({
   params,
@@ -63,9 +64,7 @@ export default async function ProductDetailPage({
             </div>
           )}
           
-          <button className="bg-black text-white px-8 py-4 rounded-lg font-medium hover:bg-gray-800 transition mt-auto w-full sm:w-auto">
-            Añadir al carrito
-          </button>
+          <AddToCartButton variantId={product.variants[0]?.id || ''} />
         </div>
       </div>
     </div>

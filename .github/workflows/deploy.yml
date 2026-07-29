@@ -28,18 +28,24 @@ jobs:
       - name: Compilar proyecto (Build)
         run: pnpm build
 
-      - name: Subir archivos a Hostinger
+      - name: Preparar archivos para Hostinger
+        run: |
+          cp -r public .next/standalone/public
+          cp -r .next/static .next/standalone/.next/static
+          cd .next/standalone
+          tar -czf ../../deploy.tar.gz .
+
+      - name: Subir archivos a Hostinger (SCP)
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: ".next,public,package.json,pnpm-lock.yaml,next.config.mjs"
-          target: "${{ secrets.REMOTE_TARGET }}" # EJ: /home/u1234567/domains/roisinjoyasyaccesorios.com/public_html
-          strip_components: 0
+          source: "deploy.tar.gz"
+          target: "${{ secrets.REMOTE_TARGET }}"
 
-      - name: Instalar dependencias de producción y reiniciar
+      - name: Extraer archivos en Hostinger
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -48,7 +54,5 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ${{ secrets.REMOTE_TARGET }}
-            npm install -g pnpm pm2
-            pnpm install --prod
-            pm2 restart roisin-web || pm2 start npm --name "roisin-web" -- start
-            pm2 save
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz

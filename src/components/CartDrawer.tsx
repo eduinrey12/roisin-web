@@ -53,9 +53,13 @@ export default function CartDrawer() {
               <span className="font-semibold text-lg">Total</span>
               <span className="font-bold text-lg">${total.toFixed(2)}</span>
             </div>
-            <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
+            <a 
+              href="/checkout"
+              onClick={toggleCart}
+              className="block text-center w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition"
+            >
               Proceder al pago
-            </button>
+            </a>
           </div>
         )}
       </div>

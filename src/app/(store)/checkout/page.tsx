@@ -47,8 +47,9 @@ export default function CheckoutPage() {
       });
 
       if (res.ok) {
+        const order = await res.json();
         await initCart(); // refresh cart (now empty)
-        router.push('/success');
+        router.push(`/checkout/payment/${order.id}`);
       }
     } catch (err) {
       console.error(err);

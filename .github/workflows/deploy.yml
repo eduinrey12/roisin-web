@@ -1,0 +1,54 @@
+name: Deploy Frontend (Next.js)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Instalar dependencias
+        run: pnpm install
+
+      - name: Compilar proyecto (Build)
+        run: pnpm build
+
+      - name: Subir archivos a Hostinger
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: ".next,public,package.json,pnpm-lock.yaml,next.config.mjs"
+          target: "${{ secrets.REMOTE_TARGET }}" # EJ: /home/u1234567/domains/roisinjoyasyaccesorios.com/public_html
+          strip_components: 0
+
+      - name: Instalar dependencias de producción y reiniciar
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ${{ secrets.REMOTE_TARGET }}
+            npm install -g pnpm pm2
+            pnpm install --prod
+            pm2 restart roisin-web || pm2 start npm --name "roisin-web" -- start
+            pm2 save

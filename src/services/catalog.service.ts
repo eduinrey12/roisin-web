@@ -32,6 +32,8 @@ export async function getFeaturedProducts(limit = 8) {
 export async function getProducts(params?: {
   categorySlug?: string;
   query?: string;
+  minPrice?: number;
+  maxPrice?: number;
   sort?: 'price_asc' | 'price_desc' | 'newest';
   page?: number;
   limit?: number;
@@ -50,6 +52,12 @@ export async function getProducts(params?: {
         { title: { contains: params.query } },
         { description: { contains: params.query } },
       ],
+    }),
+    ...((params?.minPrice !== undefined || params?.maxPrice !== undefined) && {
+      basePrice: {
+        ...(params?.minPrice !== undefined && { gte: new Prisma.Decimal(params.minPrice) }),
+        ...(params?.maxPrice !== undefined && { lte: new Prisma.Decimal(params.maxPrice) }),
+      },
     }),
   };
 

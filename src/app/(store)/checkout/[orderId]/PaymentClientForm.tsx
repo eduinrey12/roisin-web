@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { selectPaymentMethodAction, submitEvidenceAction } from '@/lib/actions/checkout.actions';
 import { STORE_CONFIG } from '@/lib/config/store';
-import { Landmark, Banknote, Upload, CheckCircle2, MessageCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { Landmark, Banknote, Upload, CheckCircle2, MessageCircle, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface PaymentClientFormProps {
   order: {
@@ -72,175 +73,182 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
         return;
       }
 
-      // 2. If transfer and evidence uploaded, submit evidence
+      // 2. If transfer and has evidence, submit evidence
       if (method === 'BANK_TRANSFER' && evidenceUrl) {
         await submitEvidenceAction(order.id, evidenceUrl, referenceNumber);
       }
 
-      // 3. Redirect to Order Confirmation
       router.push(`/orden-confirmada/${order.id}`);
     } catch (err: any) {
-      setError(err.message || 'Error al completar el proceso');
+      setError(err.message || 'Error al confirmar');
       setLoading(false);
     }
   };
 
-  const whatsappMessage = `Hola ${STORE_CONFIG.name}, he realizado el pedido ${order.orderNumber} por un total de $${order.total.toFixed(2)}. Adjunto mi comprobante de pago.`;
+  const whatsappMessage = `Hola ${STORE_CONFIG.name}, acabo de generar mi pedido #${order.orderNumber} por un total de $${order.total.toFixed(2)}.`;
   const whatsappUrl = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
-    <div className="space-y-8 bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-sm">
+    <div className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs flex items-center gap-2">
           <AlertCircle size={16} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Payment Method Cards */}
+      {/* 1. Payment Method Options */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <label
-          className={`relative p-5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3 ${
+        {/* Bank Transfer */}
+        <div
+          onClick={() => setMethod('BANK_TRANSFER')}
+          className={`p-5 rounded-3xl border cursor-pointer transition flex flex-col justify-between ${
             method === 'BANK_TRANSFER'
-              ? 'border-black bg-zinc-50 ring-2 ring-black/5'
-              : 'border-gray-200 hover:border-gray-300'
+              ? 'border-[#BE6C7C] bg-[#FAF4F5] ring-1 ring-[#BE6C7C]'
+              : 'border-[#F0E6E8] bg-white hover:border-[#EFCFD6]'
           }`}
         >
-          <div className="flex items-start justify-between">
-            <div className="p-2.5 bg-black text-white rounded-lg">
-              <Landmark size={20} />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-3 bg-white rounded-2xl text-[#BE6C7C] border border-[#EFCFD6] shadow-xs">
+              <Landmark size={22} />
             </div>
-            <input
-              type="radio"
-              name="paymentMethod"
-              checked={method === 'BANK_TRANSFER'}
-              onChange={() => setMethod('BANK_TRANSFER')}
-              className="w-4 h-4 text-black focus:ring-black"
-            />
+            {method === 'BANK_TRANSFER' && (
+              <span className="w-5 h-5 rounded-full bg-[#BE6C7C] text-white flex items-center justify-center text-[10px]">
+                ✓
+              </span>
+            )}
           </div>
           <div>
-            <h3 className="font-bold text-sm text-gray-900">Transferencia / Depósito Bancario</h3>
-            <p className="text-[11px] text-gray-500 mt-0.5">
-              Cuentas en Ecuador. Tu pedido se procesa inmediatamente al validar el comprobante.
+            <h3 className="font-serif font-bold text-sm text-zinc-900">Transferencia Bancaria</h3>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              Banco Pichincha, Guayaquil, Pacífico, Produbanco o DeUna.
             </p>
           </div>
-        </label>
+        </div>
 
-        <label
-          className={`relative p-5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3 ${
+        {/* Cash on Delivery */}
+        <div
+          onClick={() => setMethod('CASH_ON_DELIVERY')}
+          className={`p-5 rounded-3xl border cursor-pointer transition flex flex-col justify-between ${
             method === 'CASH_ON_DELIVERY'
-              ? 'border-black bg-zinc-50 ring-2 ring-black/5'
-              : 'border-gray-200 hover:border-gray-300'
+              ? 'border-[#BE6C7C] bg-[#FAF4F5] ring-1 ring-[#BE6C7C]'
+              : 'border-[#F0E6E8] bg-white hover:border-[#EFCFD6]'
           }`}
         >
-          <div className="flex items-start justify-between">
-            <div className="p-2.5 bg-black text-white rounded-lg">
-              <Banknote size={20} />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-3 bg-white rounded-2xl text-[#BE6C7C] border border-[#EFCFD6] shadow-xs">
+              <Banknote size={22} />
             </div>
-            <input
-              type="radio"
-              name="paymentMethod"
-              checked={method === 'CASH_ON_DELIVERY'}
-              onChange={() => setMethod('CASH_ON_DELIVERY')}
-              className="w-4 h-4 text-black focus:ring-black"
-            />
+            {method === 'CASH_ON_DELIVERY' && (
+              <span className="w-5 h-5 rounded-full bg-[#BE6C7C] text-white flex items-center justify-center text-[10px]">
+                ✓
+              </span>
+            )}
           </div>
           <div>
-            <h3 className="font-bold text-sm text-gray-900">Pago Contra Entrega</h3>
-            <p className="text-[11px] text-gray-500 mt-0.5">
-              Paga en efectivo al recibir el paquete en tu domicilio (Zonas seleccionadas).
+            <h3 className="font-serif font-bold text-sm text-zinc-900">Pago Contra Entrega</h3>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              Paga en efectivo al recibir tu joya (disponible en Quito).
             </p>
           </div>
-        </label>
+        </div>
       </div>
 
-      {/* Bank Transfer Detailed Box */}
+      {/* 2. Bank Details Accordion */}
       {method === 'BANK_TRANSFER' && (
-        <div className="space-y-6 pt-4 border-t border-gray-100 animate-fade-in">
-          <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200/80 space-y-3 text-xs">
-            <h4 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px]">
-              Cuentas Bancarias Registradas
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#F0E6E8] space-y-5">
+          <div className="border-b border-[#F0E6E8] pb-3">
+            <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
+              Cuentas Oficiales
+            </span>
+            <h4 className="font-serif font-bold text-base text-zinc-900 mt-0.5">
+              Cuentas Bancarias para Transferencia
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-zinc-700">
-              {STORE_CONFIG.bankAccounts.map((b, i) => (
-                <div key={i} className="p-3 bg-white rounded-lg border border-zinc-200/60 space-y-1">
-                  <p className="font-semibold text-black">{b.bankName}</p>
-                  <p>{b.accountType}: <strong>{b.accountNumber}</strong></p>
-                  <p>Titular: {b.beneficiary}</p>
-                  <p>CI/RUC: {b.idDocument}</p>
-                </div>
-              ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-[#FAF4F5] p-4 rounded-2xl border border-[#EFCFD6] text-xs space-y-1">
+              <p className="font-bold text-zinc-900">Banco Pichincha (Cta. Corriente)</p>
+              <p className="text-zinc-600">No. 2100234567</p>
+              <p className="text-zinc-600">Titular: ROISIN JOYAS S.A.S.</p>
+              <p className="text-zinc-500 text-[10px]">RUC: 1792983748001</p>
+            </div>
+            <div className="bg-[#FAF4F5] p-4 rounded-2xl border border-[#EFCFD6] text-xs space-y-1">
+              <p className="font-bold text-zinc-900">Banco Guayaquil (Cta. Ahorros)</p>
+              <p className="text-zinc-600">No. 0034567891</p>
+              <p className="text-zinc-600">Titular: ROISIN JOYAS S.A.S.</p>
+              <p className="text-zinc-500 text-[10px]">RUC: 1792983748001</p>
             </div>
           </div>
 
-          {/* Evidence Upload Section */}
-          <div className="space-y-3">
-            <label className="text-xs font-semibold text-gray-800 block">
-              Subir Comprobante de Pago (Opcional en este paso, puedes enviarlo luego por WhatsApp)
+          {/* Upload Receipt */}
+          <div className="pt-3 space-y-3">
+            <label className="text-xs font-semibold text-zinc-800 block">
+              Subir Comprobante de Transferencia (Opcional, acelera tu despacho):
             </label>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <label className="w-full sm:w-auto flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 hover:border-black rounded-xl cursor-pointer bg-gray-50/50 hover:bg-gray-50 transition">
-                <Upload size={24} className="text-gray-400 mb-1.5" />
-                <span className="text-xs font-medium text-gray-700">
-                  {uploading ? 'Subiendo...' : 'Seleccionar foto del comprobante'}
-                </span>
-                <span className="text-[10px] text-gray-400 mt-0.5">JPG, PNG o WebP (Máx. 5MB)</span>
+              <label className="w-full sm:w-auto bg-[#FAF4F5] hover:bg-[#F6E8EB] text-zinc-800 border border-[#EFCFD6] px-5 py-3 rounded-2xl text-xs font-bold cursor-pointer transition flex items-center justify-center gap-2">
+                <Upload size={16} className="text-[#BE6C7C]" />
+                {uploading ? 'Subiendo imagen...' : 'Seleccionar Comprobante'}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
                   onChange={handleFileUpload}
-                  disabled={uploading}
                   className="hidden"
+                  disabled={uploading}
                 />
               </label>
 
               {evidenceUrl && (
-                <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-emerald-500 shrink-0">
-                  <Image src={evidenceUrl} alt="Comprobante" fill sizes="96px" className="object-cover" />
-                  <div className="absolute top-1 right-1 bg-emerald-600 text-white rounded-full p-0.5">
-                    <CheckCircle2 size={14} />
+                <div className="flex items-center gap-3 bg-emerald-50 text-emerald-800 px-4 py-2 rounded-2xl border border-emerald-200 text-xs">
+                  <CheckCircle2 size={16} />
+                  <span>Comprobante cargado con éxito</span>
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-emerald-300">
+                    <Image src={evidenceUrl} alt="Comprobante" fill sizes="96px" className="object-cover" />
                   </div>
                 </div>
               )}
             </div>
 
             <div className="pt-2">
-              <label className="text-xs font-medium text-gray-700 block mb-1">
-                Número de Referencia / Comprobante (Opcional)
+              <label className="text-xs font-semibold text-zinc-700 block mb-1">
+                Número de Referencia / Comprobante:
               </label>
               <input
                 type="text"
-                placeholder="Ej: 009847162"
+                placeholder="Ej: 98347102"
                 value={referenceNumber}
                 onChange={(e) => setReferenceNumber(e.target.value)}
-                className="w-full sm:w-64 px-4 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+                className="w-full sm:w-72 px-4 py-2.5 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C]"
               />
-            </div>
-
-            <div className="pt-2">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
-              >
-                <MessageCircle size={15} /> ¿Prefieres enviar el comprobante directamente por WhatsApp? Haz clic aquí
-              </a>
             </div>
           </div>
         </div>
       )}
 
-      {/* Submit Button */}
-      <button
-        onClick={handleFinishPayment}
-        disabled={loading || uploading}
-        className="w-full bg-black text-white py-4 rounded-xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 transition active:scale-[0.99] disabled:opacity-50 shadow-md"
-      >
-        {loading ? 'Confirmando...' : 'Finalizar y Confirmar Pedido'}
-        <ArrowRight size={16} />
-      </button>
+      {/* 3. Confirm CTA */}
+      <div className="space-y-3 pt-2">
+        <button
+          onClick={handleFinishPayment}
+          disabled={loading || uploading}
+          className="w-full bg-zinc-900 hover:bg-black text-white py-4 px-8 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-md active:scale-[0.99] disabled:opacity-50 shimmer-button"
+        >
+          {loading ? 'Confirmando pedido...' : 'Confirmar Pedido & Proceder'}
+          <ArrowRight size={16} />
+        </button>
+
+        <div className="text-center pt-2">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition"
+          >
+            <MessageCircle size={15} /> ¿Prefieres enviar el comprobante por WhatsApp? Haz clic aquí
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

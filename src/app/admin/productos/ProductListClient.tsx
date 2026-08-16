@@ -65,7 +65,7 @@ export default function ProductListClient({ products: initialProducts }: { produ
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg bg-zinc-100 overflow-hidden border border-zinc-200 shrink-0">
-                      <Image src={product.imageUrl} alt="" fill className="object-cover" />
+                      <Image src={product.imageUrl} alt="" fill sizes="48px" className="object-cover" />
                     </div>
                     <div>
                       <Link

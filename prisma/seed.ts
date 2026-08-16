@@ -43,18 +43,22 @@ async function main() {
   // 2. Categories
   const catAnillos = await prisma.category.upsert({
     where: { slug: 'anillos' },
-    update: {},
+    update: {
+      imageUrl: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
+    },
     create: {
       name: 'Anillos',
       slug: 'anillos',
       description: 'Anillos elegantes de plata 925 y oro para cada ocasión especial.',
-      imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f6612d4a5?q=80&w=800&auto=format&fit=crop',
+      imageUrl: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
     },
   });
 
   const catCollares = await prisma.category.upsert({
     where: { slug: 'collares' },
-    update: {},
+    update: {
+      imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+    },
     create: {
       name: 'Collares y Gargantillas',
       slug: 'collares',
@@ -65,18 +69,22 @@ async function main() {
 
   const catPulseras = await prisma.category.upsert({
     where: { slug: 'pulseras' },
-    update: {},
+    update: {
+      imageUrl: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+    },
     create: {
       name: 'Pulseras y Brazaletes',
       slug: 'pulseras',
       description: 'Brazaletes finos y pulseras combinables para un look deslumbrante.',
-      imageUrl: 'https://images.unsplash.com/photo-1611591475837-7756f7ef07b8?q=80&w=800&auto=format&fit=crop',
+      imageUrl: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
     },
   });
 
   const catAretes = await prisma.category.upsert({
     where: { slug: 'aretes' },
-    update: {},
+    update: {
+      imageUrl: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?q=80&w=800&auto=format&fit=crop',
+    },
     create: {
       name: 'Aretes y Candongas',
       slug: 'aretes',
@@ -119,13 +127,13 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://images.unsplash.com/photo-1605100804763-247f6612d4a5?q=80&w=800&auto=format&fit=crop',
+            url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
             isPrimary: true,
             altText: 'Anillo Solitario Eterno en Plata',
             sortOrder: 0,
           },
           {
-            url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
+            url: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?q=80&w=800&auto=format&fit=crop',
             isPrimary: false,
             altText: 'Detalle de la circonia brillante',
             sortOrder: 1,
@@ -140,6 +148,26 @@ async function main() {
         ],
       },
     },
+  });
+
+  await prisma.productImage.deleteMany({ where: { productId: p1.id } });
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: p1.id,
+        url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
+        isPrimary: true,
+        altText: 'Anillo Solitario Eterno en Plata',
+        sortOrder: 0,
+      },
+      {
+        productId: p1.id,
+        url: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?q=80&w=800&auto=format&fit=crop',
+        isPrimary: false,
+        altText: 'Detalle de la circonia brillante',
+        sortOrder: 1,
+      },
+    ],
   });
 
   await prisma.productOptionGroupAssignment.upsert({
@@ -204,7 +232,7 @@ async function main() {
       images: {
         create: [
           {
-            url: 'https://images.unsplash.com/photo-1611591475837-7756f7ef07b8?q=80&w=800&auto=format&fit=crop',
+            url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
             isPrimary: true,
             altText: 'Pulsera Tennis Zirconia',
             sortOrder: 0,
@@ -217,6 +245,17 @@ async function main() {
           { sku: 'PUL-TENIS-19CM', price: 58.0, inventory: { create: { quantity: 5 } } },
         ],
       },
+    },
+  });
+
+  await prisma.productImage.deleteMany({ where: { productId: p3.id } });
+  await prisma.productImage.create({
+    data: {
+      productId: p3.id,
+      url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+      isPrimary: true,
+      altText: 'Pulsera Tennis Zirconia',
+      sortOrder: 0,
     },
   });
 

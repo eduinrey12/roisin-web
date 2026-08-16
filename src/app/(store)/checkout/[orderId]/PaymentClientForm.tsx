@@ -197,7 +197,7 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
 
               {evidenceUrl && (
                 <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-emerald-500 shrink-0">
-                  <Image src={evidenceUrl} alt="Comprobante" fill className="object-cover" />
+                  <Image src={evidenceUrl} alt="Comprobante" fill sizes="96px" className="object-cover" />
                   <div className="absolute top-1 right-1 bg-emerald-600 text-white rounded-full p-0.5">
                     <CheckCircle2 size={14} />
                   </div>

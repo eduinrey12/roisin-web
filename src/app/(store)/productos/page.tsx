@@ -1,5 +1,6 @@
 import { getProducts, getCategories } from '@/services/catalog.service';
 import ProductCard from '@/components/storefront/ProductCard';
+import ProductSortSelect from '@/components/storefront/ProductSortSelect';
 import Link from 'next/link';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -100,20 +101,7 @@ export default async function CatalogPage({
         {/* Sort Filter */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-gray-500 hidden sm:inline">Ordenar:</span>
-          <form method="GET" action="/productos">
-            {category && <input type="hidden" name="category" value={category} />}
-            {q && <input type="hidden" name="q" value={q} />}
-            <select
-              name="sort"
-              defaultValue={sort || 'newest'}
-              onChange={(e) => e.target.form?.submit()}
-              className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-black"
-            >
-              <option value="newest">Más Recientes</option>
-              <option value="price_asc">Precio: Menor a Mayor</option>
-              <option value="price_desc">Precio: Mayor a Menor</option>
-            </select>
-          </form>
+          <ProductSortSelect currentSort={sort} />
         </div>
       </div>
 

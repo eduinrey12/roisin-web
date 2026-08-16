@@ -1,33 +1,44 @@
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+import prisma from '../src/lib/db';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
+import crypto from 'crypto';
 
 async function main() {
-  console.log('Seeding initial data for ROISIN e-commerce...');
+  console.log('--- ROISIN Initial Database Seed ---');
 
-  // 1. Admin User
-  const adminPassword = await bcrypt.hash('AdminRoisin2026!', 10);
+  // 1. Admin User (Securely generated or from environment)
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@roisinjoyas.com';
+  const initialPassword =
+    process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(8).toString('hex') + '!A1';
+
+  const adminPasswordHash = await bcrypt.hash(initialPassword, 10);
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@roisinjoyas.com' },
+    where: { email: adminEmail },
     update: {
-      passwordHash: adminPassword,
       role: 'ADMIN',
     },
     create: {
-      email: 'admin@roisinjoyas.com',
-      passwordHash: adminPassword,
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
       role: 'ADMIN',
       customerProfile: {
         create: {
           firstName: 'Administrador',
           lastName: 'Roisin',
-          phone: '0999999999',
+          phone: process.env.NEXT_PUBLIC_STORE_PHONE || '0999999999',
         },
       },
     },
   });
-  console.log('Admin user ready:', adminUser.email);
+
+  console.log('✅ Admin user configured:');
+  console.log(`   Email: ${adminEmail}`);
+  if (!process.env.ADMIN_INITIAL_PASSWORD) {
+    console.log(`   Temporary Generated Password: ${initialPassword}`);
+    console.log('   ⚠️  Please change this password upon first login.');
+  } else {
+    console.log('   Password configured from ADMIN_INITIAL_PASSWORD env variable.');
+  }
 
   // 2. Categories
   const catAnillos = await prisma.category.upsert({
@@ -300,7 +311,7 @@ async function main() {
     },
   });
 
-  console.log('Seed completed successfully!');
+  console.log('✅ Seed completed successfully!');
 }
 
 main()

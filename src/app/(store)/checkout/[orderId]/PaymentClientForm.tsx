@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { selectPaymentMethodAction, submitEvidenceAction } from '@/lib/actions/checkout.actions';
+import { STORE_CONFIG } from '@/lib/config/store';
 import { Landmark, Banknote, Upload, CheckCircle2, MessageCircle, AlertCircle, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
@@ -84,8 +85,8 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
     }
   };
 
-  const whatsappMessage = `Hola Roisin Joyas, he realizado el pedido ${order.orderNumber} por un total de $${order.total.toFixed(2)}. Adjunto mi comprobante de pago.`;
-  const whatsappUrl = `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '593999999999'}?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappMessage = `Hola ${STORE_CONFIG.name}, he realizado el pedido ${order.orderNumber} por un total de $${order.total.toFixed(2)}. Adjunto mi comprobante de pago.`;
+  const whatsappUrl = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="space-y-8 bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-sm">
@@ -118,9 +119,9 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
             />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-gray-900">Transferencia / Depósito</h3>
+            <h3 className="font-bold text-sm text-gray-900">Transferencia / Depósito Bancario</h3>
             <p className="text-[11px] text-gray-500 mt-0.5">
-              Banco Pichincha, Guayaquil o Pacífico. Tu pedido se procesa al confirmar.
+              Cuentas en Ecuador. Tu pedido se procesa inmediatamente al validar el comprobante.
             </p>
           </div>
         </label>
@@ -147,7 +148,7 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
           <div>
             <h3 className="font-bold text-sm text-gray-900">Pago Contra Entrega</h3>
             <p className="text-[11px] text-gray-500 mt-0.5">
-              Paga en efectivo al recibir el paquete en tu domicilio (Zonas urbanas).
+              Paga en efectivo al recibir el paquete en tu domicilio (Zonas seleccionadas).
             </p>
           </div>
         </label>
@@ -158,27 +159,24 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
         <div className="space-y-6 pt-4 border-t border-gray-100 animate-fade-in">
           <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200/80 space-y-3 text-xs">
             <h4 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px]">
-              Cuentas Bancarias Disponibles en Ecuador
+              Cuentas Bancarias Registradas
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-zinc-700">
-              <div className="p-3 bg-white rounded-lg border border-zinc-200/60 space-y-1">
-                <p className="font-semibold text-black">Banco Pichincha</p>
-                <p>Cuenta de Ahorros: <strong>2208945123</strong></p>
-                <p>Titular: ROISIN Joyas</p>
-                <p>CI/RUC: 1792345678001</p>
-              </div>
-              <div className="p-3 bg-white rounded-lg border border-zinc-200/60 space-y-1">
-                <p className="font-semibold text-black">Banco Guayaquil / Produbanco</p>
-                <p>Cuenta Corriente: <strong>0015678912</strong></p>
-                <p>Correo: pagos@roisinjoyas.com</p>
-              </div>
+              {STORE_CONFIG.bankAccounts.map((b, i) => (
+                <div key={i} className="p-3 bg-white rounded-lg border border-zinc-200/60 space-y-1">
+                  <p className="font-semibold text-black">{b.bankName}</p>
+                  <p>{b.accountType}: <strong>{b.accountNumber}</strong></p>
+                  <p>Titular: {b.beneficiary}</p>
+                  <p>CI/RUC: {b.idDocument}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Evidence Upload Section */}
           <div className="space-y-3">
             <label className="text-xs font-semibold text-gray-800 block">
-              Subir Comprobante de Pago (Opcional ahora, puedes enviarlo luego por WhatsApp)
+              Subir Comprobante de Pago (Opcional en este paso, puedes enviarlo luego por WhatsApp)
             </label>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">

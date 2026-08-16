@@ -221,12 +221,101 @@ export async function adminGetAllOrders(status?: OrderStatus) {
 }
 
 export async function adminUpdateOrderStatus(orderId: string, status: OrderStatus) {
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) throw new Error('Orden no encontrada');
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
 
-  return prisma.order.update({
-    where: { id: orderId },
-    data: { status },
+    if (!order) throw new Error('Orden no encontrada');
+
+    const wasCancelled = order.status === 'CANCELLED';
+    const isNowCancelled = status === 'CANCELLED';
+
+    // 1. If cancelling an active order -> restore inventory & coupon usage
+    if (!wasCancelled && isNowCancelled) {
+      for (const item of order.items) {
+        let inv = await tx.inventoryItem.findUnique({
+          where: { variantId: item.variantId },
+        });
+
+        if (!inv) {
+          inv = await tx.inventoryItem.create({
+            data: { variantId: item.variantId, quantity: 0 },
+          });
+        }
+
+        await tx.inventoryItem.update({
+          where: { id: inv.id },
+          data: { quantity: inv.quantity + item.quantity },
+        });
+
+        await tx.inventoryMovement.create({
+          data: {
+            inventoryItemId: inv.id,
+            quantityChange: item.quantity,
+            reason: 'ORDER_CANCELLED',
+            referenceId: order.id,
+          },
+        });
+      }
+
+      if (order.couponId) {
+        await tx.coupon.update({
+          where: { id: order.couponId },
+          data: { currentUses: { decrement: 1 } },
+        });
+      }
+    }
+
+    // 2. If re-activating a previously cancelled order -> re-deduct inventory & coupon usage
+    if (wasCancelled && !isNowCancelled) {
+      for (const item of order.items) {
+        let inv = await tx.inventoryItem.findUnique({
+          where: { variantId: item.variantId },
+        });
+
+        if (!inv) {
+          inv = await tx.inventoryItem.create({
+            data: { variantId: item.variantId, quantity: 0 },
+          });
+        }
+
+        if (inv.quantity < item.quantity) {
+          throw new Error(
+            `Stock insuficiente para reactivar el pedido. Variante ${item.variantId} solo tiene ${inv.quantity} unidades.`
+          );
+        }
+
+        await tx.inventoryItem.update({
+          where: { id: inv.id },
+          data: { quantity: inv.quantity - item.quantity },
+        });
+
+        await tx.inventoryMovement.create({
+          data: {
+            inventoryItemId: inv.id,
+            quantityChange: -item.quantity,
+            reason: 'ORDER_PLACED',
+            referenceId: order.id,
+          },
+        });
+      }
+
+      if (order.couponId) {
+        await tx.coupon.update({
+          where: { id: order.couponId },
+          data: { currentUses: { increment: 1 } },
+        });
+      }
+    }
+
+    return tx.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
   });
 }
 

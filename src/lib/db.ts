@@ -6,27 +6,35 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const dbUrl = process.env.DATABASE_URL || 'mysql://root:password@127.0.0.1:3306/roisin_db';
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (!dbUrl) {
+    console.error('❌ ERROR CRÍTICO: La variable DATABASE_URL no está configurada en el archivo .env');
+  }
 
   let adapter: PrismaMariaDb;
   try {
-    const parsed = new URL(dbUrl);
+    const urlString = dbUrl || 'mysql://root:@127.0.0.1:3306/roisin_db';
+    const parsed = new URL(urlString);
+
     adapter = new PrismaMariaDb({
-      host: parsed.hostname,
+      host: parsed.hostname || '127.0.0.1',
       port: parsed.port ? parseInt(parsed.port, 10) : 3306,
-      user: decodeURIComponent(parsed.username),
-      password: decodeURIComponent(parsed.password),
-      database: parsed.pathname.replace(/^\//, ''),
+      user: decodeURIComponent(parsed.username || 'root'),
+      password: decodeURIComponent(parsed.password || ''),
+      database: parsed.pathname.replace(/^\//, '') || 'roisin_db',
       connectionLimit: 5,
-      acquireTimeout: 10000,
+      connectTimeout: 5000,
+      acquireTimeout: 3000,
+      allowPublicKeyRetrieval: true,
     });
   } catch {
-    adapter = new PrismaMariaDb(dbUrl);
+    adapter = new PrismaMariaDb(dbUrl || 'mysql://root:@127.0.0.1:3306/roisin_db');
   }
 
   return new PrismaClient({
     adapter,
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 }
 

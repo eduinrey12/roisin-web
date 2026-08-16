@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import { STORE_CONFIG } from '@/lib/config/store';
 import { ShieldCheck, Truck, Sparkles, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
-  const whatsappUrl = `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '593999999999'}?text=Hola%20Roisin%20Joyas,%20deseo%20m%C3%A1s%20informaci%C3%B3n`;
+  const whatsappUrl = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(
+    `Hola ${STORE_CONFIG.name}, deseo más información sobre sus joyas.`
+  )}`;
 
   return (
     <footer className="bg-zinc-950 text-white border-t border-zinc-900 mt-20">
@@ -16,10 +19,10 @@ export default function Footer() {
               </div>
               <div>
                 <h4 className="font-semibold text-sm uppercase tracking-wider text-white">
-                  Plata 925 & Oro 18k
+                  Plata 925 & Baño de Oro
                 </h4>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Metales nobles certificados y durabilidad garantizada.
+                  Metales finos certificados y durabilidad garantizada.
                 </p>
               </div>
             </div>
@@ -33,7 +36,7 @@ export default function Footer() {
                   Envíos Nacionales
                 </h4>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Entregas seguras en Quito y todo el Ecuador vía Servientrega.
+                  Entregas seguras a nivel nacional en 24h a 48h.
                 </p>
               </div>
             </div>
@@ -47,7 +50,7 @@ export default function Footer() {
                   Compra Protegida
                 </h4>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Atención directa y asesoría personalizada por WhatsApp.
+                  Asesoría y seguimiento directo vía WhatsApp.
                 </p>
               </div>
             </div>
@@ -60,10 +63,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
             <span className="font-serif text-2xl font-bold tracking-[0.25em] text-white">
-              ROISIN
+              {STORE_CONFIG.name}
             </span>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Diseño de joyas finas y accesorios de lujo accesible. Diseñados para realzar tu belleza en cada momento especial.
+              {STORE_CONFIG.description}
             </p>
             <div className="pt-2">
               <a
@@ -123,7 +126,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-white transition">
-                  Guía de Tallas de Anillos
+                  Guía de Tallas & Consultas
                 </a>
               </li>
             </ul>
@@ -145,7 +148,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-zinc-900 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-500 gap-4">
-          <p>© {new Date().getFullYear()} ROISIN Joyas y Accesorios. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} {STORE_CONFIG.name}. Todos los derechos reservados.</p>
           <p className="text-zinc-500">Hecho con excelencia para Ecuador 🇪🇨</p>
         </div>
       </div>

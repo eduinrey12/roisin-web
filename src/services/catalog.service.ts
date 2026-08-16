@@ -2,41 +2,31 @@ import prisma from '@/lib/db';
 import { Prisma } from '@prisma/client';
 
 export async function getCategories() {
-  try {
-    return await prisma.category.findMany({
-      where: { isActive: true },
-      include: {
-        _count: {
-          select: { products: { where: { isActive: true } } },
-        },
+  return prisma.category.findMany({
+    where: { isActive: true },
+    include: {
+      _count: {
+        select: { products: { where: { isActive: true } } },
       },
-      orderBy: { name: 'asc' },
-    });
-  } catch (error) {
-    console.warn('Database not reachable for getCategories, returning fallback:', error);
-    return [];
-  }
+    },
+    orderBy: { name: 'asc' },
+  });
 }
 
 export async function getFeaturedProducts(limit = 8) {
-  try {
-    return await prisma.product.findMany({
-      where: { isActive: true, isFeatured: true },
-      include: {
-        images: { orderBy: { sortOrder: 'asc' } },
-        variants: {
-          where: { isActive: true },
-          include: { inventory: true },
-        },
-        category: true,
+  return prisma.product.findMany({
+    where: { isActive: true, isFeatured: true },
+    include: {
+      images: { orderBy: { sortOrder: 'asc' } },
+      variants: {
+        where: { isActive: true },
+        include: { inventory: true },
       },
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-    });
-  } catch (error) {
-    console.warn('Database not reachable for getFeaturedProducts, returning fallback:', error);
-    return [];
-  }
+      category: true,
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export async function getProducts(params?: {
@@ -70,99 +60,79 @@ export async function getProducts(params?: {
     orderBy = { basePrice: 'desc' };
   }
 
-  try {
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        include: {
-          images: { orderBy: { sortOrder: 'asc' } },
-          variants: {
-            where: { isActive: true },
-            include: { inventory: true },
-          },
-          category: true,
-        },
-        orderBy,
-        skip,
-        take: limit,
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    return {
-      products,
-      total,
-      totalPages: Math.ceil(total / limit),
-      page,
-    };
-  } catch (error) {
-    console.warn('Database not reachable for getProducts, returning fallback:', error);
-    return {
-      products: [],
-      total: 0,
-      totalPages: 1,
-      page: 1,
-    };
-  }
-}
-
-export async function getProductBySlug(slug: string) {
-  try {
-    return await prisma.product.findUnique({
-      where: { slug, isActive: true },
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
       include: {
-        category: true,
         images: { orderBy: { sortOrder: 'asc' } },
         variants: {
           where: { isActive: true },
-          include: {
-            inventory: true,
-            attributes: {
-              include: {
-                attributeValue: {
-                  include: { attribute: true },
-                },
-              },
-            },
-          },
+          include: { inventory: true },
         },
-        optionGroupLinks: {
-          include: {
-            group: {
-              include: {
-                options: {
-                  where: { isActive: true },
-                  orderBy: { sortOrder: 'asc' },
-                },
+        category: true,
+      },
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return {
+    products,
+    total,
+    totalPages: Math.ceil(total / limit),
+    page,
+  };
+}
+
+export async function getProductBySlug(slug: string) {
+  return prisma.product.findUnique({
+    where: { slug, isActive: true },
+    include: {
+      category: true,
+      images: { orderBy: { sortOrder: 'asc' } },
+      variants: {
+        where: { isActive: true },
+        include: {
+          inventory: true,
+          attributes: {
+            include: {
+              attributeValue: {
+                include: { attribute: true },
               },
             },
           },
         },
       },
-    });
-  } catch (error) {
-    console.warn('Database not reachable for getProductBySlug, returning null:', error);
-    return null;
-  }
+      optionGroupLinks: {
+        include: {
+          group: {
+            include: {
+              options: {
+                where: { isActive: true },
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 // Admin Operations
 export async function adminGetAllProducts() {
-  try {
-    return await prisma.product.findMany({
-      include: {
-        category: true,
-        images: { orderBy: { sortOrder: 'asc' } },
-        variants: {
-          include: { inventory: true },
-        },
+  return prisma.product.findMany({
+    include: {
+      category: true,
+      images: { orderBy: { sortOrder: 'asc' } },
+      variants: {
+        include: { inventory: true },
       },
-      orderBy: { createdAt: 'desc' },
-    });
-  } catch (error) {
-    console.warn('Database not reachable for adminGetAllProducts:', error);
-    return [];
-  }
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export async function adminCreateProduct(data: {

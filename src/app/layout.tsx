@@ -1,47 +1,68 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
-import "./globals.css";
-import Header from "@/components/Header";
-import CartDrawer from "@/components/CartDrawer";
-
-const inter = Inter({ subsets: ['latin'] });
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google';
+import './globals.css';
+import Header from '@/components/storefront/Header';
+import Footer from '@/components/storefront/Footer';
+import CartDrawer from '@/components/storefront/CartDrawer';
+import { getCurrentUser } from '@/lib/auth';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+const playfair = Playfair_Display({
+  variable: '--font-serif',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Roisin Joyas y Accesorios | Elegancia en cada detalle",
-  description: "Descubre nuestra exclusiva colección de anillos, collares y pulseras. En Roisin ofrecemos joyas de alta calidad con diseños únicos para realzar tu belleza.",
-  keywords: "joyas, accesorios, anillos, collares, pulseras, joyería online, Roisin, Ecuador",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://roisinjoyas.com'),
+  title: {
+    default: 'ROISIN Joyas & Accesorios | Plata 925 y Oro 18k en Ecuador',
+    template: '%s | ROISIN Joyas',
+  },
+  description:
+    'Exclusiva joyería fina en Plata de Ley 925 y Baño de Oro 18k. Anillos de promesa, collares, pulseras tennis y aretes con envíos seguros a todo el Ecuador.',
+  keywords: [
+    'joyas ecuador',
+    'plata 925 quito',
+    'anillos de promesa',
+    'pulseras tennis',
+    'collares oro',
+    'joyeria fina',
+    'roisin joyas',
+  ],
   openGraph: {
-    title: "Roisin Joyas y Accesorios",
-    description: "Exclusiva colección de anillos, collares y pulseras.",
-    url: "https://roisinjoyas.com",
-    siteName: "Roisin Joyas",
-    locale: "es_EC",
-    type: "website",
+    title: 'ROISIN Joyas & Accesorios | Elegancia en cada detalle',
+    description: 'Exclusiva joyería en Plata 925 y Baño de Oro 18k con envíos a todo Ecuador.',
+    url: 'https://roisinjoyas.com',
+    siteName: 'ROISIN Joyas',
+    locale: 'es_EC',
+    type: 'website',
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
-    <html lang="es">
+    <html lang="es" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-black selection:text-white flex flex-col min-h-screen`}
       >
-        <Header />
-        {children}
+        <Header user={user ? { email: user.email, role: user.role } : null} />
+        <main className="flex-1">{children}</main>
+        <Footer />
         <CartDrawer />
       </body>
     </html>

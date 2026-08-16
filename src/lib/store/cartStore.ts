@@ -1,90 +1,80 @@
 import { create } from 'zustand';
-import Cookies from 'js-cookie';
-import { v4 as uuidv4 } from 'uuid';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import {
+  fetchCartAction,
+  addToCartAction,
+  updateQuantityAction,
+  removeItemAction,
+} from '@/lib/actions/cart.actions';
 
 interface CartState {
   cart: any;
   isOpen: boolean;
-  guestToken: string;
-  initCart: () => Promise<void>;
-  addItem: (variantId: string, quantity: number) => Promise<void>;
-  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  loading: boolean;
   toggleCart: () => void;
-  mergeCart: () => Promise<void>;
+  openCart: () => void;
+  closeCart: () => void;
+  initCart: () => Promise<void>;
+  addItem: (variantId: string, quantity?: number, optionIds?: string[]) => Promise<boolean>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  removeItem: (itemId: string) => Promise<void>;
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
   cart: null,
   isOpen: false,
-  guestToken: '',
-
-  initCart: async () => {
-    let token = Cookies.get('guest_token');
-    if (!token) {
-      token = uuidv4();
-      Cookies.set('guest_token', token, { expires: 30 });
-    }
-    set({ guestToken: token });
-
-    const authToken = Cookies.get('access_token');
-    const headers: Record<string, string> = {
-      'x-guest-token': token,
-    };
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/carts`, { headers });
-      if (res.ok) {
-        const cart = await res.json();
-        set({ cart });
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  },
-
-  addItem: async (variantId, quantity) => {
-    const { guestToken } = get();
-    const authToken = Cookies.get('access_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'x-guest-token': guestToken,
-    };
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-
-    const res = await fetch(`${API_URL}/carts/items`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ variantId, quantity }),
-    });
-    if (res.ok) {
-      const cart = await res.json();
-      set({ cart, isOpen: true });
-    }
-  },
-
-  updateQuantity: async (itemId, quantity) => {
-    // Basic implementation for update...
-  },
+  loading: false,
 
   toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+  openCart: () => set({ isOpen: true }),
+  closeCart: () => set({ isOpen: false }),
 
-  mergeCart: async () => {
-    const { guestToken } = get();
-    const authToken = Cookies.get('access_token');
-    if (!authToken || !guestToken) return;
-
-    await fetch(`${API_URL}/carts/merge`, {
-      method: 'POST',
-      headers: {
-        'x-guest-token': guestToken,
-        'Authorization': `Bearer ${authToken}`
+  initCart: async () => {
+    try {
+      const res = await fetchCartAction();
+      if (res.success) {
+        set({ cart: res.cart });
       }
-    });
-    get().initCart();
-  }
+    } catch (err) {
+      console.error('Error al inicializar carrito:', err);
+    }
+  },
+
+  addItem: async (variantId: string, quantity = 1, optionIds: string[] = []) => {
+    set({ loading: true });
+    try {
+      const res = await addToCartAction(variantId, quantity, optionIds);
+      if (res.success) {
+        set({ cart: res.cart, isOpen: true, loading: false });
+        return true;
+      }
+      set({ loading: false });
+      return false;
+    } catch (err) {
+      console.error('Error al añadir:', err);
+      set({ loading: false });
+      return false;
+    }
+  },
+
+  updateQuantity: async (itemId: string, quantity: number) => {
+    try {
+      const res = await updateQuantityAction(itemId, quantity);
+      if (res.success) {
+        set({ cart: res.cart });
+      }
+    } catch (err) {
+      console.error('Error al actualizar cantidad:', err);
+    }
+  },
+
+  removeItem: async (itemId: string) => {
+    try {
+      const res = await removeItemAction(itemId);
+      if (res.success) {
+        set({ cart: res.cart });
+      }
+    } catch (err) {
+      console.error('Error al remover item:', err);
+    }
+  },
 }));

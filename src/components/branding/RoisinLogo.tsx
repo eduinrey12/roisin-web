@@ -1,11 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import RoisinDiamond from './RoisinDiamond';
 
 interface RoisinLogoProps {
   className?: string;
-  height?: number;
   width?: number;
+  height?: number;
   theme?: 'dark' | 'light' | 'rose';
   href?: string;
   showTagline?: boolean;
@@ -13,28 +13,44 @@ interface RoisinLogoProps {
 
 export default function RoisinLogo({
   className = '',
-  height = 48,
-  width = 175,
   theme = 'dark',
   href = '/',
+  showTagline = true,
 }: RoisinLogoProps) {
-  // Using the official vector SVG brand assets directly
-  const logoSrc =
-    theme === 'light'
-      ? '/branding/diapo-1/logo-con-sombra.svg'
-      : '/branding/diapo-1/logo-sin-sombra.svg';
+  const isLight = theme === 'light';
+  const isRose = theme === 'rose';
+
+  const diamondColor = isLight ? '#F08097' : '#E65573';
+  const textColor = isLight ? 'text-white' : isRose ? 'text-[#D33658]' : 'text-zinc-900';
+  const tagColor = isLight ? 'text-[#FAD1DC]' : 'text-[#D33658]';
 
   const content = (
-    <div className={`inline-flex items-center select-none group transition-transform duration-300 group-hover:scale-102 ${className}`}>
-      <div className="relative flex items-center justify-center">
-        <Image
-          src={logoSrc}
-          alt="ROISIN Joyas & Accesorios"
-          width={width}
-          height={height}
-          priority
-          className="h-10 sm:h-12 w-auto object-contain drop-shadow-2xs transition-opacity duration-300"
+    <div className={`inline-flex items-center gap-3 select-none group transition-transform duration-300 group-hover:scale-102 ${className}`}>
+      {/* Official Diamond Vector Symbol from diapo-2 */}
+      <div className="relative flex items-center justify-center p-1 bg-[#FFF5F7] rounded-2xl border border-[#FAD1DC] shadow-xs group-hover:border-[#E65573] transition-colors">
+        <RoisinDiamond
+          size={32}
+          color={diamondColor}
+          className="transition-transform duration-300 group-hover:scale-108 drop-shadow-xs"
         />
+      </div>
+
+      {/* Brand Wordmark & Tagline */}
+      <div className="flex flex-col text-left">
+        <span
+          className={`font-serif text-xl sm:text-2xl font-black tracking-[0.28em] uppercase leading-none transition-colors ${textColor}`}
+          style={{ letterSpacing: '0.28em' }}
+        >
+          ROISIN
+        </span>
+        {showTagline && (
+          <span
+            className={`text-[8.5px] uppercase tracking-[0.38em] font-bold mt-1 leading-none ${tagColor}`}
+            style={{ letterSpacing: '0.38em' }}
+          >
+            Joyas & Accesorios
+          </span>
+        )}
       </div>
     </div>
   );

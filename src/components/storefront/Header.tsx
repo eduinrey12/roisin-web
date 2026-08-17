@@ -50,7 +50,7 @@ export default function Header({ user }: { user?: { email: string; role: string 
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#FAD1DC] transition-all">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#FAD1DC] transition-all shadow-2xs">
       {/* 1. Luminous Pink Diamond Announcement Bar */}
       <div className="bg-[#FFF5F7] border-b border-[#FAD1DC] text-zinc-800 text-[11px] font-medium tracking-widest text-center py-2 px-4 flex items-center justify-center gap-2">
         <RoisinDiamond size={13} color="#E65573" />
@@ -74,9 +74,9 @@ export default function Header({ user }: { user?: { email: string; role: string 
           </button>
         </div>
 
-        {/* Official Brand Logo using SVG */}
+        {/* Official Brand Logo in radiant Pink Diamond */}
         <div className="flex-1 md:flex-initial flex items-center justify-center md:justify-start">
-          <RoisinLogo width={185} height={52} />
+          <RoisinLogo />
         </div>
 
         {/* Desktop Navigation with "Colecciones" Dropdown */}
@@ -176,8 +176,8 @@ export default function Header({ user }: { user?: { email: string; role: string 
           </a>
         </nav>
 
-        {/* Actions (Search, Account, Cart) */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        {/* Actions (Search, Account, Pink Diamond Cart Button) */}
+        <div className="flex items-center space-x-2.5 sm:space-x-4">
           <button
             onClick={() => setSearchOpen(!searchOpen)}
             className="p-2.5 text-zinc-700 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-full transition"
@@ -199,15 +199,23 @@ export default function Header({ user }: { user?: { email: string; role: string 
             )}
           </Link>
 
+          {/* Luminous Pink Diamond Cart Trigger Button */}
           <button
             onClick={toggleCart}
-            className="relative p-2.5 text-zinc-900 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-full transition group"
+            className="relative flex items-center gap-2 p-2.5 sm:px-4 sm:py-2.5 bg-[#FFF5F7] hover:bg-[#FDE8ED] border border-[#FAD1DC] hover:border-[#E65573] rounded-2xl transition-all duration-200 group shadow-2xs"
             aria-label="Bolsa de compras"
           >
-            <ShoppingBag size={20} />
-            {itemCount > 0 && (
-              <span className="absolute 0.5 right-0.5 bg-[#D33658] text-white text-[10px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+            <ShoppingBag size={19} className="text-[#D33658] transition-transform group-hover:scale-108" />
+            <span className="hidden sm:inline text-xs font-bold text-zinc-900">
+              Bolsa
+            </span>
+            {itemCount > 0 ? (
+              <span className="bg-[#D33658] text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-scale-in">
                 {itemCount}
+              </span>
+            ) : (
+              <span className="hidden sm:inline text-[10px] text-zinc-400 font-bold">
+                (0)
               </span>
             )}
           </button>

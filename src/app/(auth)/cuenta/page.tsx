@@ -137,9 +137,10 @@ export default async function AccountPage() {
                   <div className="pt-2 border-t border-[#FAF4F5] flex justify-end">
                     <Link
                       href={`/orden-confirmada/${order.id}`}
-                      className="text-[11px] uppercase font-bold tracking-wider text-[#BE6C7C] hover:underline inline-flex items-center gap-1"
+                      className="text-[11px] uppercase font-bold tracking-wider text-[#D33658] hover:text-[#93203A] inline-flex items-center gap-1 transition-colors group"
                     >
-                      Ver Detalle Completo <ArrowRight size={12} />
+                      <span>Ver Detalle Completo</span>
+                      <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Link>
                   </div>
                 </div>

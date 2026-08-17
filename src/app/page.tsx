@@ -169,9 +169,10 @@ export default async function HomePage() {
           </div>
           <Link
             href="/productos"
-            className="text-xs uppercase font-bold tracking-widest text-[#D33658] hover:text-[#93203A] transition flex items-center gap-2 border-b border-[#E65573] pb-1"
+            className="text-xs uppercase font-bold tracking-widest text-[#D33658] hover:text-[#93203A] transition-all flex items-center gap-2 group px-4 py-2.5 bg-[#FFF5F7] hover:bg-[#FDE8ED] rounded-full border border-[#FAD1DC] shadow-2xs"
           >
-            Ver Catálogo Completo ({featuredProducts.length} joyas) <ArrowRight size={14} />
+            <span>Ver Catálogo Completo ({featuredProducts.length} joyas)</span>
+            <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
 

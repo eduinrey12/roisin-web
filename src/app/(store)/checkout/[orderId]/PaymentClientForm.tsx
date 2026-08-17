@@ -232,7 +232,7 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
         <button
           onClick={handleFinishPayment}
           disabled={loading || uploading}
-          className="w-full bg-zinc-900 hover:bg-black text-white py-4 px-8 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-md active:scale-[0.99] disabled:opacity-50 shimmer-button"
+          className="w-full btn-pink-diamond py-4 px-8 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-lg active:scale-[0.99] disabled:opacity-50 shimmer-button"
         >
           {loading ? 'Confirmando pedido...' : 'Confirmar Pedido & Proceder'}
           <ArrowRight size={16} />

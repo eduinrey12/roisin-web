@@ -137,8 +137,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
 
             {/* Desktop Link indicator */}
-            <span className="hidden lg:inline-block text-[11px] uppercase font-bold tracking-widest text-[#D33658] group-hover:underline">
-              Ver Joya →
+            <span className="hidden lg:inline-flex items-center gap-1 text-[11px] uppercase font-bold tracking-widest text-[#D33658] group-hover:text-[#93203A] transition-colors">
+              Ver Joya <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
             </span>
           </div>
         </div>

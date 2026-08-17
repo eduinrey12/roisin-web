@@ -139,7 +139,7 @@ export default function AddToCartSection({ product }: AddToCartSectionProps) {
               <button
                 type="button"
                 onClick={() => setSizeGuideOpen(true)}
-                className="text-[11px] font-bold text-[#D33658] hover:text-[#93203A] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-bold text-[#D33658] hover:text-[#93203A] inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FFF5F7] hover:bg-[#FDE8ED] border border-[#FAD1DC] transition cursor-pointer shadow-2xs"
               >
                 <HelpCircle size={13} /> ¿Dudas con tu talla?
               </button>

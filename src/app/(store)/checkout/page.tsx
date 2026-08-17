@@ -396,7 +396,7 @@ export default function CheckoutPage() {
               type="submit"
               form="checkout-form"
               disabled={loading}
-              className="w-full bg-zinc-900 hover:bg-black text-white py-4 px-6 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-md active:scale-[0.99] disabled:opacity-50 shimmer-button"
+              className="w-full btn-pink-diamond py-4 px-6 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-xl active:scale-[0.99] disabled:opacity-50 shimmer-button"
             >
               {loading ? 'Generando Pedido...' : 'Continuar al Pago'}
               <ArrowRight size={16} />

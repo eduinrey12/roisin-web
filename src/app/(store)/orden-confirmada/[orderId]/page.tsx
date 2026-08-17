@@ -137,7 +137,7 @@ export default async function OrderSuccessPage({
 
           <Link
             href="/productos"
-            className="w-full sm:w-auto bg-zinc-900 hover:bg-black text-white text-xs uppercase tracking-widest font-bold px-7 py-4 rounded-2xl transition flex items-center justify-center gap-2"
+            className="w-full sm:w-auto btn-pink-diamond text-white text-xs uppercase tracking-widest font-bold px-8 py-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-md shimmer-button"
           >
             Seguir Explorando Joyas <ArrowRight size={16} />
           </Link>

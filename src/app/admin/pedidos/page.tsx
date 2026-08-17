@@ -1,5 +1,6 @@
 import { adminGetAllOrders } from '@/services/order.service';
 import OrdersTableClient from './OrdersTableClient';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,10 +9,17 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 border-b border-[#FAD1DC] pb-6">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-zinc-900">Gestión de Pedidos</h1>
-          <p className="text-xs text-zinc-500 mt-1">Control de estados, envíos y comprobantes de pago</p>
+          <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658] mb-1">
+            <RoisinDiamond size={13} color="#E65573" /> Control de Ventas
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
+            Gestión de Pedidos & Comprobantes
+          </h1>
+          <p className="text-xs text-zinc-500 font-light mt-0.5">
+            Verificación de transferencias bancarias, actualización de estados de envío y clientes.
+          </p>
         </div>
       </div>
 

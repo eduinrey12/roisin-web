@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { adminAdjustStockAction } from '@/lib/actions/admin.actions';
 import Image from 'next/image';
-import { Plus, Minus, History, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Plus, Minus, History, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface Movement {
   id: string;
@@ -40,57 +41,57 @@ export default function InventoryTableClient({ items: initialItems }: { items: I
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-3xl border border-[#FAD1DC] shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50/70 text-zinc-600">
-              <th className="p-4 font-bold uppercase tracking-wider">Joya / Variante</th>
-              <th className="p-4 font-bold uppercase tracking-wider">SKU</th>
-              <th className="p-4 font-bold uppercase tracking-wider">Precio</th>
-              <th className="p-4 font-bold uppercase tracking-wider">Existencias</th>
-              <th className="p-4 font-bold uppercase tracking-wider">Estado de Stock</th>
-              <th className="p-4 font-bold uppercase tracking-wider text-right">Ajuste Rápido</th>
+            <tr className="border-b border-[#FAD1DC] bg-[#FFF5F7] text-zinc-900 font-bold">
+              <th className="p-4 uppercase tracking-wider">Joya / Variante</th>
+              <th className="p-4 uppercase tracking-wider">SKU</th>
+              <th className="p-4 uppercase tracking-wider">Precio</th>
+              <th className="p-4 uppercase tracking-wider">Existencias</th>
+              <th className="p-4 uppercase tracking-wider">Nivel de Stock</th>
+              <th className="p-4 uppercase tracking-wider text-right">Ajuste Rápido (+/-)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-[#FAD1DC]/60">
             {items.map((item) => (
-              <tr key={item.id} className="hover:bg-zinc-50 transition">
+              <tr key={item.id} className="hover:bg-[#FFF8FA] transition">
                 <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded-lg bg-zinc-100 overflow-hidden border border-zinc-200 shrink-0">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative w-12 h-12 rounded-2xl bg-[#FFF5F7] overflow-hidden border border-[#FAD1DC] shrink-0 shadow-2xs">
                       <Image src={item.imageUrl} alt="" fill className="object-cover" />
                     </div>
-                    <span className="font-bold text-black">{item.productTitle}</span>
+                    <span className="font-bold text-zinc-900">{item.productTitle}</span>
                   </div>
                 </td>
-                <td className="p-4 font-mono text-zinc-700">{item.sku}</td>
-                <td className="p-4 font-semibold text-black">${item.price.toFixed(2)}</td>
+                <td className="p-4 font-mono font-bold text-zinc-700">{item.sku}</td>
+                <td className="p-4 font-serif font-bold text-zinc-900 text-sm">${item.price.toFixed(2)}</td>
                 <td className="p-4">
-                  <span className="text-sm font-bold text-black">{item.quantity}</span>
-                  <span className="text-zinc-400 text-[10px] block">unidades</span>
+                  <span className="text-base font-serif font-bold text-zinc-900">{item.quantity}</span>
+                  <span className="text-zinc-400 text-[10px] block font-light">unidades</span>
                 </td>
                 <td className="p-4">
                   {item.quantity <= 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 text-red-800">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
                       <AlertTriangle size={12} /> Agotado
                     </span>
                   ) : item.quantity <= 5 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">
-                      <AlertTriangle size={12} /> Stock Bajo
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FFF5F7] text-[#D33658] border border-[#FAD1DC]">
+                      <AlertTriangle size={12} /> Stock Crítico
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                       <CheckCircle2 size={12} /> Óptimo
                     </span>
                   )}
                 </td>
                 <td className="p-4 text-right">
-                  <div className="inline-flex items-center gap-1.5 bg-zinc-100 p-1 rounded-xl border border-zinc-200">
+                  <div className="inline-flex items-center gap-1 bg-[#FFF5F7] p-1 rounded-2xl border border-[#FAD1DC] shadow-2xs">
                     <button
                       onClick={() => handleAdjust(item.variantId, -5)}
                       disabled={loadingId === item.variantId || item.quantity < 5}
-                      className="px-2 py-1 bg-white hover:bg-zinc-200 rounded-lg text-zinc-700 font-bold disabled:opacity-30 transition"
+                      className="px-2.5 py-1 bg-white hover:bg-[#FDE8ED] rounded-xl text-zinc-700 hover:text-[#D33658] font-bold disabled:opacity-30 transition cursor-pointer text-[11px]"
                       title="Restar 5 unidades"
                     >
                       -5
@@ -98,23 +99,23 @@ export default function InventoryTableClient({ items: initialItems }: { items: I
                     <button
                       onClick={() => handleAdjust(item.variantId, -1)}
                       disabled={loadingId === item.variantId || item.quantity < 1}
-                      className="p-1.5 bg-white hover:bg-zinc-200 rounded-lg text-zinc-700 font-bold disabled:opacity-30 transition"
+                      className="p-1.5 bg-white hover:bg-[#FDE8ED] rounded-xl text-zinc-700 hover:text-[#D33658] font-bold disabled:opacity-30 transition cursor-pointer"
                       title="Restar 1 unidad"
                     >
-                      <Minus size={12} />
+                      <Minus size={13} />
                     </button>
                     <button
                       onClick={() => handleAdjust(item.variantId, 1)}
                       disabled={loadingId === item.variantId}
-                      className="p-1.5 bg-white hover:bg-zinc-200 rounded-lg text-zinc-700 font-bold disabled:opacity-30 transition"
+                      className="p-1.5 bg-white hover:bg-[#FDE8ED] rounded-xl text-zinc-700 hover:text-[#D33658] font-bold disabled:opacity-30 transition cursor-pointer"
                       title="Añadir 1 unidad"
                     >
-                      <Plus size={12} />
+                      <Plus size={13} />
                     </button>
                     <button
                       onClick={() => handleAdjust(item.variantId, 5)}
                       disabled={loadingId === item.variantId}
-                      className="px-2 py-1 bg-white hover:bg-zinc-200 rounded-lg text-zinc-700 font-bold disabled:opacity-30 transition"
+                      className="px-2.5 py-1 bg-white hover:bg-[#FDE8ED] rounded-xl text-zinc-700 hover:text-[#D33658] font-bold disabled:opacity-30 transition cursor-pointer text-[11px]"
                       title="Añadir 5 unidades"
                     >
                       +5
@@ -125,7 +126,7 @@ export default function InventoryTableClient({ items: initialItems }: { items: I
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-zinc-400">
+                <td colSpan={6} className="p-10 text-center text-zinc-400 font-light">
                   No hay inventario registrado en el sistema.
                 </td>
               </tr>

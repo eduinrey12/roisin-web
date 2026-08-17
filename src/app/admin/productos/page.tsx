@@ -1,8 +1,8 @@
 import { adminGetAllProducts } from '@/services/catalog.service';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Plus, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, PlusCircle, Sparkles } from 'lucide-react';
 import ProductListClient from './ProductListClient';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,19 +11,24 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#FAD1DC] pb-6">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-zinc-900">Catálogo de Productos</h1>
-          <p className="text-xs text-zinc-500 mt-1">
-            Administra tus joyas, imágenes, precios e inventario
+          <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658] mb-1">
+            <RoisinDiamond size={13} color="#E65573" /> Colecciones & Piezas
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
+            Catálogo de Joyería
+          </h1>
+          <p className="text-xs text-zinc-500 font-light mt-0.5">
+            Administra tus joyas en Plata 925 y Oro 18k, precios, fotos, variantes y stock disponible ({products.length} piezas).
           </p>
         </div>
 
         <Link
           href="/admin/productos/nuevo"
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-bold bg-black text-white px-5 py-3 rounded-xl hover:bg-zinc-800 transition shadow-sm"
+          className="btn-pink-diamond text-xs uppercase tracking-wider font-bold px-6 py-3.5 rounded-2xl flex items-center gap-2 shadow-md shimmer-button"
         >
-          <Plus size={16} /> Crear Nueva Joya
+          <PlusCircle size={16} /> Crear Nueva Joya
         </Link>
       </div>
 
@@ -35,7 +40,7 @@ export default async function AdminProductsPage() {
           basePrice: Number(p.basePrice),
           categoryName: p.category.name,
           isActive: p.isActive,
-          imageUrl: p.images[0]?.url || '/placeholder.png',
+          imageUrl: p.images[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
           variantsCount: p.variants.length,
           totalStock: p.variants.reduce((acc, v) => acc + (v.inventory?.quantity || 0), 0),
         }))}

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { adminCreateCouponAction, adminToggleCouponAction } from '@/lib/actions/admin.actions';
-import { Tag, Plus, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Tag, Plus, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface CouponItem {
   id: string;
@@ -66,14 +67,17 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
 
   return (
     <div className="space-y-8">
-      {/* Creation Form */}
-      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-zinc-200 shadow-xs space-y-4">
-        <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2">
-          <Tag size={16} /> Crear Nuevo Cupón
-        </h2>
+      {/* 1. Creation Form */}
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-5">
+        <div className="flex items-center gap-2 border-b border-[#FAD1DC] pb-3.5">
+          <RoisinDiamond size={15} color="#E65573" />
+          <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900">
+            Crear Nuevo Cupón de Descuento
+          </h2>
+        </div>
 
         {error && (
-          <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs flex items-center gap-2">
             <AlertCircle size={16} />
             <span>{error}</span>
           </div>
@@ -81,40 +85,40 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
 
         <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end">
           <div className="sm:col-span-2">
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">Código de Cupón *</label>
+            <label className="text-xs font-bold text-zinc-800 block mb-1.5">Código Promocional *</label>
             <input
               type="text"
               required
-              placeholder="EJ: VERANO20"
+              placeholder="EJ: AMOR2026"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl font-mono uppercase focus:outline-none focus:border-black"
+              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl font-mono uppercase font-bold focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">Descuento (%) *</label>
+            <label className="text-xs font-bold text-zinc-800 block mb-1.5">Descuento (%) *</label>
             <input
               type="number"
               min="1"
               max="100"
               required
-              placeholder="10"
+              placeholder="15"
               value={formData.discountPercentage}
               onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
-              className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-black"
+              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 font-bold transition text-center"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">Usos Máx (Opcional)</label>
+            <label className="text-xs font-bold text-zinc-800 block mb-1.5">Usos Máx (Opcional)</label>
             <input
               type="number"
               min="1"
               placeholder="Ilimitado"
               value={formData.maxUses}
               onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
-              className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:border-black"
+              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 font-bold transition text-center"
             />
           </div>
 
@@ -122,53 +126,55 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-black text-white py-2.5 rounded-xl text-xs uppercase tracking-wider font-bold hover:bg-zinc-800 transition active:scale-[0.99] disabled:opacity-50 h-[38px] flex items-center justify-center gap-1.5"
+              className="w-full btn-pink-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 shadow-md shimmer-button flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Plus size={14} /> {loading ? '...' : 'Crear'}
+              <Plus size={15} /> {loading ? '...' : 'Crear Cupón'}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Coupons Table */}
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-xs overflow-hidden">
+      {/* 2. Coupons Table */}
+      <div className="bg-white rounded-3xl border border-[#FAD1DC] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50/70 text-zinc-600">
-                <th className="p-4 font-bold uppercase tracking-wider">Código</th>
-                <th className="p-4 font-bold uppercase tracking-wider">Descuento</th>
-                <th className="p-4 font-bold uppercase tracking-wider">Usos (Actual / Máx)</th>
-                <th className="p-4 font-bold uppercase tracking-wider">Estado</th>
-                <th className="p-4 font-bold uppercase tracking-wider text-right">Acciones</th>
+              <tr className="border-b border-[#FAD1DC] bg-[#FFF5F7] text-zinc-900 font-bold">
+                <th className="p-4 uppercase tracking-wider">Código</th>
+                <th className="p-4 uppercase tracking-wider">Descuento</th>
+                <th className="p-4 uppercase tracking-wider">Usos (Actual / Máx)</th>
+                <th className="p-4 uppercase tracking-wider">Estado</th>
+                <th className="p-4 uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[#FAD1DC]/60">
               {coupons.map((coupon) => (
-                <tr key={coupon.id} className="hover:bg-zinc-50 transition">
-                  <td className="p-4 font-mono font-bold text-black tracking-wider text-sm">
-                    {coupon.code}
+                <tr key={coupon.id} className="hover:bg-[#FFF8FA] transition">
+                  <td className="p-4 font-mono font-bold text-zinc-900 tracking-wider text-sm">
+                    <span className="bg-[#FFF5F7] px-3 py-1 rounded-full border border-[#FAD1DC] text-[#D33658]">
+                      {coupon.code}
+                    </span>
                   </td>
-                  <td className="p-4 font-bold text-emerald-700">{coupon.discountPercentage}%</td>
-                  <td className="p-4 text-zinc-700">
-                    {coupon.currentUses} / {coupon.maxUses || '∞'}
+                  <td className="p-4 font-serif font-bold text-zinc-900 text-sm">{coupon.discountPercentage}% OFF</td>
+                  <td className="p-4 text-zinc-700 font-medium">
+                    {coupon.currentUses} / {coupon.maxUses || 'Ilimitado'}
                   </td>
                   <td className="p-4">
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
                         coupon.isActive
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-zinc-200 text-zinc-600'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
                       }`}
                     >
-                      {coupon.isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                      {coupon.isActive ? <CheckCircle2 size={12} className="text-emerald-700" /> : <XCircle size={12} />}
                       {coupon.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td className="p-4 text-right">
                     <button
                       onClick={() => handleToggle(coupon.id, coupon.isActive)}
-                      className="text-xs font-semibold text-zinc-700 hover:text-black hover:underline"
+                      className="text-xs font-bold text-[#D33658] hover:text-[#93203A] transition cursor-pointer px-3 py-1.5 rounded-xl hover:bg-[#FFF5F7]"
                     >
                       {coupon.isActive ? 'Desactivar' : 'Activar'}
                     </button>
@@ -177,7 +183,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
               ))}
               {coupons.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-zinc-400">
+                  <td colSpan={5} className="p-10 text-center text-zinc-400 font-light">
                     No hay cupones creados aún.
                   </td>
                 </tr>

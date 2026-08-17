@@ -47,7 +47,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#EFCFD6] shadow-xl">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-2">
-            <RoisinLogo symbolSize={32} showTagline={false} />
+            <RoisinLogo width={180} height={50} />
           </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900">
             Bienvenida de Vuelta

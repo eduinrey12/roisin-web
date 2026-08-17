@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SlidersHorizontal, X, Check, ArrowUpDown, DollarSign, RotateCcw } from 'lucide-react';
+import { SlidersHorizontal, X, Check, ChevronDown, Sparkles, RotateCcw, Search } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface Category {
   id: string;
   name: string;
   slug: string;
-  _count?: { products: number };
 }
 
 interface CatalogFilterBarProps {
@@ -24,13 +23,25 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
 
   const currentCategory = searchParams.get('category') || '';
   const currentSort = searchParams.get('sort') || 'newest';
-  const currentMinPrice = Number(searchParams.get('minPrice')) || 0;
   const currentMaxPrice = Number(searchParams.get('maxPrice')) || 100;
   const currentQuery = searchParams.get('q') || '';
 
-  // Local state for interactive slider
+  // Local states
   const [maxPrice, setMaxPrice] = useState<number>(currentMaxPrice);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const updateFilters = (paramsToUpdate: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -64,59 +75,102 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
     setIsDrawerOpen(false);
   };
 
+  const activeCategoryObj = categories.find((c) => c.slug === currentCategory);
   const hasActiveFilters = Boolean(currentCategory || currentQuery || currentMaxPrice < 100 || currentSort !== 'newest');
 
   return (
     <>
       {/* Desktop & Tablet Filter Bar */}
-      <div className="bg-white rounded-2xl border border-[#F0E6E8] p-4 sm:p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-3xl border border-[#FAD1DC] p-4 sm:p-5 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* 1. Category Quick Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+          {/* 1. Custom Premium Category Select Input */}
+          <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => updateFilters({ category: null })}
-              className={`px-4 py-2 rounded-full text-xs uppercase font-bold tracking-wider transition shrink-0 ${
-                !currentCategory
-                  ? 'bg-zinc-900 text-white shadow-xs'
-                  : 'bg-[#FAF4F5] text-zinc-700 hover:bg-[#F6E8EB] border border-[#EFCFD6]'
-              }`}
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full sm:w-72 bg-[#FFF5F7] hover:bg-[#FDE8ED] border border-[#FAD1DC] rounded-2xl px-4 py-3 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group"
             >
-              Todas las Joyas
+              <div className="flex items-center gap-2.5 truncate">
+                <RoisinDiamond size={14} color="#E65573" />
+                <span className="truncate">
+                  {activeCategoryObj ? activeCategoryObj.name : 'Todas las Joyas (Catálogo)'}
+                </span>
+              </div>
+              <ChevronDown
+                size={16}
+                className={`text-[#E65573] transition-transform duration-200 ${
+                  isDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
             </button>
 
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => updateFilters({ category: cat.slug })}
-                className={`px-4 py-2 rounded-full text-xs uppercase font-bold tracking-wider transition shrink-0 flex items-center gap-1.5 ${
-                  currentCategory === cat.slug
-                    ? 'bg-zinc-900 text-white shadow-xs'
-                    : 'bg-[#FAF4F5] text-zinc-700 hover:bg-[#F6E8EB] border border-[#EFCFD6]'
-                }`}
-              >
-                <RoisinDiamond size={10} color={currentCategory === cat.slug ? '#E2A3B0' : '#BE6C7C'} />
-                {cat.name}
-              </button>
-            ))}
+            {/* Custom Luxury Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-3xl p-3 shadow-2xl border border-[#FAD1DC] z-50 animate-fade-in space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateFilters({ category: null });
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition ${
+                    !currentCategory
+                      ? 'btn-pink-diamond shadow-xs'
+                      : 'hover:bg-[#FFF5F7] text-zinc-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <RoisinDiamond size={12} color={!currentCategory ? '#FFFFFF' : '#E65573'} />
+                    <span>Todas las Colecciones</span>
+                  </div>
+                  {!currentCategory && <Check size={14} />}
+                </button>
+
+                {categories.map((cat) => {
+                  const isSelected = currentCategory === cat.slug;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        updateFilters({ category: cat.slug });
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition ${
+                        isSelected
+                          ? 'btn-pink-diamond shadow-xs'
+                          : 'hover:bg-[#FFF5F7] text-zinc-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <RoisinDiamond size={12} color={isSelected ? '#FFFFFF' : '#E65573'} />
+                        <span>{cat.name}</span>
+                      </div>
+                      {isSelected && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* 2. Actions: Price Range, Sort, Mobile Drawer Trigger */}
-          <div className="flex items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#F0E6E8]">
+          {/* 2. Interactive Budget Slider, Sort & Mobile Trigger */}
+          <div className="flex items-center justify-between lg:justify-end gap-3.5 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#FAD1DC]">
             {/* Mobile Filter Button */}
             <button
               onClick={() => setIsDrawerOpen(true)}
-              className="lg:hidden flex items-center gap-2 bg-[#FAF4F5] text-zinc-800 border border-[#EFCFD6] px-4 py-2 rounded-xl text-xs font-bold"
+              className="lg:hidden flex items-center gap-2 bg-[#FFF5F7] text-zinc-900 border border-[#FAD1DC] px-4 py-2.5 rounded-2xl text-xs font-bold"
             >
-              <SlidersHorizontal size={14} className="text-[#BE6C7C]" />
-              Filtros & Precio
+              <SlidersHorizontal size={14} className="text-[#E65573]" />
+              Filtros & Presupuesto
               {hasActiveFilters && (
-                <span className="w-2 h-2 rounded-full bg-[#BE6C7C]" />
+                <span className="w-2 h-2 rounded-full bg-[#E65573]" />
               )}
             </button>
 
-            {/* Desktop Interactive Budget Slider */}
-            <div className="hidden lg:flex items-center gap-3 bg-[#FAF4F5] border border-[#EFCFD6] px-4 py-2 rounded-xl">
-              <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider whitespace-nowrap">
+            {/* Desktop Budget Slider */}
+            <div className="hidden lg:flex items-center gap-3 bg-[#FFF5F7] border border-[#FAD1DC] px-4 py-2.5 rounded-2xl">
+              <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider whitespace-nowrap">
                 Hasta ${maxPrice}
               </span>
               <input
@@ -128,7 +182,7 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
                 onChange={(e) => handlePriceChange(Number(e.target.value))}
                 onMouseUp={handlePriceCommit}
                 onTouchEnd={handlePriceCommit}
-                className="w-24 accent-[#BE6C7C] cursor-pointer"
+                className="w-28 accent-[#E65573] cursor-pointer"
                 aria-label="Filtro de presupuesto máximo"
               />
             </div>
@@ -141,7 +195,7 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
               <select
                 value={currentSort}
                 onChange={(e) => updateFilters({ sort: e.target.value })}
-                className="text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl px-3.5 py-2 font-medium text-zinc-800 focus:outline-none focus:border-[#BE6C7C] cursor-pointer"
+                className="text-xs bg-[#FFF5F7] border border-[#FAD1DC] rounded-2xl px-4 py-2.5 font-bold text-zinc-900 focus:outline-none focus:border-[#E65573] cursor-pointer"
                 aria-label="Ordenar productos"
               >
                 <option value="newest">Más Recientes</option>
@@ -154,11 +208,11 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+                className="p-2.5 text-zinc-400 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-2xl transition"
                 title="Limpiar filtros"
                 aria-label="Limpiar todos los filtros"
               >
-                <RotateCcw size={15} />
+                <RotateCcw size={16} />
               </button>
             )}
           </div>
@@ -175,9 +229,9 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
 
           <div className="relative bg-white w-full max-w-xs h-full p-6 shadow-2xl overflow-y-auto space-y-6 flex flex-col justify-between z-10 animate-slide-left">
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#F0E6E8] pb-4">
+              <div className="flex items-center justify-between border-b border-[#FAD1DC] pb-4">
                 <div className="flex items-center gap-2">
-                  <RoisinDiamond size={16} color="#E2A3B0" />
+                  <RoisinDiamond size={18} color="#E65573" />
                   <h3 className="font-serif text-lg font-bold text-zinc-900">Filtros de Joyas</h3>
                 </div>
                 <button
@@ -191,7 +245,7 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
               {/* Category Options */}
               <div className="space-y-2.5">
                 <span className="text-xs uppercase font-bold tracking-wider text-zinc-500 block">
-                  Categoría
+                  Categoría de Joya
                 </span>
                 <div className="space-y-1.5">
                   <button
@@ -199,11 +253,11 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
                       updateFilters({ category: null });
                       setIsDrawerOpen(false);
                     }}
-                    className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between ${
-                      !currentCategory ? 'bg-zinc-900 text-white' : 'bg-[#FAF4F5] text-zinc-800'
+                    className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between ${
+                      !currentCategory ? 'btn-pink-diamond' : 'bg-[#FFF5F7] text-zinc-900'
                     }`}
                   >
-                    <span>Todas las Joyas</span>
+                    <span>Todas las Colecciones</span>
                     {!currentCategory && <Check size={14} />}
                   </button>
                   {categories.map((c) => (
@@ -213,8 +267,8 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
                         updateFilters({ category: c.slug });
                         setIsDrawerOpen(false);
                       }}
-                      className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between ${
-                        currentCategory === c.slug ? 'bg-zinc-900 text-white' : 'bg-[#FAF4F5] text-zinc-800'
+                      className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between ${
+                        currentCategory === c.slug ? 'btn-pink-diamond' : 'bg-[#FFF5F7] text-zinc-900'
                       }`}
                     >
                       <span>{c.name}</span>
@@ -224,11 +278,11 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
                 </div>
               </div>
 
-              {/* Price Range Slider in Mobile Drawer */}
-              <div className="space-y-3 bg-[#FAF4F5] p-4 rounded-2xl border border-[#EFCFD6]">
+              {/* Price Range Slider */}
+              <div className="space-y-3 bg-[#FFF5F7] p-4 rounded-3xl border border-[#FAD1DC]">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-zinc-700 uppercase tracking-wider">Presupuesto Máximo</span>
-                  <span className="font-bold text-[#BE6C7C] text-sm">${maxPrice}</span>
+                  <span className="font-bold text-zinc-800 uppercase tracking-wider">Presupuesto Máximo</span>
+                  <span className="font-bold text-[#D33658] text-sm">${maxPrice}</span>
                 </div>
                 <input
                   type="range"
@@ -237,9 +291,9 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
                   step="5"
                   value={maxPrice}
                   onChange={(e) => handlePriceChange(Number(e.target.value))}
-                  className="w-full accent-[#BE6C7C] cursor-pointer"
+                  className="w-full accent-[#E65573] cursor-pointer"
                 />
-                <div className="flex justify-between text-[10px] text-zinc-400">
+                <div className="flex justify-between text-[10px] text-zinc-400 font-bold">
                   <span>$15</span>
                   <span>$100</span>
                 </div>
@@ -247,20 +301,20 @@ export default function CatalogFilterBar({ categories, totalProducts }: CatalogF
             </div>
 
             {/* Mobile Drawer Footer Actions */}
-            <div className="space-y-2 pt-4 border-t border-[#F0E6E8]">
+            <div className="space-y-2 pt-4 border-t border-[#FAD1DC]">
               <button
                 onClick={() => {
                   handlePriceCommit();
                   setIsDrawerOpen(false);
                 }}
-                className="w-full bg-zinc-900 text-white py-3.5 rounded-xl text-xs uppercase tracking-wider font-bold shadow-md"
+                className="w-full btn-pink-diamond py-4 rounded-2xl text-xs uppercase tracking-wider font-bold shadow-md"
               >
                 Aplicar Filtros
               </button>
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="w-full bg-transparent text-zinc-500 hover:text-red-600 py-2 text-xs font-medium text-center"
+                  className="w-full bg-transparent text-zinc-500 hover:text-red-600 py-2 text-xs font-bold text-center"
                 >
                   Restablecer Filtros
                 </button>

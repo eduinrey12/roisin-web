@@ -61,12 +61,10 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
   const activeVariant =
     variants.find((v) => v.id === selectedVariantId) || variants[0] || null;
 
-  // Initialize variant if not set
   if (!selectedVariantId && activeVariant) {
     setSelectedVariantId(activeVariant.id);
   }
 
-  // Calculate dynamic price
   const variantPrice = activeVariant ? Number(activeVariant.price) : Number(product.basePrice);
   const optionsPrice =
     product.optionGroupLinks?.reduce((sum, link) => {
@@ -111,9 +109,9 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
         } else {
           openCart();
         }
-      }, 500);
+      }, 400);
     } catch (err) {
-      console.error('Error al agregar al carrito:', err);
+      console.error('Error al agregar:', err);
       setIsAdding(false);
     }
   };
@@ -127,18 +125,18 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
       />
 
       {/* Modal Container */}
-      <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-[#EFCFD6] overflow-hidden z-10 flex flex-col md:flex-row max-h-[90vh]">
+      <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-[#FAD1DC] overflow-hidden z-10 flex flex-col md:flex-row max-h-[90vh]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 bg-white/90 hover:bg-white text-zinc-500 hover:text-black rounded-full shadow-xs transition border border-[#F0E6E8]"
+          className="absolute top-4 right-4 z-20 p-2 bg-white/90 hover:bg-white text-zinc-500 hover:text-black rounded-full shadow-xs transition border border-[#FAD1DC]"
           aria-label="Cerrar vista rápida"
         >
           <X size={18} />
         </button>
 
         {/* Product Image Side */}
-        <div className="relative w-full md:w-5/12 bg-[#FAF7F8] aspect-square md:aspect-auto flex items-center justify-center p-6 border-b md:border-b-0 md:border-r border-[#F0E6E8]">
+        <div className="relative w-full md:w-5/12 bg-[#FFF8FA] aspect-square md:aspect-auto flex items-center justify-center p-6 border-b md:border-b-0 md:border-r border-[#FAD1DC]">
           <div className="relative w-full h-full min-h-[220px] rounded-2xl overflow-hidden shadow-xs">
             <Image
               src={primaryImage}
@@ -149,8 +147,8 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
             />
           </div>
           {product.category && (
-            <span className="absolute top-4 left-4 diamond-tag text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full text-zinc-800 flex items-center gap-1.5">
-              <RoisinDiamond size={10} color="#E2A3B0" />
+            <span className="absolute top-4 left-4 diamond-tag text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full text-zinc-900 flex items-center gap-1.5 shadow-xs">
+              <RoisinDiamond size={10} color="#E65573" />
               {product.category.name}
             </span>
           )}
@@ -160,7 +158,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
         <div className="w-full md:w-7/12 p-6 sm:p-7 overflow-y-auto space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658]">
                 Compra Rápida
               </span>
               <h3 className="font-serif text-xl sm:text-2xl font-bold text-zinc-900 leading-snug mt-0.5">
@@ -172,9 +170,9 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
             </div>
 
             {/* Price & Stock Badge */}
-            <div className="flex items-baseline justify-between border-y border-[#F0E6E8] py-3">
+            <div className="flex items-baseline justify-between border-y border-[#FAD1DC] py-3">
               <div>
-                <span className="text-[10px] uppercase text-zinc-400 block font-medium">Precio Unitario</span>
+                <span className="text-[10px] uppercase text-zinc-400 block font-bold">Precio Unitario</span>
                 <span className="font-serif text-2xl font-bold text-zinc-900">
                   ${(variantPrice + optionsPrice).toFixed(2)}
                 </span>
@@ -187,7 +185,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                     : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                 }`}
               >
-                {isOutOfStock ? 'Agotado temporalmente' : `Stock disponible (${currentStock} u.)`}
+                {isOutOfStock ? 'Agotado' : `En Stock (${currentStock} u.)`}
               </span>
             </div>
 
@@ -202,10 +200,10 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariantId(v.id)}
-                      className={`px-3.5 py-2 text-xs rounded-xl font-medium transition border ${
+                      className={`px-3.5 py-2 text-xs rounded-2xl font-bold transition border ${
                         selectedVariantId === v.id
-                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
-                          : 'bg-[#FAF4F5] text-zinc-800 border-[#EFCFD6] hover:border-[#BE6C7C]'
+                          ? 'btn-pink-diamond shadow-xs'
+                          : 'bg-[#FFF5F7] text-zinc-800 border-[#FAD1DC] hover:border-[#E65573]'
                       }`}
                     >
                       {v.sku.split('-').pop() || v.sku}
@@ -226,14 +224,14 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                     <button
                       key={opt.id}
                       onClick={() => handleToggleOption(opt.id, opt.isDefault)}
-                      className={`w-full p-2.5 rounded-xl border text-left text-xs flex items-center justify-between transition ${
+                      className={`w-full p-3 rounded-2xl border text-left text-xs flex items-center justify-between transition ${
                         selectedOptionIds.includes(opt.id) || (selectedOptionIds.length === 0 && opt.isDefault)
-                          ? 'border-[#BE6C7C] bg-[#FAF4F5] font-semibold text-zinc-900'
-                          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+                          ? 'border-[#D33658] bg-[#FFF5F7] font-bold text-zinc-900 ring-1 ring-[#D33658]'
+                          : 'border-[#FAD1DC]/80 hover:border-[#FAD1DC] text-zinc-700'
                       }`}
                     >
                       <span>{opt.name}</span>
-                      <span className="text-[11px] text-[#BE6C7C]">
+                      <span className="text-[11px] text-[#D33658] font-bold">
                         {Number(opt.priceModifier) > 0 ? `+$${Number(opt.priceModifier).toFixed(2)}` : 'Incluido'}
                       </span>
                     </button>
@@ -244,11 +242,11 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
             {/* Quantity Selector */}
             <div className="flex items-center gap-3 pt-1">
-              <span className="text-xs font-semibold text-zinc-700">Cantidad:</span>
-              <div className="flex items-center border border-[#EFCFD6] rounded-xl overflow-hidden bg-white">
+              <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">Cantidad:</span>
+              <div className="flex items-center border border-[#FAD1DC] rounded-2xl overflow-hidden bg-white">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1 text-sm font-bold text-zinc-600 hover:bg-[#FAF4F5]"
+                  className="px-3.5 py-1 text-sm font-bold text-zinc-600 hover:bg-[#FFF5F7]"
                   disabled={quantity <= 1}
                 >
                   -
@@ -256,7 +254,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                 <span className="px-3 py-1 text-xs font-bold text-zinc-900">{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
-                  className="px-3 py-1 text-sm font-bold text-zinc-600 hover:bg-[#FAF4F5]"
+                  className="px-3.5 py-1 text-sm font-bold text-zinc-600 hover:bg-[#FFF5F7]"
                   disabled={quantity >= currentStock}
                 >
                   +
@@ -265,13 +263,13 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-2.5 pt-4 border-t border-[#F0E6E8]">
+          {/* Action Buttons with Radiant Pink Diamond style */}
+          <div className="space-y-2.5 pt-4 border-t border-[#FAD1DC]">
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleAddToCart(false)}
                 disabled={isAdding || isOutOfStock}
-                className="w-full bg-[#FAF4F5] hover:bg-[#F6E8EB] text-zinc-900 border border-[#EFCFD6] py-3.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50"
+                className="w-full btn-pink-outline py-3.5 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50"
               >
                 {addedSuccess ? (
                   <>
@@ -287,7 +285,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
               <button
                 onClick={() => handleAddToCart(true)}
                 disabled={isAdding || isOutOfStock}
-                className="w-full bg-zinc-900 hover:bg-black text-white py-3.5 rounded-xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50 shadow-md shimmer-button"
+                className="w-full btn-pink-diamond py-3.5 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50 shadow-md shimmer-button"
               >
                 Comprar Ahora <ArrowRight size={15} />
               </button>

@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <div className="space-y-20 sm:space-y-24 pb-20">
       {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center justify-center bg-[#141415] text-white overflow-hidden text-center px-4">
+      <section className="relative min-h-[50vh] flex items-center justify-center bg-[#1A1115] text-white overflow-hidden text-center px-4">
         <div className="absolute inset-0 z-0 opacity-30">
           <Image
             src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1600&auto=format&fit=crop"
@@ -24,13 +24,13 @@ export default function AboutPage() {
             className="object-cover"
           />
         </div>
-        <div className="relative z-10 max-w-3xl space-y-4 py-20">
-          <div className="inline-flex items-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#E2A3B0]">
-            <RoisinDiamond size={13} color="#E2A3B0" /> Nuestra Esencia
+        <div className="relative z-10 max-w-4xl space-y-4 py-20">
+          <div className="inline-flex items-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#FAD1DC]">
+            <RoisinDiamond size={13} color="#F08097" /> Nuestra Esencia
           </div>
           <h1 className="font-serif text-4xl sm:text-6xl font-bold leading-tight">
             El arte de crear <br />
-            <span className="italic font-normal text-[#F6E8EB]">momentos inolvidables</span>
+            <span className="italic font-normal text-[#FAD1DC]">momentos inolvidables</span>
           </h1>
           <p className="text-xs sm:text-base text-zinc-300 max-w-xl mx-auto font-light leading-relaxed">
             ROISIN nace de la pasión por las piezas elegantes, duraderas y con un significado profundo para celebrar el amor y los instantes especiales.
@@ -39,9 +39,9 @@ export default function AboutPage() {
       </section>
 
       {/* Story Grid */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl border border-[#EFCFD6]">
+          <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl border border-[#FAD1DC]">
             <Image
               src="https://images.unsplash.com/photo-1605100804763-247f6612d4a5?q=80&w=1000&auto=format&fit=crop"
               alt="Anillos y Collares Roisin"
@@ -52,7 +52,7 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-6">
-            <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C] block">
+            <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658] block">
               Calidad & Pasión Artesanal
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 leading-snug">
@@ -67,15 +67,15 @@ export default function AboutPage() {
 
             <div className="space-y-3 pt-2 text-xs font-medium text-zinc-800">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 size={16} className="text-[#BE6C7C]" />
+                <CheckCircle2 size={16} className="text-[#D33658]" />
                 <span>100% Plata de Ley 925 Certificada & Baño de Oro 18k</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 size={16} className="text-[#BE6C7C]" />
+                <CheckCircle2 size={16} className="text-[#D33658]" />
                 <span>Empaque de regalo exclusivo con lazo y tarjeta para dedicatoria</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 size={16} className="text-[#BE6C7C]" />
+                <CheckCircle2 size={16} className="text-[#D33658]" />
                 <span>Envíos rápidos y asegurados con Servientrega a todo el Ecuador</span>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function AboutPage() {
             <div className="pt-4">
               <Link
                 href="/productos"
-                className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-bold bg-zinc-900 text-white px-8 py-4 rounded-full hover:bg-black transition shadow-md shimmer-button"
+                className="inline-flex items-center gap-2 btn-pink-diamond text-xs uppercase tracking-widest font-bold px-9 py-4 rounded-full transition shadow-md shimmer-button"
               >
                 Explorar Colección <ArrowRight size={16} />
               </Link>

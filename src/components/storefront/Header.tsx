@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCartStore } from '@/lib/store/cartStore';
-import { ShoppingBag, User, Search, Menu, X, Sparkles, MessageCircle } from 'lucide-react';
+import { ShoppingBag, User, Search, Menu, X, ChevronDown, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import RoisinLogo from '@/components/branding/RoisinLogo';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
@@ -13,6 +13,7 @@ export default function Header({ user }: { user?: { email: string; role: string 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [collectionsHover, setCollectionsHover] = useState(false);
 
   useEffect(() => {
     initCart();
@@ -22,103 +23,177 @@ export default function Header({ user }: { user?: { email: string; role: string 
     cart?.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
 
   const whatsappUrl = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(
-    `Hola ${STORE_CONFIG.name}, deseo consultar sobre sus colecciones.`
+    `Hola ${STORE_CONFIG.name}, deseo consultar sobre sus colecciones de alta joyería.`
   )}`;
 
+  const categories = [
+    {
+      name: 'Anillos',
+      slug: 'anillos',
+      desc: 'Solitarios eternos, anillos de promesa y piezas de compromiso en Plata 925.',
+    },
+    {
+      name: 'Collares & Gargantillas',
+      slug: 'collares',
+      desc: 'Cadenas finas con dijes delicados y baño de oro 18k.',
+    },
+    {
+      name: 'Pulseras & Brazaletes',
+      slug: 'pulseras',
+      desc: 'Pulseras tennis con circonias suizas y brazaletes de lujo.',
+    },
+    {
+      name: 'Aretes & Candongas',
+      slug: 'aretes',
+      desc: 'Candongas huggies y aretes sutiles para iluminar tu rostro.',
+    },
+  ];
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#F0E6E8] transition-all">
-      {/* 1. Romantic Top Announcement Bar */}
-      <div className="bg-[#FAF4F5] border-b border-[#EFCFD6]/60 text-zinc-800 text-[11px] font-medium tracking-widest text-center py-2 px-4 flex items-center justify-center gap-2">
-        <RoisinDiamond size={12} color="#E2A3B0" />
-        <span className="hidden sm:inline">Alta Joyería en Plata 925 & Oro 18k</span>
-        <span className="hidden sm:inline text-[#E2A3B0]">•</span>
-        <span>Envíos Seguros a Todo el Ecuador</span>
-        <span className="hidden sm:inline text-[#E2A3B0]">•</span>
-        <span className="hidden sm:inline text-zinc-600">Empaque de Regalo Exclusivo</span>
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#FAD1DC] transition-all">
+      {/* 1. Luminous Pink Diamond Announcement Bar */}
+      <div className="bg-[#FFF5F7] border-b border-[#FAD1DC] text-zinc-800 text-[11px] font-medium tracking-widest text-center py-2 px-4 flex items-center justify-center gap-2">
+        <RoisinDiamond size={13} color="#E65573" />
+        <span className="font-bold text-[#D33658] uppercase">Alta Joyería Roisin</span>
+        <span className="hidden sm:inline text-[#E65573]">•</span>
+        <span className="hidden sm:inline">Plata de Ley 925 & Oro 18k Certificado</span>
+        <span className="hidden sm:inline text-[#E65573]">•</span>
+        <span>Envíos Seguros en Ecuador</span>
       </div>
 
       {/* 2. Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-20 sm:h-22 flex items-center justify-between">
         {/* Mobile menu trigger */}
         <div className="flex items-center md:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-zinc-700 hover:text-[#BE6C7C] focus:outline-none transition"
+            className="p-2.5 text-zinc-700 hover:text-[#D33658] focus:outline-none transition"
             aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
-        {/* Official Brand Logo */}
+        {/* Official Brand Logo using SVG */}
         <div className="flex-1 md:flex-initial flex items-center justify-center md:justify-start">
-          <RoisinLogo symbolSize={30} showTagline={true} />
+          <RoisinLogo width={185} height={52} />
         </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-7 lg:space-x-9">
-          <Link
-            href="/productos"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-800 hover:text-[#BE6C7C] font-semibold transition relative group py-2"
+        {/* Desktop Navigation with "Colecciones" Dropdown */}
+        <nav className="hidden md:flex items-center space-x-8 lg:space-x-12">
+          {/* Colecciones with Hover Dropdown Megamenu */}
+          <div
+            className="relative"
+            onMouseEnter={() => setCollectionsHover(true)}
+            onMouseLeave={() => setCollectionsHover(false)}
           >
-            Colecciones
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
-          </Link>
-          <Link
-            href="/productos?category=anillos"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-600 hover:text-[#BE6C7C] font-medium transition relative group py-2"
-          >
-            Anillos
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
-          </Link>
-          <Link
-            href="/productos?category=collares"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-600 hover:text-[#BE6C7C] font-medium transition relative group py-2"
-          >
-            Collares
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
-          </Link>
-          <Link
-            href="/productos?category=pulseras"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-600 hover:text-[#BE6C7C] font-medium transition relative group py-2"
-          >
-            Pulseras
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
-          </Link>
-          <Link
-            href="/productos?category=aretes"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-600 hover:text-[#BE6C7C] font-medium transition relative group py-2"
-          >
-            Aretes
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
-          </Link>
+            <Link
+              href="/productos"
+              className="text-xs uppercase tracking-[0.2em] font-bold text-zinc-800 hover:text-[#D33658] transition py-4 inline-flex items-center gap-1.5 group"
+            >
+              <span>Colecciones</span>
+              <ChevronDown
+                size={14}
+                className={`text-[#E65573] transition-transform duration-300 ${
+                  collectionsHover ? 'rotate-180' : ''
+                }`}
+              />
+            </Link>
+
+            {/* Megamenu Floating Card */}
+            {collectionsHover && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-[540px] bg-white rounded-3xl p-6 shadow-2xl border border-[#FAD1DC] animate-fade-in z-50">
+                <div className="flex items-center justify-between pb-3 border-b border-[#FAD1DC] mb-4">
+                  <div className="flex items-center gap-2">
+                    <RoisinDiamond size={16} color="#E65573" />
+                    <span className="text-xs uppercase font-bold tracking-widest text-[#D33658]">
+                      Categorías de Joyería
+                    </span>
+                  </div>
+                  <Link
+                    href="/productos"
+                    className="text-[11px] font-bold text-zinc-600 hover:text-[#D33658] flex items-center gap-1"
+                  >
+                    Ver Todo <ArrowRight size={12} />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      href={`/productos?category=${cat.slug}`}
+                      className="p-3.5 rounded-2xl bg-[#FFF8FA] hover:bg-[#FDE8ED] border border-[#FAD1DC]/60 hover:border-[#E65573] transition group text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RoisinDiamond
+                          size={12}
+                          color="#E65573"
+                          className="group-hover:scale-110 transition-transform"
+                        />
+                        <h4 className="font-serif font-bold text-sm text-zinc-900 group-hover:text-[#D33658] transition-colors">
+                          {cat.name}
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 mt-1 leading-snug font-light">
+                        {cat.desc}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Banner inside megamenu */}
+                <div className="mt-4 pt-3 border-t border-[#FAD1DC] flex items-center justify-between text-xs text-zinc-600">
+                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-700">
+                    <Sparkles size={13} className="text-[#E65573]" /> Garantía de autenticidad en todas las piezas
+                  </span>
+                  <Link
+                    href="/productos"
+                    className="btn-pink-diamond text-[10px] uppercase font-bold tracking-wider px-3.5 py-1.5 rounded-xl shadow-xs"
+                  >
+                    Catálogo Completo
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Link
             href="/nosotros"
-            className="text-xs uppercase tracking-[0.18em] text-zinc-500 hover:text-[#BE6C7C] font-medium transition relative group py-2"
+            className="text-xs uppercase tracking-[0.2em] font-semibold text-zinc-700 hover:text-[#D33658] transition py-4 relative group"
           >
-            La Marca
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#E2A3B0] transition-all duration-300 group-hover:w-full" />
+            Nuestra Esencia
+            <span className="absolute bottom-2 left-0 w-0 h-[1.5px] bg-[#E65573] transition-all duration-300 group-hover:w-full" />
           </Link>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs uppercase tracking-[0.2em] font-semibold text-emerald-700 hover:text-emerald-800 transition py-4 inline-flex items-center gap-1.5"
+          >
+            <MessageCircle size={15} /> Asesoría
+          </a>
         </nav>
 
         {/* Actions (Search, Account, Cart) */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="p-2.5 text-zinc-700 hover:text-[#BE6C7C] hover:bg-[#FAF4F5] rounded-full transition"
+            className="p-2.5 text-zinc-700 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-full transition"
             aria-label="Buscar productos"
           >
-            <Search size={19} />
+            <Search size={20} />
           </button>
 
           <Link
             href={user ? '/cuenta' : '/login'}
-            className="p-2.5 text-zinc-700 hover:text-[#BE6C7C] hover:bg-[#FAF4F5] rounded-full transition flex items-center gap-2"
+            className="p-2.5 text-zinc-700 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-full transition flex items-center gap-2"
             aria-label="Mi Cuenta"
           >
-            <User size={19} />
+            <User size={20} />
             {user && (
-              <span className="hidden lg:inline text-xs font-semibold text-zinc-800">
+              <span className="hidden lg:inline text-xs font-bold text-zinc-900">
                 {user.role === 'ADMIN' ? 'Admin' : 'Mi Cuenta'}
               </span>
             )}
@@ -126,12 +201,12 @@ export default function Header({ user }: { user?: { email: string; role: string 
 
           <button
             onClick={toggleCart}
-            className="relative p-2.5 text-zinc-800 hover:text-[#BE6C7C] hover:bg-[#FAF4F5] rounded-full transition group"
-            aria-label="Carrito de compras"
+            className="relative p-2.5 text-zinc-900 hover:text-[#D33658] hover:bg-[#FFF5F7] rounded-full transition group"
+            aria-label="Bolsa de compras"
           >
-            <ShoppingBag size={19} />
+            <ShoppingBag size={20} />
             {itemCount > 0 && (
-              <span className="absolute 1 right-1 bg-[#E2A3B0] text-zinc-900 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+              <span className="absolute 0.5 right-0.5 bg-[#D33658] text-white text-[10px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                 {itemCount}
               </span>
             )}
@@ -141,7 +216,7 @@ export default function Header({ user }: { user?: { email: string; role: string 
 
       {/* 3. Search Bar Overlay */}
       {searchOpen && (
-        <div className="border-t border-[#F0E6E8] bg-white/95 backdrop-blur-md py-4 px-4 sm:px-6 animate-fade-in shadow-sm">
+        <div className="border-t border-[#FAD1DC] bg-white/98 backdrop-blur-md py-4 px-4 sm:px-6 animate-fade-in shadow-md">
           <form
             action="/productos"
             method="GET"
@@ -154,14 +229,14 @@ export default function Header({ user }: { user?: { email: string; role: string 
                 name="q"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar anillos de promesa, solitarios, collares de oro..."
-                className="w-full pl-11 pr-4 py-2.5 bg-[#FAF4F5] border border-[#EFCFD6] rounded-full text-xs text-zinc-900 focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition placeholder:text-zinc-400"
+                placeholder="Buscar anillos de promesa, solitarios, collares de oro, pulseras..."
+                className="w-full pl-11 pr-4 py-3 bg-[#FFF5F7] border border-[#FAD1DC] rounded-full text-xs text-zinc-900 focus:outline-none focus:border-[#D33658] focus:bg-white transition placeholder:text-zinc-400"
                 autoFocus
               />
             </div>
             <button
               type="submit"
-              className="bg-zinc-900 text-white text-xs uppercase tracking-widest px-6 py-2.5 rounded-full font-semibold hover:bg-zinc-800 hover:border-[#E2A3B0] transition active:scale-95 shadow-xs"
+              className="btn-pink-diamond text-xs uppercase tracking-widest px-7 py-3 rounded-full font-bold transition active:scale-95 shadow-md"
             >
               Buscar
             </button>
@@ -179,54 +254,36 @@ export default function Header({ user }: { user?: { email: string; role: string 
 
       {/* 4. Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[115px] bottom-0 bg-black/40 backdrop-blur-xs z-50 animate-fade-in">
-          <div className="bg-white border-b border-[#F0E6E8] p-6 space-y-6 max-h-[85vh] overflow-y-auto shadow-xl">
-            <div className="space-y-3 border-b border-[#F0E6E8] pb-4">
-              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
-                Navegación
+        <div className="md:hidden fixed inset-x-0 top-[115px] bottom-0 bg-black/50 backdrop-blur-xs z-50 animate-fade-in">
+          <div className="bg-white border-b border-[#FAD1DC] p-6 space-y-6 max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div className="space-y-3 border-b border-[#FAD1DC] pb-4">
+              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658]">
+                Catálogo de Joyas
               </span>
               <Link
                 href="/productos"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-bold uppercase tracking-wider text-zinc-900 hover:text-[#BE6C7C]"
+                className="block text-base font-bold text-zinc-900 hover:text-[#D33658]"
               >
-                Ver Catálogo Completo
+                Ver Colección Completa
               </Link>
             </div>
 
-            <div className="space-y-3 border-b border-[#F0E6E8] pb-4">
+            <div className="space-y-3 border-b border-[#FAD1DC] pb-4">
               <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-zinc-400">
-                Categorías de Joyas
+                Por Categoría
               </span>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <Link
-                  href="/productos?category=anillos"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3 bg-[#FAF4F5] rounded-xl font-medium text-zinc-800 hover:bg-[#F6E8EB] transition flex items-center gap-2"
-                >
-                  <RoisinDiamond size={12} color="#E2A3B0" /> Anillos
-                </Link>
-                <Link
-                  href="/productos?category=collares"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3 bg-[#FAF4F5] rounded-xl font-medium text-zinc-800 hover:bg-[#F6E8EB] transition flex items-center gap-2"
-                >
-                  <RoisinDiamond size={12} color="#E2A3B0" /> Collares
-                </Link>
-                <Link
-                  href="/productos?category=pulseras"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3 bg-[#FAF4F5] rounded-xl font-medium text-zinc-800 hover:bg-[#F6E8EB] transition flex items-center gap-2"
-                >
-                  <RoisinDiamond size={12} color="#E2A3B0" /> Pulseras
-                </Link>
-                <Link
-                  href="/productos?category=aretes"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-3 bg-[#FAF4F5] rounded-xl font-medium text-zinc-800 hover:bg-[#F6E8EB] transition flex items-center gap-2"
-                >
-                  <RoisinDiamond size={12} color="#E2A3B0" /> Aretes
-                </Link>
+              <div className="grid grid-cols-2 gap-2.5 text-xs">
+                {categories.map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/productos?category=${c.slug}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-3 bg-[#FFF5F7] rounded-2xl font-semibold text-zinc-800 hover:bg-[#FDE8ED] border border-[#FAD1DC] transition flex items-center gap-2"
+                  >
+                    <RoisinDiamond size={12} color="#E65573" /> {c.name.split('&')[0]}
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -234,24 +291,24 @@ export default function Header({ user }: { user?: { email: string; role: string 
               <Link
                 href="/nosotros"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 hover:text-[#BE6C7C]"
+                className="block text-xs font-bold uppercase tracking-wider text-zinc-700 hover:text-[#D33658]"
               >
-                Historia & Compromiso de Calidad
+                Nuestra Historia & Compromiso
               </Link>
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-4 py-2.5 rounded-xl w-full justify-center"
+                className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-2xl w-full justify-center"
               >
-                <MessageCircle size={15} /> Asesoría por WhatsApp
+                <MessageCircle size={16} /> Asesoría por WhatsApp
               </a>
 
               {user?.role === 'ADMIN' && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-xs font-bold text-black pt-2 border-t text-center"
+                  className="block text-xs font-bold text-purple-700 pt-2 border-t text-center"
                 >
                   Ir al Panel Administrativo
                 </Link>

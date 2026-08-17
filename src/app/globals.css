@@ -12,20 +12,20 @@
   --font-serif: var(--font-serif);
   --font-heading: var(--font-serif);
 
-  /* ROISIN Brand Rose & Derived Palette */
-  --color-roisin-50: #FAF4F5;
-  --color-roisin-100: #F6E8EB;
-  --color-roisin-200: #EFCFD6;
-  --color-roisin-300: #E7B8C2;
-  --color-roisin-400: #E2A3B0;
-  --color-roisin-500: #D28695;
-  --color-roisin-600: #BE6C7C;
-  --color-roisin-700: #9E5260;
-  --color-roisin-800: #743843;
-  --color-roisin-900: #4A2028;
+  /* ROISIN Radiant Pink Diamond Palette */
+  --color-roisin-50: #FFF5F7;
+  --color-roisin-100: #FDE8ED;
+  --color-roisin-200: #FAD1DC;
+  --color-roisin-300: #F6AEC0;
+  --color-roisin-400: #F08097;
+  --color-roisin-500: #E65573;
+  --color-roisin-600: #D33658;
+  --color-roisin-700: #B22343;
+  --color-roisin-800: #93203A;
+  --color-roisin-900: #7C1E34;
 
-  --color-gold-400: #D4AF37;
-  --color-gold-500: #C5A028;
+  --color-gold-400: #E5C058;
+  --color-gold-500: #D4AF37;
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -47,24 +47,24 @@
 
 :root {
   --background: #FFFFFF;
-  --foreground: #18181B;
+  --foreground: #1A1A1E;
   --card: #FFFFFF;
-  --card-foreground: #18181B;
+  --card-foreground: #1A1A1E;
   --popover: #FFFFFF;
-  --popover-foreground: #18181B;
-  --primary: #18181B;
+  --popover-foreground: #1A1A1E;
+  --primary: #D33658;
   --primary-foreground: #FFFFFF;
-  --secondary: #FAF4F5;
-  --secondary-foreground: #BE6C7C;
-  --muted: #F4F4F5;
-  --muted-foreground: #71717A;
-  --accent: #F6E8EB;
-  --accent-foreground: #BE6C7C;
+  --secondary: #FFF5F7;
+  --secondary-foreground: #B22343;
+  --muted: #F8F6F7;
+  --muted-foreground: #787178;
+  --accent: #FDE8ED;
+  --accent-foreground: #B22343;
   --destructive: #EF4444;
-  --border: #F0E6E8;
-  --input: #E4E4E7;
-  --ring: #E2A3B0;
-  --radius: 0.875rem;
+  --border: #FAD1DC;
+  --input: #F0D5DD;
+  --ring: #E65573;
+  --radius: 1rem;
 }
 
 @layer base {
@@ -72,44 +72,80 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground selection:bg-[#E2A3B0]/30 selection:text-zinc-900;
+    @apply bg-background text-foreground selection:bg-[#FAD1DC] selection:text-[#7C1E34];
   }
 }
 
-/* Custom Diamond & Luxury Jewelry Utilities */
+/* Radiant Pink Diamond Facet & Glow Utilities */
 .facet-line {
-  background: linear-gradient(90deg, transparent 0%, #EFCFD6 30%, #E2A3B0 50%, #EFCFD6 70%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, #FAD1DC 25%, #E65573 50%, #FAD1DC 75%, transparent 100%);
   height: 1px;
 }
 
-.luxury-card-glow {
-  box-shadow: 0 10px 30px -10px rgba(226, 163, 176, 0.15), 0 2px 6px 0 rgba(0, 0, 0, 0.02);
+.diamond-glow {
+  box-shadow: 0 10px 30px -8px rgba(230, 85, 115, 0.25), 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.diamond-card-glow {
+  box-shadow: 0 14px 35px -10px rgba(230, 85, 115, 0.18), 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .luxury-card-hover {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .luxury-card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -15px rgba(226, 163, 176, 0.25), 0 4px 12px rgba(0, 0, 0, 0.04);
-  border-color: #EFCFD6;
+  transform: translateY(-5px);
+  box-shadow: 0 22px 45px -12px rgba(230, 85, 115, 0.32), 0 4px 14px rgba(0, 0, 0, 0.04);
+  border-color: #F6AEC0;
 }
 
-/* Diamond Notch Card Header */
+/* Pink Diamond Badge */
 .diamond-tag {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #EFCFD6;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #FAD1DC;
   backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(226, 163, 176, 0.15);
+  box-shadow: 0 2px 10px rgba(230, 85, 115, 0.15);
 }
 
-/* Subtle Shimmer Effect on CTA Buttons */
-.shimmer-button {
+/* Primary Pink Diamond Button (Vibrant, Luminous, High Conversion) */
+.btn-pink-diamond {
+  background: linear-gradient(135deg, #F08097 0%, #E65573 50%, #C22648 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px -3px rgba(230, 85, 115, 0.45), 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
+.btn-pink-diamond:hover {
+  background: linear-gradient(135deg, #F492A5 0%, #D83E60 50%, #B01E3E 100%);
+  box-shadow: 0 10px 28px -4px rgba(230, 85, 115, 0.6), 0 3px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-pink-diamond:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 10px rgba(230, 85, 115, 0.35);
+}
+
+/* Pink Diamond Outline Button */
+.btn-pink-outline {
+  background: #FFFFFF;
+  color: #C22648;
+  border: 1.5px solid #FAD1DC;
+  box-shadow: 0 2px 8px rgba(230, 85, 115, 0.08);
+  transition: all 0.25s ease;
+}
+
+.btn-pink-outline:hover {
+  background: #FFF5F7;
+  border-color: #E65573;
+  color: #93203A;
+  box-shadow: 0 4px 14px rgba(230, 85, 115, 0.2);
+}
+
+/* Diamond Crystal Shimmer Effect */
 .shimmer-button::after {
   content: '';
   position: absolute;
@@ -119,9 +155,9 @@
   height: 200%;
   background: linear-gradient(
     60deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 70%
+    transparent 35%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 65%
   );
   transform: rotate(30deg) translateY(-100%);
   transition: transform 0.75s ease-in-out;

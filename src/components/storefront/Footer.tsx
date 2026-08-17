@@ -10,48 +10,48 @@ export default function Footer() {
   )}`;
 
   return (
-    <footer className="bg-[#141415] text-white border-t border-zinc-800 mt-20">
+    <footer className="bg-[#141013] text-white border-t border-[#381C24] mt-24">
       {/* 1. Compact Value Pillars */}
-      <div className="border-b border-zinc-800/80 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-[#2D161C] py-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-2.5 bg-zinc-900 rounded-full text-[#E2A3B0] border border-zinc-800 shrink-0">
-                <Sparkles size={18} />
+              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+                <Sparkles size={20} />
               </div>
               <div>
                 <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
                   Plata 925 & Oro 18k
                 </h4>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
                   Metales nobles certificados y duraderos.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-2.5 bg-zinc-900 rounded-full text-[#E2A3B0] border border-zinc-800 shrink-0">
-                <Truck size={18} />
+              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+                <Truck size={20} />
               </div>
               <div>
                 <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
                   Envíos a Todo Ecuador
                 </h4>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
                   Entregas seguras en 24h a 48h con Servientrega.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-2.5 bg-zinc-900 rounded-full text-[#E2A3B0] border border-zinc-800 shrink-0">
-                <ShieldCheck size={18} />
+              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+                <ShieldCheck size={20} />
               </div>
               <div>
                 <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
                   Garantía & Asesoría
                 </h4>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
                   Atención directa y cercana por WhatsApp.
                 </p>
               </div>
@@ -61,11 +61,11 @@ export default function Footer() {
       </div>
 
       {/* 2. Main Footer Links & Branding */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
-          <div className="space-y-3.5">
-            <RoisinLogo theme="light" symbolSize={26} />
+          <div className="space-y-4">
+            <RoisinLogo theme="light" width={180} height={50} />
             <p className="text-[11px] text-zinc-400 leading-relaxed font-light">
               Joyería fina en Plata de Ley 925 y Baño de Oro 18k. Diseños creados para celebrar tus momentos más inolvidables.
             </p>
@@ -74,7 +74,7 @@ export default function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold text-[#E2A3B0] hover:text-white transition"
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#F08097] hover:text-white transition"
               >
                 <MessageCircle size={15} /> Asesoría por WhatsApp
               </a>
@@ -83,10 +83,10 @@ export default function Footer() {
 
           {/* Colecciones */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#E2A3B0] mb-3">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
               Colecciones
             </h5>
-            <ul className="space-y-2 text-xs text-zinc-400">
+            <ul className="space-y-2.5 text-xs text-zinc-400">
               <li>
                 <Link href="/productos?category=anillos" className="hover:text-white transition">
                   Anillos de Promesa & Solitarios
@@ -112,10 +112,10 @@ export default function Footer() {
 
           {/* Información */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#E2A3B0] mb-3">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
               Atención al Cliente
             </h5>
-            <ul className="space-y-2 text-xs text-zinc-400">
+            <ul className="space-y-2.5 text-xs text-zinc-400">
               <li>
                 <Link href="/nosotros" className="hover:text-white transition">
                   Sobre ROISIN & Compromiso
@@ -141,25 +141,25 @@ export default function Footer() {
 
           {/* Métodos de Pago */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#E2A3B0] mb-3">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
               Pagos en Ecuador
             </h5>
-            <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+            <p className="text-[11px] text-zinc-400 leading-relaxed mb-3 font-light">
               Transferencia bancaria directa (Pichincha, Guayaquil, Pacífico, Produbanco) o Pago Contra Entrega.
             </p>
-            <div className="flex flex-wrap gap-1.5 text-[10px] text-zinc-300 font-medium">
-              <span className="bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">Transferencia</span>
-              <span className="bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">Contra Entrega</span>
-              <span className="bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">Depósito</span>
+            <div className="flex flex-wrap gap-2 text-[10px] text-zinc-300 font-medium">
+              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Transferencia</span>
+              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Contra Entrega</span>
+              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Depósito</span>
             </div>
           </div>
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-zinc-900 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-zinc-500 gap-3">
+        <div className="border-t border-[#2D161C] mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-zinc-500 gap-3">
           <p>© {new Date().getFullYear()} {STORE_CONFIG.name}. Todos los derechos reservados.</p>
-          <p className="flex items-center gap-1 text-zinc-400">
-            Hecho con <Heart size={12} className="fill-[#E2A3B0] text-[#E2A3B0]" /> para Ecuador 🇪🇨
+          <p className="flex items-center gap-1 text-zinc-400 font-light">
+            Hecho con <Heart size={12} className="fill-[#F08097] text-[#F08097]" /> para Ecuador 🇪🇨
           </p>
         </div>
       </div>

@@ -71,7 +71,7 @@ export default async function ProductDetailPage({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 space-y-16">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12 space-y-16">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -79,15 +79,15 @@ export default async function ProductDetailPage({
 
       {/* Breadcrumb Navigation */}
       <nav className="text-[11px] text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-        <Link href="/" className="hover:text-[#BE6C7C] transition">Inicio</Link>
+        <Link href="/" className="hover:text-[#D33658] transition">Inicio</Link>
         <span>/</span>
-        <Link href="/productos" className="hover:text-[#BE6C7C] transition">Catálogo</Link>
+        <Link href="/productos" className="hover:text-[#D33658] transition">Catálogo</Link>
         <span>/</span>
         {product.category && (
           <>
             <Link
               href={`/productos?category=${product.category.slug}`}
-              className="hover:text-[#BE6C7C] transition"
+              className="hover:text-[#D33658] transition"
             >
               {product.category.name}
             </Link>
@@ -108,8 +108,8 @@ export default async function ProductDetailPage({
         <div className="flex flex-col space-y-7">
           <div className="space-y-1.5">
             {product.category && (
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
-                <RoisinDiamond size={10} color="#E2A3B0" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658]">
+                <RoisinDiamond size={11} color="#E65573" />
                 {product.category.name}
               </span>
             )}
@@ -122,9 +122,9 @@ export default async function ProductDetailPage({
           <AddToCartSection product={product} />
 
           {/* Description & Materials Accordion */}
-          <div className="pt-6 border-t border-[#F0E6E8] space-y-4">
+          <div className="pt-6 border-t border-[#FAD1DC] space-y-4">
             <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2">
-              <RoisinDiamond size={12} color="#E2A3B0" /> Descripción & Detalles de la Joya
+              <RoisinDiamond size={13} color="#E65573" /> Descripción & Detalles de la Joya
             </h2>
             <div className="text-xs text-zinc-600 leading-relaxed whitespace-pre-line space-y-2 font-light">
               <p>{product.description}</p>
@@ -132,9 +132,9 @@ export default async function ProductDetailPage({
           </div>
 
           {/* Luxury Gift Presentation Box Info */}
-          <div className="bg-[#FAF4F5] p-5 rounded-2xl border border-[#EFCFD6] space-y-2">
+          <div className="bg-[#FFF5F7] p-6 rounded-3xl border border-[#FAD1DC] space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 uppercase tracking-wider">
-              <Gift size={15} className="text-[#BE6C7C]" />
+              <Gift size={16} className="text-[#D33658]" />
               <span>Experiencia de Regalo ROISIN</span>
             </div>
             <p className="text-[11px] text-zinc-600 leading-relaxed font-light">
@@ -143,11 +143,11 @@ export default async function ProductDetailPage({
           </div>
 
           {/* Care Tips */}
-          <div className="bg-white p-5 rounded-2xl border border-[#F0E6E8] space-y-2 text-xs">
+          <div className="bg-white p-6 rounded-3xl border border-[#FAD1DC] space-y-2 text-xs">
             <h3 className="font-semibold text-zinc-900 flex items-center gap-2">
-              <Sparkles size={14} className="text-[#BE6C7C]" /> Cuidados y Mantenimiento:
+              <Sparkles size={15} className="text-[#E65573]" /> Cuidados y Mantenimiento:
             </h3>
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <p className="text-[11px] text-zinc-500 leading-relaxed font-light">
               Para conservar el brillo intacto de la plata 925 y el baño de oro 18k, evita el contacto directo con perfumes o químicos agresivos. Limpia suavemente con un paño de microfibra tras cada uso.
             </p>
           </div>
@@ -156,9 +156,9 @@ export default async function ProductDetailPage({
 
       {/* Related Products Section */}
       {filteredRelated.length > 0 && (
-        <section className="pt-16 border-t border-[#F0E6E8] space-y-8">
+        <section className="pt-16 border-t border-[#FAD1DC] space-y-8">
           <div className="text-center max-w-xl mx-auto space-y-1.5">
-            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
+            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#D33658]">
               Sugerencias para Ti
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900">
@@ -166,7 +166,7 @@ export default async function ProductDetailPage({
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6">
             {filteredRelated.map((p) => (
               <ProductCard
                 key={p.id}

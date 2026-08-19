@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Open_Sans } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/storefront/Header';
-import Footer from '@/components/storefront/Footer';
-import CartDrawer from '@/components/storefront/CartDrawer';
+import ConditionalStorefrontLayout from '@/components/layout/ConditionalStorefrontLayout';
 import PageTransitionLoader from '@/components/ui/PageTransitionLoader';
 import { getCurrentUser } from '@/lib/auth';
 import { Suspense } from 'react';
@@ -57,10 +55,9 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <PageTransitionLoader />
         </Suspense>
-        <Header user={user ? { email: user.email, role: user.role } : null} />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
+        <ConditionalStorefrontLayout user={user ? { email: user.email, role: user.role } : null}>
+          {children}
+        </ConditionalStorefrontLayout>
       </body>
     </html>
   );

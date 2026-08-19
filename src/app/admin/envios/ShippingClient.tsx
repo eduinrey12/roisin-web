@@ -5,8 +5,10 @@ import {
   adminCreateShippingRegionAction,
   adminUpdateShippingRegionAction,
   adminDeleteShippingRegionAction,
+  adminUpdateFreeShippingThresholdAction,
 } from '@/lib/actions/admin.actions';
-import { Truck, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Truck, Plus, Trash2, Edit2, Check, X, Sparkles, Save } from 'lucide-react';
+import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface ShippingRegionItem {
   id: string;
@@ -18,10 +20,16 @@ interface ShippingRegionItem {
 
 export default function ShippingClient({
   initialRegions,
+  initialThreshold = 50.0,
 }: {
   initialRegions: ShippingRegionItem[];
+  initialThreshold?: number;
 }) {
   const [regions, setRegions] = useState(initialRegions);
+  const [threshold, setThreshold] = useState<string>(String(initialThreshold));
+  const [thresholdSaving, setThresholdSaving] = useState(false);
+  const [thresholdSuccess, setThresholdSuccess] = useState(false);
+
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRate, setEditRate] = useState<string>('');
@@ -34,6 +42,24 @@ export default function ShippingClient({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleSaveThreshold = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!threshold || isNaN(Number(threshold))) return;
+    setThresholdSaving(true);
+    setThresholdSuccess(false);
+    try {
+      const res = await adminUpdateFreeShippingThresholdAction(Number(threshold));
+      if (res.success) {
+        setThresholdSuccess(true);
+        setTimeout(() => setThresholdSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al guardar');
+    } finally {
+      setThresholdSaving(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,16 +123,73 @@ export default function ShippingClient({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
+      {/* 1. Free Shipping Dynamic Threshold Manager Card */}
+      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#F8F5FA] pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-[#F0E9F5] text-[#3F235F] rounded-2xl border border-[#DFD0EC]">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#7043A0] block">
+                Parámetro Comercial Global
+              </span>
+              <h2 className="font-sans text-lg font-bold text-zinc-900">
+                Monto Mínimo para Envío Gratis Dinámico
+              </h2>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveThreshold} className="flex items-center gap-2.5">
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">$</span>
+              <input
+                type="number"
+                step="0.50"
+                min="0"
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
+                className="w-32 pl-7 pr-3 py-2.5 bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl text-xs font-bold text-zinc-900 focus:outline-none focus:border-[#7043A0]"
+                placeholder="50.00"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={thresholdSaving}
+              className="btn-purple-diamond px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {thresholdSaving ? (
+                <span>Guardando...</span>
+              ) : thresholdSuccess ? (
+                <>
+                  <Check size={14} className="text-emerald-300" />
+                  <span>¡Guardado!</span>
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  <span>Guardar</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-xs text-zinc-500 leading-relaxed font-light">
+          Este valor controla la barra de progreso en tiempo real en el Carrito (*&quot;Te faltan $XX para Envío Gratis&quot;*) y en el Checkout. Si colocas <strong>$0.00</strong>, el sistema considerará todos los envíos gratis de manera ilimitada.
+        </p>
+      </div>
+
+      {/* 2. Header for Regional Rates */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-sans text-zinc-900 flex items-center gap-2">
             <Truck className="text-[#7043A0]" size={24} />
-            Tarifas de Envíos Nacionales
+            Tarifas de Envíos por Región
           </h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Configura los costos de envío a nivel nacional (Guayaquil $3, Otros Destinos $6, Galápagos $12). Las eliminaciones se realizan mediante baja lógica (isActive: false) para proteger las órdenes históricas.
+            Configura los costos base de entrega (Guayaquil $3.00, Nacional $6.00, Galápagos $12.00).
           </p>
         </div>
 

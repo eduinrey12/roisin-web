@@ -20,14 +20,17 @@ export default function RoisinLogo({
   const isLight = theme === 'light';
   const isPurple = theme === 'purple';
 
-  const diamondColor = isLight ? '#C7B0DE' : '#3F235F';
+  const diamondColor = isLight ? '#DFD0EC' : '#3F235F';
   const textColor = isLight ? 'text-white' : isPurple ? 'text-[#3F235F]' : 'text-zinc-900';
   const tagColor = isLight ? 'text-[#DFD0EC]' : 'text-[#3F235F]';
+  const containerBg = isLight
+    ? 'bg-[#2A1442] border-[#4E2975] group-hover:border-[#DFD0EC]'
+    : 'bg-[#F8F5FA] border-[#DFD0EC] group-hover:border-[#7043A0]';
 
   const content = (
     <div className={`inline-flex items-center gap-3 select-none group transition-transform duration-300 group-hover:scale-102 ${className}`}>
       {/* Official Diamond Vector Symbol in Purple */}
-      <div className="relative flex items-center justify-center p-1 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] shadow-xs group-hover:border-[#7043A0] transition-colors">
+      <div className={`relative flex items-center justify-center p-1 rounded-2xl border shadow-xs transition-colors ${containerBg}`}>
         <RoisinDiamond
           size={32}
           color={diamondColor}

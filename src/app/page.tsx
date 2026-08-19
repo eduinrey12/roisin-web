@@ -16,7 +16,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="space-y-10 sm:space-y-14 pb-20">
+    <div className="space-y-6 sm:space-y-8 pb-20">
       {/* 1. TOP CATEGORY BAR (Starts with Descuentos, followed by all categories) */}
       <section className="border-b border-[#DFD0EC] bg-[#F8F5FA] py-2.5 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
@@ -55,7 +55,7 @@ export default async function HomePage() {
 
       {/* 2. DYNAMIC PROMOTIONAL BANNER CAROUSEL (2-3 cards with < and > arrows) */}
       {promotions.length > 0 && (
-        <div className="pt-1 sm:pt-2">
+        <div>
           <PromotionsCarousel promotions={promotions} />
         </div>
       )}

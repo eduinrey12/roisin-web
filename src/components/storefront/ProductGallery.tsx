@@ -37,7 +37,7 @@ export default function ProductGallery({
   const currentImage = activeImages[selectedIdx] || activeImages[0];
 
   return (
-    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 sticky top-24 items-start">
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-28 items-start">
       {/* 1. Left Vertical Thumbnails Column (capped to main image height, smooth hidden scroll) */}
       {activeImages.length > 1 && (
         <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 shrink-0 max-h-[460px] pb-1 sm:pb-0">

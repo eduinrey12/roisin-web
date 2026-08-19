@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useCartStore } from '@/lib/store/cartStore';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,9 +24,21 @@ export default function CartDrawer() {
     return sum + (itemPrice + optionsPrice) * item.quantity;
   }, 0);
 
-  // Free shipping threshold at $70
-  const freeShippingThreshold = 70;
-  const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  // Dynamic Free Shipping Threshold (configured from admin panel)
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(50.0);
+
+  useEffect(() => {
+    fetch('/api/settings/free-shipping')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.threshold && !isNaN(Number(data.threshold))) {
+          setFreeShippingThreshold(Number(data.threshold));
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
+
+  const progressPercent = freeShippingThreshold <= 0 ? 100 : Math.min(100, (subtotal / freeShippingThreshold) * 100);
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
   return (
@@ -103,9 +116,10 @@ export default function CartDrawer() {
               <Link
                 href="/productos"
                 onClick={closeCart}
-                className="btn-purple-diamond text-xs uppercase tracking-widest px-8 py-3.5 rounded-full font-bold transition shadow-md cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 btn-purple-diamond text-xs uppercase tracking-wider px-8 py-3.5 rounded-full font-bold transition shadow-md cursor-pointer"
               >
-                Explorar Colecciones <ArrowRight size={14} />
+                <span>Explorar Colecciones</span>
+                <ArrowRight size={14} />
               </Link>
             </div>
           ) : (

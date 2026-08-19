@@ -161,22 +161,6 @@ export default function CatalogFilterBar({
                     {!currentCategory && !isOnlyDiscounts && <Check size={14} />}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateFilters({ ofertas: 'true', category: null });
-                      setIsCatDropdownOpen(false);
-                    }}
-                    className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
-                      isOnlyDiscounts
-                        ? 'btn-purple-diamond shadow-xs'
-                        : 'hover:bg-[#F8F5FA] text-zinc-800'
-                    }`}
-                  >
-                    <span>🔥 Piezas en Descuento</span>
-                    {isOnlyDiscounts && <Check size={14} />}
-                  </button>
-
                   {categories.map((cat) => {
                     const isSelected = currentCategory === cat.slug && !isOnlyDiscounts;
                     return (
@@ -372,21 +356,8 @@ export default function CatalogFilterBar({
                         : 'bg-[#F8F5FA] text-zinc-900'
                     }`}
                   >
-                    <span>Todas las Colecciones</span>
+                    <span>Todas las Categorías</span>
                     {!currentCategory && !isOnlyDiscounts && <Check size={14} />}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      updateFilters({ ofertas: 'true', category: null });
-                      setIsDrawerOpen(false);
-                    }}
-                    className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between cursor-pointer ${
-                      isOnlyDiscounts ? 'btn-purple-diamond' : 'bg-[#F8F5FA] text-zinc-900'
-                    }`}
-                  >
-                    <span>🔥 Descuentos & Ofertas</span>
-                    {isOnlyDiscounts && <Check size={14} />}
                   </button>
 
                   {categories.map((c) => (

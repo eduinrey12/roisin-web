@@ -342,3 +342,42 @@ export async function adminVerifyPaymentAction(paymentId: string, isApproved: bo
   }
 }
 
+// ==================== STORE SETTINGS ACTIONS ====================
+export async function adminUpdateFreeShippingThresholdAction(threshold: number) {
+  try {
+    await requireAdmin();
+    const prisma = (await import('@/lib/db')).default;
+    const updated = await prisma.storeSetting.upsert({
+      where: { key: 'free_shipping_threshold' },
+      update: { value: String(threshold) },
+      create: {
+        key: 'free_shipping_threshold',
+        value: String(threshold),
+        label: 'Monto mínimo para Envío Gratis ($)',
+        type: 'number',
+      },
+    });
+    revalidatePath('/admin/envios');
+    revalidatePath('/checkout');
+    revalidatePath('/');
+    return { success: true, threshold: Number(updated.value) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar umbral de envío' };
+  }
+}
+
+export async function getFreeShippingThreshold(): Promise<number> {
+  try {
+    const prisma = (await import('@/lib/db')).default;
+    const setting = await prisma.storeSetting.findUnique({
+      where: { key: 'free_shipping_threshold' },
+    });
+    if (setting && !isNaN(Number(setting.value))) {
+      return Number(setting.value);
+    }
+    return 50.0;
+  } catch {
+    return 50.0;
+  }
+}
+

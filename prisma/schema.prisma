@@ -448,3 +448,20 @@ model Coupon {
   @@index([code])
   @@index([isActive])
 }
+
+// -----------------------------------------------------------------------------
+// Store Settings & Parameters
+// -----------------------------------------------------------------------------
+
+model StoreSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string")
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+

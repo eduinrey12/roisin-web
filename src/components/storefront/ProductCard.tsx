@@ -88,7 +88,7 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
               <Link
                 href={`/productos?category=${product.category.slug}`}
                 onClick={handleCategoryClick}
-                className="text-[11px] uppercase font-bold tracking-wider px-3 py-1 rounded-full text-zinc-900 bg-white/95 shadow-sm hover:bg-[#F0E9F5] hover:text-[#3F235F] transition"
+                className="text-[11px] uppercase font-bold tracking-wider px-3 py-1 rounded-full text-zinc-900 bg-white/95 shadow-sm hover:bg-[#F0E9F5] hover:text-[#3F235F] transition leading-normal inline-block"
               >
                 {product.category.name}
               </Link>
@@ -98,12 +98,12 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
           {/* Top-Right Badges: Discount or Tag */}
           <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-1.5">
             {hasDiscount && discountBadgeText && (
-              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-xs uppercase font-black px-3 py-1 rounded-full shadow-md tracking-wider">
+              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-xs uppercase font-black px-3 py-1 rounded-full shadow-md tracking-wider leading-normal inline-block">
                 {discountBadgeText}
               </span>
             )}
             {product.tag && (
-              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[10.5px] uppercase font-bold px-3 py-1 rounded-full shadow-xs">
+              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[10.5px] uppercase font-bold px-3 py-1 rounded-full shadow-xs leading-normal inline-block">
                 {product.tag}
               </span>
             )}

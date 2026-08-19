@@ -82,7 +82,7 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
             <Link
               key={promo.id}
               href={promo.targetUrl || '/productos'}
-              className="group relative flex-none w-[82vw] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] aspect-[4/3] sm:aspect-[4/3.2] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-xs hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 flex flex-col justify-end p-5 sm:p-6 bg-[#1B1124] snap-start"
+              className="group relative flex-none w-[82vw] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] aspect-square sm:aspect-[1/1] sm:h-[340px] lg:h-[360px] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-xs hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 flex flex-col justify-end p-5 sm:p-6 bg-[#1B1124] snap-start"
             >
               <Image
                 src={promo.imageUrl}
@@ -94,15 +94,15 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
               <div className="absolute inset-0 bg-gradient-to-t from-[#1B1124]/95 via-[#1B1124]/40 to-transparent" />
 
               {/* Promo Badges & Content */}
-              <div className="relative z-10 space-y-1.5">
+              <div className="relative z-10 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   {promo.badge && (
-                    <span className="bg-white text-[#3F235F] text-[9.5px] uppercase font-bold tracking-wider px-3 py-0.5 rounded-full shadow-xs">
+                    <span className="bg-white text-[#3F235F] text-[10.5px] uppercase font-bold tracking-wider px-3.5 py-1 rounded-full shadow-xs leading-normal inline-block">
                       {promo.badge}
                     </span>
                   )}
                   {promo.discountText && (
-                    <span className="bg-gradient-to-r from-[#7043A0] to-[#3F235F] text-white text-[9.5px] uppercase font-bold tracking-wider px-3 py-0.5 rounded-full shadow-sm">
+                    <span className="bg-gradient-to-r from-[#7043A0] to-[#3F235F] text-white text-[10.5px] uppercase font-black tracking-wider px-3.5 py-1 rounded-full shadow-sm leading-normal inline-block">
                       {promo.discountText}
                     </span>
                   )}

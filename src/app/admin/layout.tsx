@@ -34,16 +34,17 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen flex bg-[#FAF8FC] text-zinc-900 font-sans">
       {/* 1. Admin Sidebar (Deep Obsidian-Purple with Amethyst Diamond Accents) */}
-      <aside className="w-68 bg-[#1B1124] text-zinc-300 flex flex-col shrink-0 border-r border-[#341F48] shadow-2xl">
-        <div className="p-6 border-b border-[#341F48] space-y-1">
-          <Link href="/admin" className="inline-block">
-            <RoisinLogo theme="light" showTagline={false} />
-          </Link>
-          <div className="flex items-center gap-1.5 pt-1 text-[9px] uppercase font-bold tracking-[0.25em] text-[#C2A3DF]">
-            <RoisinDiamond size={11} color="#C2A3DF" />
-            <span>Panel Administrativo</span>
+      <aside className="w-68 h-screen sticky top-0 bg-[#1B1124] text-zinc-300 flex flex-col justify-between shrink-0 border-r border-[#341F48] shadow-2xl overflow-y-auto no-scrollbar z-40">
+        <div>
+          <div className="p-6 border-b border-[#341F48] space-y-1">
+            <Link href="/admin" className="inline-block">
+              <RoisinLogo theme="light" showTagline={false} />
+            </Link>
+            <div className="flex items-center gap-1.5 pt-1 text-[9px] uppercase font-bold tracking-[0.25em] text-[#C2A3DF]">
+              <RoisinDiamond size={11} color="#C2A3DF" />
+              <span>Panel Administrativo</span>
+            </div>
           </div>
-        </div>
 
         {/* Sidebar Navigation */}
         <nav className="flex-1 p-4 space-y-1 text-xs font-semibold overflow-y-auto">
@@ -132,9 +133,10 @@ export default async function AdminLayout({
             </Link>
           </div>
         </nav>
+        </div>
 
         {/* Sidebar Footer User Info */}
-        <div className="p-4 border-t border-[#341F48] text-[11px] text-zinc-400 flex items-center justify-between bg-[#150D1C]">
+        <div className="p-4 border-t border-[#341F48] text-[11px] text-zinc-400 flex items-center justify-between bg-[#150D1C] shrink-0">
           <div className="flex items-center gap-2 truncate">
             <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
             <span className="truncate">{user.email}</span>

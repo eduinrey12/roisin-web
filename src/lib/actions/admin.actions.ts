@@ -412,6 +412,7 @@ export async function adminCreatePresentationOptionAction(formData: {
   description?: string;
   priceModifier: number;
   imageUrl?: string;
+  images?: string[];
   isDefault?: boolean;
   sortOrder?: number;
 }) {
@@ -435,6 +436,7 @@ export async function adminUpdatePresentationOptionAction(
     description?: string;
     priceModifier?: number;
     imageUrl?: string;
+    images?: string[];
     isDefault?: boolean;
     sortOrder?: number;
     isActive?: boolean;

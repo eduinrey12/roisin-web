@@ -154,8 +154,45 @@ export async function getProducts(params?: {
   };
 }
 
+async function attachOptionImages(options: any[]) {
+  if (!options || options.length === 0) return options;
+  const optionIds = options.map((o) => o.id).filter(Boolean);
+  if (optionIds.length === 0) return options;
+
+  try {
+    let images: any[] = [];
+    if ((prisma as any).productOptionImage) {
+      images = await (prisma as any).productOptionImage.findMany({
+        where: { optionId: { in: optionIds } },
+        orderBy: { sortOrder: 'asc' },
+      });
+    } else {
+      const idsIn = optionIds.map((id) => `'${id}'`).join(',');
+      images = await prisma.$queryRawUnsafe(
+        `SELECT id, optionId, url, altText, sortOrder FROM ProductOptionImage WHERE optionId IN (${idsIn}) ORDER BY sortOrder ASC`
+      );
+    }
+
+    options.forEach((opt) => {
+      const optImgs = images.filter((img) => img.optionId === opt.id);
+      opt.images =
+        optImgs.length > 0
+          ? optImgs
+          : opt.imageUrl
+          ? [{ url: opt.imageUrl, altText: opt.name }]
+          : [];
+    });
+  } catch {
+    options.forEach((opt) => {
+      opt.images = opt.imageUrl ? [{ url: opt.imageUrl, altText: opt.name }] : [];
+    });
+  }
+
+  return options;
+}
+
 export async function getProductBySlug(slug: string) {
-  return prisma.product.findUnique({
+  const product = await prisma.product.findUnique({
     where: { slug, isActive: true },
     include: {
       category: true,
@@ -190,6 +227,16 @@ export async function getProductBySlug(slug: string) {
       },
     },
   });
+
+  if (product?.optionGroupLinks) {
+    for (const link of product.optionGroupLinks) {
+      if (link.group?.options) {
+        await attachOptionImages(link.group.options);
+      }
+    }
+  }
+
+  return product;
 }
 
 // -----------------------------------------------------------------------------
@@ -532,15 +579,20 @@ export async function getOrCreatePresentationOptionGroup() {
     });
   }
 
+  if (group?.options) {
+    await attachOptionImages(group.options);
+  }
+
   return group;
 }
 
 export async function adminGetAllPresentationOptions() {
   const group = await getOrCreatePresentationOptionGroup();
-  return prisma.productOption.findMany({
+  const options = await prisma.productOption.findMany({
     where: { groupId: group.id, isActive: true },
     orderBy: { sortOrder: 'asc' },
   });
+  return attachOptionImages(options);
 }
 
 export async function adminCreatePresentationOption(data: {
@@ -548,6 +600,7 @@ export async function adminCreatePresentationOption(data: {
   description?: string;
   priceModifier: number;
   imageUrl?: string;
+  images?: string[];
   isDefault?: boolean;
   sortOrder?: number;
 }) {
@@ -560,16 +613,28 @@ export async function adminCreatePresentationOption(data: {
     });
   }
 
+  const primaryImg = data.imageUrl || data.images?.[0] || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop';
+  const allImages = data.images && data.images.length > 0 ? data.images : [primaryImg];
+
   return prisma.productOption.create({
     data: {
       groupId: group.id,
       name: data.name,
       description: data.description,
       priceModifier: new Prisma.Decimal(data.priceModifier || 0),
-      imageUrl: data.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+      imageUrl: primaryImg,
       isDefault: data.isDefault || false,
       sortOrder: data.sortOrder || 0,
       isActive: true,
+      images: {
+        create: allImages.map((url, idx) => ({
+          url,
+          sortOrder: idx,
+        })),
+      },
+    },
+    include: {
+      images: { orderBy: { sortOrder: 'asc' } },
     },
   });
 }
@@ -581,6 +646,7 @@ export async function adminUpdatePresentationOption(
     description?: string;
     priceModifier?: number;
     imageUrl?: string;
+    images?: string[];
     isDefault?: boolean;
     sortOrder?: number;
     isActive?: boolean;
@@ -594,6 +660,17 @@ export async function adminUpdatePresentationOption(
     });
   }
 
+  if (data.images && data.images.length > 0) {
+    await prisma.productOptionImage.deleteMany({ where: { optionId: id } });
+    await prisma.productOptionImage.createMany({
+      data: data.images.map((url, idx) => ({
+        optionId: id,
+        url,
+        sortOrder: idx,
+      })),
+    });
+  }
+
   return prisma.productOption.update({
     where: { id },
     data: {
@@ -604,6 +681,9 @@ export async function adminUpdatePresentationOption(
       ...(data.isDefault !== undefined && { isDefault: data.isDefault }),
       ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
+    },
+    include: {
+      images: { orderBy: { sortOrder: 'asc' } },
     },
   });
 }

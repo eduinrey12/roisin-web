@@ -17,6 +17,9 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  X,
+  Maximize2,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import SizeGuideModal from './SizeGuideModal';
@@ -52,6 +55,7 @@ interface AddToCartSectionProps {
           description?: string | null;
           priceModifier: any;
           imageUrl?: string | null;
+          images?: { id?: string; url: string; altText?: string | null }[];
           isDefault: boolean;
         }[];
       };
@@ -112,6 +116,17 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
     });
     return initial;
   });
+
+  // Modal for previewing packaging photos in full size
+  const [previewOption, setPreviewOption] = useState<{
+    groupId: string;
+    optionId: string;
+    name: string;
+    description?: string | null;
+    priceModifier: any;
+    images: string[];
+    selectedImgIdx: number;
+  } | null>(null);
 
   const [dedication, setDedication] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -183,8 +198,26 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
   const scrollPack = (direction: 'left' | 'right') => {
     if (!packScrollRef.current) return;
-    const amount = direction === 'left' ? -280 : 280;
+    const amount = direction === 'left' ? -220 : 220;
     packScrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+  };
+
+  const handleOpenPreview = (groupId: string, opt: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const imgs =
+      opt.images && opt.images.length > 0
+        ? opt.images.map((i: any) => i.url)
+        : [opt.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop'];
+
+    setPreviewOption({
+      groupId,
+      optionId: opt.id,
+      name: opt.name,
+      description: opt.description,
+      priceModifier: opt.priceModifier,
+      images: imgs,
+      selectedImgIdx: 0,
+    });
   };
 
   const handleAction = async (directCheckout = false) => {
@@ -218,23 +251,23 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
   return (
     <>
-      <div className="space-y-6">
-        {/* 1. NOMBRE PRINCIPAL DEL PRODUCTO */}
-        <div className="space-y-1.5">
-          <h1 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+      <div className="space-y-5">
+        {/* 1. NOMBRE PRINCIPAL DEL PRODUCTO (Color morado principal, tamaño equilibrado) */}
+        <div className="space-y-1">
+          <h1 className="font-sans text-xl sm:text-2xl font-bold text-[#3F235F] leading-tight">
             {product.title}
           </h1>
 
-          {/* 2. DESCRIPCIÓN CORTA */}
+          {/* 2. DESCRIPCIÓN CORTA (Color negro en negrita) */}
           {product.shortDescription && (
-            <p className="text-xs sm:text-sm text-zinc-600 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base font-bold text-black leading-snug">
               {product.shortDescription}
             </p>
           )}
         </div>
 
-        {/* 3. DESCRIPCIÓN LARGA / DETALLES */}
-        <div className="bg-[#FAF8FC] p-4 sm:p-5 rounded-3xl border border-[#DFD0EC] space-y-2">
+        {/* 3. DESCRIPCIÓN LARGA / DETALLES DE LA JOYA */}
+        <div className="bg-[#FAF8FC] p-4 rounded-2xl border border-[#DFD0EC] space-y-1.5">
           <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-1.5">
             <RoisinDiamond size={11} color="#7043A0" /> Detalles de la Joya
           </h3>
@@ -244,25 +277,25 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
         </div>
 
         {/* 4. PRECIO & DISPONIBILIDAD */}
-        <div className="flex items-baseline justify-between border-b border-[#DFD0EC] pb-4 pt-1">
+        <div className="flex items-baseline justify-between border-b border-[#DFD0EC] pb-3 pt-1">
           <div className="flex items-baseline gap-3">
-            <span className="font-sans text-3xl sm:text-4xl font-bold text-[#3F235F]">
+            <span className="font-sans text-2xl sm:text-3xl font-bold text-[#3F235F]">
               ${finalUnitPrice.toFixed(2)}
             </span>
             {compareAt && compareAt > finalUnitPrice && (
-              <span className="text-base text-zinc-400 line-through font-normal">
+              <span className="text-sm text-zinc-400 line-through font-normal">
                 ${compareAt.toFixed(2)}
               </span>
             )}
             {product.discountPercent && product.discountPercent > 0 && (
-              <span className="bg-[#3F235F] text-white text-[11px] uppercase font-black px-3 py-0.5 rounded-full shadow-xs leading-normal">
+              <span className="bg-[#3F235F] text-white text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-xs leading-normal">
                 -{product.discountPercent}% OFF
               </span>
             )}
           </div>
 
           <span
-            className={`text-xs font-bold px-3.5 py-1 rounded-full ${
+            className={`text-xs font-bold px-3 py-1 rounded-full ${
               isOutOfStock
                 ? 'bg-red-50 text-red-700 border border-red-200'
                 : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
@@ -274,16 +307,16 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
         {/* 5. VARIANTES CONECTADAS (Color / Material & Tallas) */}
         {hasMultiAttributes ? (
-          <div className="space-y-4 pt-2 border-t border-[#DFD0EC]">
+          <div className="space-y-3 pt-1 border-t border-[#DFD0EC]">
             {/* 5A. Selector de Color / Material */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
                 <span>Color / Material:</span>
                 <span className="text-[#7043A0] font-bold lowercase first-letter:uppercase">
                   {selectedColor}
                 </span>
               </label>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {colorAttrValues.map((color) => {
                   const isSelected = color === selectedColor;
                   return (
@@ -291,7 +324,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                       key={color}
                       type="button"
                       onClick={() => setSelectedColor(color)}
-                      className={`px-4 py-2 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                      className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
                         isSelected
                           ? 'btn-purple-diamond shadow-xs'
                           : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
@@ -305,7 +338,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </div>
 
             {/* 5B. Selector de Talla / Medida */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
                   Medida / Talla:
@@ -313,13 +346,13 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                 <button
                   type="button"
                   onClick={() => setSizeGuideOpen(true)}
-                  className="text-[11px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
+                  className="text-[10.5px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
                 >
-                  <Ruler size={13} className="text-[#7043A0]" /> Guía de Tallas
+                  <Ruler size={12} className="text-[#7043A0]" /> Guía de Tallas
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {sizeAttrValues.map((size) => {
                   const availableForColor = product.variants.some((v) => {
                     const attrs = v.attributes || [];
@@ -336,7 +369,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                       type="button"
                       disabled={!availableForColor}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                      className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
                         isSelected
                           ? 'btn-purple-diamond shadow-xs'
                           : availableForColor
@@ -353,7 +386,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         ) : product.variants.length > 1 ? (
           /* Single-Attribute Variant List */
-          <div className="space-y-3 pt-2 border-t border-[#DFD0EC]">
+          <div className="space-y-2 pt-1 border-t border-[#DFD0EC]">
             <div className="flex justify-between items-center">
               <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
                 Seleccionar Medida / Variante
@@ -361,12 +394,12 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               <button
                 type="button"
                 onClick={() => setSizeGuideOpen(true)}
-                className="text-[11px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
+                className="text-[10.5px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
               >
-                <Ruler size={13} className="text-[#7043A0]" /> Guía de Tallas
+                <Ruler size={12} className="text-[#7043A0]" /> Guía de Tallas
               </button>
             </div>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-2">
               {product.variants.map((v) => {
                 const label =
                   v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
@@ -378,7 +411,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   <button
                     key={v.id}
                     onClick={() => handleSelectSingleVariant(v.id)}
-                    className={`px-4 py-2.5 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
                       isSelected
                         ? 'btn-purple-diamond shadow-xs'
                         : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
@@ -392,14 +425,14 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         ) : (
           /* Single variant default button */
-          <div className="pt-2 border-t border-[#DFD0EC]">
+          <div className="pt-1 border-t border-[#DFD0EC]">
             <button
               type="button"
               onClick={() => setSizeGuideOpen(true)}
-              className="w-full flex items-center justify-between p-3.5 bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] hover:border-[#7043A0] rounded-2xl transition group cursor-pointer shadow-2xs"
+              className="w-full flex items-center justify-between p-3 bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] hover:border-[#7043A0] rounded-xl transition group cursor-pointer shadow-2xs"
             >
-              <div className="flex items-center gap-2.5 text-xs font-bold text-zinc-900 group-hover:text-[#3F235F]">
-                <Ruler size={16} className="text-[#7043A0]" />
+              <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 group-hover:text-[#3F235F]">
+                <Ruler size={15} className="text-[#7043A0]" />
                 <span>¿Dudas con tu medida? Consulta la Guía Oficial</span>
               </div>
               <span className="text-[11px] font-bold text-[#7043A0] group-hover:translate-x-1 transition-transform">
@@ -409,66 +442,65 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 6. SELECTOR HORIZONTAL DE PRESENTACIÓN & EMPAQUE CON FLECHAS DE NAVEGACIÓN Y PRECIOS DESTACADOS */}
+        {/* 6. SELECTOR COMPACTO DE PRESENTACIÓN & EMPAQUE CON FOTOS MÚLTIPLES Y VISTA PREVIA */}
         {product.optionGroupLinks && product.optionGroupLinks.length > 0 && (
-          <div className="space-y-3 pt-4 border-t border-[#DFD0EC]">
+          <div className="space-y-2.5 pt-3 border-t border-[#DFD0EC]">
             {product.optionGroupLinks.map((link) => (
-              <div key={link.group.id} className="space-y-3">
+              <div key={link.group.id} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Gift size={16} className="text-[#7043A0]" />
+                    <Gift size={15} className="text-[#7043A0]" />
                     <label className="text-xs uppercase font-bold tracking-wider text-zinc-900">
                       {link.group.name}
                     </label>
                   </div>
 
                   {/* Carousel Navigation Arrows */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => scrollPack('left')}
-                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      className="p-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
                       aria-label="Presentaciones anteriores"
                     >
-                      <ChevronLeft size={16} />
+                      <ChevronLeft size={15} />
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollPack('right')}
-                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      className="p-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
                       aria-label="Ver más presentaciones"
                     >
-                      <ChevronRight size={16} />
+                      <ChevronRight size={15} />
                     </button>
                   </div>
                 </div>
 
-                {/* Horizontal Scrollable Presentations Carousel */}
+                {/* Horizontal Scrollable Presentations Carousel (Flush alignment at left=0) */}
                 <div
                   ref={packScrollRef}
-                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1 -mx-1"
+                  className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1.5"
                 >
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
                     const modifier = Number(opt.priceModifier || 0);
 
                     return (
-                      <button
+                      <div
                         key={opt.id}
-                        type="button"
                         onClick={() =>
                           setSelectedOptions({
                             ...selectedOptions,
                             [link.group.id]: opt.id,
                           })
                         }
-                        className={`group relative flex-none w-[240px] sm:w-[260px] flex flex-col rounded-3xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
+                        className={`group relative flex-none w-[175px] sm:w-[195px] flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
                           isSelected
-                            ? 'border-[#3F235F] ring-2 ring-[#7043A0]/40 shadow-md bg-[#F8F5FA]'
+                            ? 'border-[#3F235F] bg-[#FAF8FC] shadow-md ring-1 ring-[#3F235F]'
                             : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
                         }`}
                       >
-                        {/* Packaging Photo */}
+                        {/* Packaging Photo with Zoom Preview Button */}
                         <div className="relative aspect-[16/11] bg-[#F0E9F5] overflow-hidden">
                           <Image
                             src={
@@ -477,19 +509,32 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                             }
                             alt={opt.name}
                             fill
-                            sizes="260px"
+                            sizes="200px"
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
+
+                          {/* Hover Action: Ver Fotos Ampliadas */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenPreview(link.group.id, opt, e)}
+                            className="absolute top-2 left-2 bg-black/60 hover:bg-[#3F235F] text-white px-2 py-0.5 rounded-full backdrop-blur-xs transition shadow-xs flex items-center gap-1 z-20 text-[9px] font-bold opacity-90 group-hover:opacity-100"
+                            title="Ver fotos en detalle"
+                          >
+                            <Eye size={10} />
+                            <span>Fotos</span>
+                          </button>
+
+                          {/* Selected Checkmark */}
                           {isSelected && (
-                            <div className="absolute top-2.5 right-2.5 bg-[#3F235F] text-white p-1.5 rounded-full shadow-md z-10">
-                              <Check size={13} />
+                            <div className="absolute top-2 right-2 bg-[#3F235F] text-white p-1 rounded-full shadow-md z-10">
+                              <Check size={11} />
                             </div>
                           )}
 
-                          {/* Large Prominent Price Badge */}
-                          <div className="absolute bottom-2.5 left-2.5 z-10">
+                          {/* Compact Price Badge */}
+                          <div className="absolute bottom-1.5 left-1.5 z-10">
                             <span
-                              className={`text-xs sm:text-[13px] font-black uppercase px-3.5 py-1.5 rounded-full shadow-lg leading-normal inline-block tracking-wide ${
+                              className={`text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full shadow-xs leading-none inline-block tracking-wide ${
                                 modifier > 0
                                   ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
                                   : 'bg-white/95 text-zinc-900 border border-[#DFD0EC]'
@@ -501,17 +546,17 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                         </div>
 
                         {/* Label & Description */}
-                        <div className="p-3.5 space-y-1">
-                          <h4 className="font-sans text-xs sm:text-[13px] font-bold text-zinc-900 leading-snug line-clamp-1">
+                        <div className="p-2.5 space-y-0.5 bg-white">
+                          <h4 className="font-sans text-xs font-bold text-zinc-900 leading-snug line-clamp-1">
                             {opt.name}
                           </h4>
                           {opt.description && (
-                            <p className="text-[10.5px] text-zinc-500 font-light line-clamp-2 leading-tight">
+                            <p className="text-[9.5px] text-zinc-500 font-light line-clamp-2 leading-tight">
                               {opt.description}
                             </p>
                           )}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -521,29 +566,29 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
         )}
 
         {/* 7. DEDICATORIA PERMANENTE PARA TARJETA DE REGALO */}
-        <div className="pt-4 border-t border-[#DFD0EC] space-y-2.5">
+        <div className="pt-3 border-t border-[#DFD0EC] space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider text-[#3F235F]">
-              <PenTool size={14} className="text-[#7043A0]" />
+              <PenTool size={13} className="text-[#7043A0]" />
               <span>Dedicatoria para Tarjeta de Regalo (Opcional)</span>
             </div>
             {dedication.length > 0 && (
-              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 Dedicatoria agregada
               </span>
             )}
           </div>
 
-          <div className="bg-[#F8F5FA] p-3.5 rounded-2xl border border-[#DFD0EC] space-y-2">
-            <label className="text-[11px] text-zinc-600 font-medium block">
+          <div className="bg-[#FAF8FC] p-3 rounded-2xl border border-[#DFD0EC] space-y-1.5">
+            <label className="text-[10.5px] text-zinc-600 font-medium block">
               Escribe el mensaje que imprimiremos en la tarjeta de regalo de lujo:
             </label>
             <textarea
               value={dedication}
               onChange={(e) => setDedication(e.target.value.slice(0, 250))}
-              rows={3}
+              rows={2}
               placeholder="Ejemplo: Para el amor de mi vida, gracias por iluminar cada uno de mis días. Te amo infinitamente."
-              className="w-full p-3 text-xs bg-white border border-[#DFD0EC] rounded-xl text-zinc-900 focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400 leading-relaxed shadow-2xs"
+              className="w-full p-2.5 text-xs bg-white border border-[#DFD0EC] rounded-xl text-zinc-900 focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400 leading-relaxed shadow-2xs"
             />
             <div className="flex justify-between items-center text-[10px] text-zinc-400 font-medium">
               <span className="text-[#3F235F] font-semibold">Tarjeta personalizada incluida</span>
@@ -553,16 +598,16 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
         </div>
 
         {/* 8. CANTIDAD & BOTONES DE COMPRA */}
-        <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
+        <div className="space-y-2.5 pt-2 border-t border-[#DFD0EC]">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
               Cantidad:
             </span>
-            <div className="flex items-center border border-[#DFD0EC] rounded-2xl overflow-hidden bg-white shadow-2xs">
+            <div className="flex items-center border border-[#DFD0EC] rounded-xl overflow-hidden bg-white shadow-2xs">
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3.5 py-1.5 text-zinc-600 hover:bg-[#F8F5FA] font-bold text-sm cursor-pointer"
+                className="px-3 py-1 text-zinc-600 hover:bg-[#F8F5FA] font-bold text-xs cursor-pointer"
                 disabled={quantity <= 1}
               >
                 -
@@ -571,7 +616,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               <button
                 type="button"
                 onClick={() => setQuantity(Math.min(stock, quantity + 1))}
-                className="px-3.5 py-1.5 text-zinc-600 hover:bg-[#F8F5FA] font-bold text-sm cursor-pointer"
+                className="px-3 py-1 text-zinc-600 hover:bg-[#F8F5FA] font-bold text-xs cursor-pointer"
                 disabled={quantity >= stock}
               >
                 +
@@ -579,24 +624,24 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {/* Add to Cart Button */}
             <button
               type="button"
               onClick={() => handleAction(false)}
               disabled={isOutOfStock || isAdding}
-              className="btn-purple-outline w-full py-4 px-6 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-purple-outline w-full py-3.5 px-5 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isAdding ? (
                 <span className="animate-pulse">Añadiendo...</span>
               ) : addedSuccess ? (
                 <>
-                  <Check size={16} className="text-emerald-600" />
+                  <Check size={15} className="text-emerald-600" />
                   <span>¡Añadido!</span>
                 </>
               ) : (
                 <>
-                  <ShoppingBag size={16} />
+                  <ShoppingBag size={15} />
                   <span>Añadir al Carrito</span>
                 </>
               )}
@@ -607,26 +652,26 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               type="button"
               onClick={() => handleAction(true)}
               disabled={isOutOfStock || isAdding}
-              className="btn-purple-diamond w-full py-4 px-6 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shimmer-button"
+              className="btn-purple-diamond w-full py-3.5 px-5 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shimmer-button"
             >
-              <Zap size={16} />
+              <Zap size={15} />
               <span>Comprar Ahora</span>
             </button>
           </div>
         </div>
 
         {/* 9. GARANTÍAS DE CONFIANZA */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="flex items-center gap-2 p-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]">
-            <ShieldCheck size={18} className="text-[#7043A0] shrink-0" />
-            <span className="text-[11px] font-bold text-zinc-800">
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
+          <div className="flex items-center gap-2 p-2.5 bg-[#FAF8FC] rounded-xl border border-[#DFD0EC]">
+            <ShieldCheck size={16} className="text-[#7043A0] shrink-0" />
+            <span className="text-[10.5px] font-bold text-zinc-800">
               Plata 925 & Oro 18k Genuinos
             </span>
           </div>
-          <div className="flex items-center gap-2 p-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]">
-            <Truck size={18} className="text-[#7043A0] shrink-0" />
-            <span className="text-[11px] font-bold text-zinc-800">
-              Envíos Seguros a Todo Ecuador
+          <div className="flex items-center gap-2 p-2.5 bg-[#FAF8FC] rounded-xl border border-[#DFD0EC]">
+            <Truck size={16} className="text-[#7043A0] shrink-0" />
+            <span className="text-[10.5px] font-bold text-zinc-800">
+              Envíos a Todo Ecuador
             </span>
           </div>
         </div>
@@ -634,6 +679,150 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
       {/* Size Guide Modal */}
       <SizeGuideModal isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
+
+      {/* Packaging Multi-Photo Preview Lightbox Modal */}
+      {previewOption && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none"
+          onClick={() => setPreviewOption(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-[#FAF8FC] rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[#DFD0EC] bg-white">
+              <div className="flex items-center gap-2">
+                <Gift size={18} className="text-[#7043A0]" />
+                <h3 className="font-sans font-bold text-zinc-900 text-sm sm:text-base">
+                  {previewOption.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewOption(null)}
+                className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition cursor-pointer"
+                aria-label="Cerrar vista previa"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Main Active Photo Container */}
+            <div className="relative aspect-square sm:aspect-[4/3] w-full bg-zinc-950 overflow-hidden flex items-center justify-center">
+              <Image
+                src={previewOption.images[previewOption.selectedImgIdx]}
+                alt={previewOption.name}
+                fill
+                sizes="(max-width: 600px) 100vw, 600px"
+                className="object-contain"
+              />
+
+              {/* Slider Arrows if more than 1 image */}
+              {previewOption.images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewOption({
+                        ...previewOption,
+                        selectedImgIdx:
+                          previewOption.selectedImgIdx > 0
+                            ? previewOption.selectedImgIdx - 1
+                            : previewOption.images.length - 1,
+                      });
+                    }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewOption({
+                        ...previewOption,
+                        selectedImgIdx:
+                          previewOption.selectedImgIdx < previewOption.images.length - 1
+                            ? previewOption.selectedImgIdx + 1
+                            : 0,
+                      });
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+
+              {/* Photo Counter */}
+              {previewOption.images.length > 1 && (
+                <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-xs">
+                  {previewOption.selectedImgIdx + 1} de {previewOption.images.length}
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnails Row if multiple photos */}
+            {previewOption.images.length > 1 && (
+              <div className="flex gap-2 p-3 bg-zinc-100 border-b border-[#DFD0EC] overflow-x-auto justify-center">
+                {previewOption.images.map((imgUrl, idx) => (
+                  <button
+                    key={imgUrl + idx}
+                    type="button"
+                    onClick={() =>
+                      setPreviewOption({ ...previewOption, selectedImgIdx: idx })
+                    }
+                    className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer ${
+                      previewOption.selectedImgIdx === idx
+                        ? 'border-[#3F235F] ring-2 ring-[#7043A0]'
+                        : 'border-zinc-300 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={imgUrl} alt="" fill sizes="48px" className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Modal Footer Description & Selection CTA */}
+            <div className="p-4 bg-white space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-zinc-900">
+                  {previewOption.description || 'Presentación oficial de lujo ROISIN.'}
+                </span>
+                <span
+                  className={`text-xs font-black uppercase px-3 py-1 rounded-full shadow-xs ${
+                    Number(previewOption.priceModifier) > 0
+                      ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  {Number(previewOption.priceModifier) > 0
+                    ? `+$${Number(previewOption.priceModifier).toFixed(2)}`
+                    : 'Incluida'}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOptions({
+                    ...selectedOptions,
+                    [previewOption.groupId]: previewOption.optionId,
+                  });
+                  setPreviewOption(null);
+                }}
+                className="btn-purple-diamond w-full py-3 rounded-2xl text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              >
+                <Check size={15} />
+                <span>Elegir esta Presentación para mi Pedido</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -94,7 +94,7 @@ export default async function ProductDetailPage({
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-12 sm:space-y-16">
+    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-12">
       {/* Schema.org Injection */}
       <script
         type="application/ld+json"
@@ -123,15 +123,15 @@ export default async function ProductDetailPage({
         </span>
       </nav>
 
-      {/* Main Grid: Gallery (Left - 7 cols) + Purchasing Details in Exact Order (Right - 5 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-        {/* Left Column: Gallery with thumbnails and large showcase image */}
-        <div className="lg:col-span-7">
+      {/* Main Grid: Gallery (Left - 5 cols, Sticky Scroll) + Purchasing Details (Right - 7 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* Left Column: Sticky Gallery */}
+        <div className="lg:col-span-5 lg:sticky lg:top-24 self-start">
           <ProductGallery images={product.images} title={product.title} />
         </div>
 
         {/* Right Column: Title -> Short Desc -> Long Desc -> Price -> Variants -> Presentations Carousel -> Dedication -> Add to Cart */}
-        <div className="lg:col-span-5 flex flex-col">
+        <div className="lg:col-span-7 flex flex-col">
           <AddToCartSection product={enhancedProduct} />
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   Save,
   CheckCircle2,
+  Layers,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
@@ -27,6 +28,7 @@ interface PresentationOptionItem {
   description: string | null;
   priceModifier: any;
   imageUrl: string | null;
+  images?: { id?: string; url: string; altText?: string | null }[];
   isDefault: boolean;
   isActive: boolean;
   sortOrder: number;
@@ -66,6 +68,7 @@ export default function PresentationsClient({
     description: '',
     priceModifier: '0.00',
     imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+    additionalImages: [''],
     isDefault: false,
     sortOrder: 0,
   });
@@ -80,6 +83,7 @@ export default function PresentationsClient({
       description: '',
       priceModifier: '0.00',
       imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+      additionalImages: [''],
       isDefault: false,
       sortOrder: options.length,
     });
@@ -91,17 +95,45 @@ export default function PresentationsClient({
   const handleStartEdit = (opt: PresentationOptionItem) => {
     setEditingId(opt.id);
     setIsCreating(false);
+
+    const extraImgs = opt.images && opt.images.length > 1
+      ? opt.images.slice(1).map((i) => i.url)
+      : [''];
+
     setFormData({
       name: opt.name,
       description: opt.description || '',
       priceModifier: String(Number(opt.priceModifier)),
       imageUrl:
         opt.imageUrl ||
+        opt.images?.[0]?.url ||
         'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+      additionalImages: extraImgs,
       isDefault: opt.isDefault,
       sortOrder: opt.sortOrder,
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddImageField = () => {
+    setFormData({
+      ...formData,
+      additionalImages: [...formData.additionalImages, ''],
+    });
+  };
+
+  const handleRemoveImageField = (idx: number) => {
+    const updated = formData.additionalImages.filter((_, i) => i !== idx);
+    setFormData({
+      ...formData,
+      additionalImages: updated.length > 0 ? updated : [''],
+    });
+  };
+
+  const handleAdditionalImageChange = (val: string, idx: number) => {
+    const updated = [...formData.additionalImages];
+    updated[idx] = val;
+    setFormData({ ...formData, additionalImages: updated });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,6 +147,11 @@ export default function PresentationsClient({
     setError('');
     setSuccessMsg('');
 
+    const cleanImages = [
+      formData.imageUrl.trim(),
+      ...formData.additionalImages.map((s) => s.trim()).filter(Boolean),
+    ].filter(Boolean);
+
     try {
       if (editingId) {
         // Update
@@ -122,7 +159,8 @@ export default function PresentationsClient({
           name: formData.name,
           description: formData.description || undefined,
           priceModifier: Number(formData.priceModifier) || 0,
-          imageUrl: formData.imageUrl,
+          imageUrl: cleanImages[0] || formData.imageUrl,
+          images: cleanImages,
           isDefault: formData.isDefault,
           sortOrder: Number(formData.sortOrder) || 0,
         });
@@ -149,7 +187,8 @@ export default function PresentationsClient({
           name: formData.name,
           description: formData.description || undefined,
           priceModifier: Number(formData.priceModifier) || 0,
-          imageUrl: formData.imageUrl,
+          imageUrl: cleanImages[0] || formData.imageUrl,
+          images: cleanImages,
           isDefault: formData.isDefault,
           sortOrder: Number(formData.sortOrder) || 0,
         });
@@ -181,51 +220,59 @@ export default function PresentationsClient({
       const res = await adminDeletePresentationOptionAction(id);
       if (res.success) {
         setOptions(options.filter((o) => o.id !== id));
+      } else {
+        alert(res.error || 'Error al eliminar');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      alert('Error de conexión');
     }
   };
 
   return (
     <div className="space-y-8">
-      {/* 1. Header with Title & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1. Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#DFD0EC] shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold font-sans text-zinc-900 flex items-center gap-2.5">
-            <Gift className="text-[#7043A0]" size={26} />
-            Presentaciones & Empaques de Regalo
-          </h1>
-          <p className="text-xs text-zinc-500 mt-1 font-light">
-            Gestiona las cajitas, estuches y fundas que los clientes pueden elegir en cada joya, con fotografía real y precio adicional.
+          <div className="flex items-center gap-2 mb-1">
+            <Gift className="text-[#7043A0]" size={22} />
+            <h1 className="font-sans text-xl font-bold text-zinc-900">
+              Presentaciones & Empaques de Joyas
+            </h1>
+          </div>
+          <p className="text-xs text-zinc-500 font-light max-w-2xl">
+            Gestiona los estuches, cajas de regalo, fundas y empaques disponibles en la tienda con fotos múltiples en alta definición.
           </p>
         </div>
 
         {!isCreating && !editingId && (
           <button
-            type="button"
-            onClick={() => setIsCreating(true)}
-            className="btn-purple-diamond px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-md"
+            onClick={() => {
+              resetForm();
+              setIsCreating(true);
+            }}
+            className="btn-purple-diamond px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer shrink-0"
           >
-            <Plus size={16} /> Nueva Presentación
+            <Plus size={16} />
+            <span>Nueva Presentación</span>
           </button>
         )}
       </div>
 
+      {/* Messages */}
       {successMsg && (
-        <div className="p-4 bg-emerald-50 text-emerald-800 text-xs rounded-2xl border border-emerald-200 flex items-center gap-2 animate-fade-in font-bold">
-          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 size={16} />
           <span>{successMsg}</span>
         </div>
       )}
-
       {error && (
-        <div className="p-4 bg-red-50 text-red-700 text-xs rounded-2xl border border-red-200 animate-fade-in font-bold">
-          {error}
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2">
+          <X size={16} />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* 2. Create / Edit Form Card */}
+      {/* 2. Create / Edit Form */}
       {(isCreating || editingId) && (
         <form
           onSubmit={handleSubmit}
@@ -332,11 +379,11 @@ export default function PresentationsClient({
               </div>
             </div>
 
-            {/* Right: Packaging Image & Presets */}
+            {/* Right: Packaging Photos & Presets */}
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                  URL de la Fotografía del Empaque *
+                  Fotografía Principal *
                 </label>
                 <input
                   type="url"
@@ -346,6 +393,43 @@ export default function PresentationsClient({
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                   className="w-full px-4 py-2 bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl text-xs font-mono text-zinc-800 focus:outline-none focus:border-[#7043A0]"
                 />
+              </div>
+
+              {/* Additional Photos for Multi-Photo Gallery */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700">
+                    Fotos Adicionales (Ángulos, Interior, Tarjeta)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddImageField}
+                    className="text-[11px] font-bold text-[#7043A0] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={12} /> Añadir otra foto
+                  </button>
+                </div>
+
+                {formData.additionalImages.map((extraUrl, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <input
+                      type="url"
+                      placeholder="https://... (Foto adicional)"
+                      value={extraUrl}
+                      onChange={(e) => handleAdditionalImageChange(e.target.value, idx)}
+                      className="flex-1 px-4 py-1.5 bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl text-xs font-mono text-zinc-800 focus:outline-none focus:border-[#7043A0]"
+                    />
+                    {formData.additionalImages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImageField(idx)}
+                        className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg cursor-pointer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Photo Preview */}
@@ -365,9 +449,9 @@ export default function PresentationsClient({
                   )}
                 </div>
                 <div className="text-xs space-y-1">
-                  <span className="font-bold text-zinc-800 block">Vista Previa de la Foto</span>
+                  <span className="font-bold text-zinc-800 block">Galería Multi-Foto</span>
                   <p className="text-[11px] text-zinc-500 font-light">
-                    Esta imagen se mostrará en el selector visual de la página de productos.
+                    Los clientes podrán ver todas las fotos en detalle mediante el botón de zoom en el carrusel de productos.
                   </p>
                 </div>
               </div>
@@ -423,6 +507,7 @@ export default function PresentationsClient({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {options.map((opt) => {
           const modifier = Number(opt.priceModifier || 0);
+          const totalPhotos = opt.images && opt.images.length > 0 ? opt.images.length : 1;
 
           return (
             <div
@@ -449,6 +534,11 @@ export default function PresentationsClient({
                         Por Defecto
                       </span>
                     )}
+                    {totalPhotos > 1 && (
+                      <span className="bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <Layers size={10} /> {totalPhotos} fotos
+                      </span>
+                    )}
                   </div>
                   <div className="absolute top-3 right-3 z-10">
                     <span className="bg-white/95 text-[#3F235F] text-xs font-black px-3 py-1 rounded-full shadow-sm border border-[#DFD0EC]">
@@ -459,41 +549,33 @@ export default function PresentationsClient({
 
                 {/* Content */}
                 <div className="p-5 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <RoisinDiamond size={13} color="#7043A0" />
-                    <h3 className="font-sans text-sm font-bold text-zinc-900 leading-snug">
-                      {opt.name}
-                    </h3>
-                  </div>
-
-                  {opt.description && (
-                    <p className="text-xs text-zinc-500 font-light leading-relaxed">
-                      {opt.description}
-                    </p>
-                  )}
+                  <h3 className="font-sans text-sm font-bold text-zinc-900 leading-snug">
+                    {opt.name}
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-light line-clamp-2 leading-relaxed">
+                    {opt.description || 'Sin descripción detallada.'}
+                  </p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="p-4 pt-0 flex items-center justify-between border-t border-[#F8F5FA] mt-4">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                  Orden #{opt.sortOrder}
+              {/* Card Footer Actions */}
+              <div className="p-4 bg-[#FAF8FC] border-t border-[#DFD0EC] flex items-center justify-between">
+                <span className="text-[11px] font-medium text-zinc-400">
+                  Orden: #{opt.sortOrder}
                 </span>
 
                 <div className="flex items-center gap-1.5">
                   <button
-                    type="button"
                     onClick={() => handleStartEdit(opt)}
-                    className="p-2 rounded-xl text-zinc-600 hover:text-[#3F235F] hover:bg-[#F0E9F5] transition cursor-pointer"
-                    title="Editar"
+                    className="p-2 hover:bg-white text-zinc-600 hover:text-[#3F235F] rounded-xl border border-transparent hover:border-[#DFD0EC] transition cursor-pointer"
+                    title="Editar presentación"
                   >
                     <Edit2 size={15} />
                   </button>
                   <button
-                    type="button"
                     onClick={() => handleDelete(opt.id)}
-                    className="p-2 rounded-xl text-zinc-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                    title="Dar de baja"
+                    className="p-2 hover:bg-red-50 text-zinc-400 hover:text-red-600 rounded-xl transition cursor-pointer"
+                    title="Eliminar presentación"
                   >
                     <Trash2 size={15} />
                   </button>

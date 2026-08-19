@@ -159,21 +159,35 @@ model ProductOptionGroup {
 }
 
 model ProductOption {
-  id              String             @id @default(uuid())
+  id              String               @id @default(uuid())
   groupId         String
-  group           ProductOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  name            String             // e.g., "Caja de regalo", "Sin presentación"
+  group           ProductOptionGroup   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name            String               // e.g., "Caja de regalo", "Sin presentación"
   description     String?
-  priceModifier   Decimal            @default(0.00) @db.Decimal(10, 2)
+  priceModifier   Decimal              @default(0.00) @db.Decimal(10, 2)
   imageUrl        String?
-  isDefault       Boolean            @default(false)
-  isActive        Boolean            @default(true)
-  sortOrder       Int                @default(0)
+  isDefault       Boolean              @default(false)
+  isActive        Boolean              @default(true)
+  sortOrder       Int                  @default(0)
+  images          ProductOptionImage[]
   cartItemOptions CartItemOption[]
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([groupId])
+}
+
+model ProductOptionImage {
+  id        String        @id @default(uuid())
+  optionId  String
+  option    ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([optionId])
 }
 
 model ProductOptionGroupAssignment {

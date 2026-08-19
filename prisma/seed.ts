@@ -301,6 +301,13 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
             isDefault: true,
             sortOrder: 0,
+            images: {
+              create: [
+                { url: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop', altText: 'Exterior con Lazo Morado', sortOrder: 0 },
+                { url: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=800&auto=format&fit=crop', altText: 'Interior Aterciopelado', sortOrder: 1 },
+                { url: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', altText: 'Presentación Completa de Entrega', sortOrder: 2 },
+              ],
+            },
           },
           {
             name: 'Empaque de Lujo Especial + Tarjeta Dedicatoria',
@@ -309,6 +316,12 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop',
             isDefault: false,
             sortOrder: 1,
+            images: {
+              create: [
+                { url: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', altText: 'Empaque de Lujo y Bolsa Roisin', sortOrder: 0 },
+                { url: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop', altText: 'Tarjeta con Dedicatoria Impresa', sortOrder: 1 },
+              ],
+            },
           },
           {
             name: 'Funda de Terciopelo Púrpura Premium',
@@ -317,6 +330,12 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop',
             isDefault: false,
             sortOrder: 2,
+            images: {
+              create: [
+                { url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop', altText: 'Funda de Terciopelo Morado', sortOrder: 0 },
+                { url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop', altText: 'Joya Protegida en Funda', sortOrder: 1 },
+              ],
+            },
           },
           {
             name: 'Cofre Joyero Aterciopelado con Espejo',
@@ -325,6 +344,12 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
             isDefault: false,
             sortOrder: 3,
+            images: {
+              create: [
+                { url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop', altText: 'Cofre Joyero Cerrado', sortOrder: 0 },
+                { url: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop', altText: 'Interior con Espejo y Compartimentos', sortOrder: 1 },
+              ],
+            },
           },
         ],
       },

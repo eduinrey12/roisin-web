@@ -482,10 +482,10 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   </div>
                 </div>
 
-                {/* Horizontal Scrollable Presentations Carousel (Generous internal padding to prevent left clipping) */}
+                {/* Horizontal Scrollable Presentations Carousel (Flush alignment, no negative margins, solid borders) */}
                 <div
                   ref={packScrollRef}
-                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-3 py-2 -mx-3"
+                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2.5 px-0.5"
                 >
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
@@ -502,8 +502,8 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                         }
                         className={`group relative flex-none w-[180px] sm:w-[200px] flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
                           isSelected
-                            ? 'border-[#3F235F] bg-[#FAF8FC] shadow-md ring-1 ring-[#3F235F]'
-                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
+                            ? 'border-[#3F235F] bg-[#FAF8FC] shadow-sm'
+                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-2xs'
                         }`}
                       >
                         {/* Packaging Photo with Zoom Preview Button */}

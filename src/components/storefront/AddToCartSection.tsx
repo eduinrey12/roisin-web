@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCartStore } from '@/lib/store/cartStore';
@@ -68,6 +69,11 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   const router = useRouter();
   const { addItem, openCart } = useCartStore();
   const packScrollRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // --- Attribute & Variant Extraction ---
   const { colorAttrValues, sizeAttrValues, hasMultiAttributes } = useMemo(() => {
@@ -251,7 +257,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
   return (
     <>
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* 1. NOMBRE PRINCIPAL DEL PRODUCTO (Color morado principal, tamaño equilibrado) */}
         <div className="space-y-1">
           <h1 className="font-sans text-xl sm:text-2xl font-bold text-[#3F235F] leading-tight">
@@ -307,16 +313,16 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
         {/* 5. VARIANTES CONECTADAS (Color / Material & Tallas) */}
         {hasMultiAttributes ? (
-          <div className="space-y-3 pt-1 border-t border-[#DFD0EC]">
+          <div className="space-y-3.5 pt-1 border-t border-[#DFD0EC]">
             {/* 5A. Selector de Color / Material */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
                 <span>Color / Material:</span>
                 <span className="text-[#7043A0] font-bold lowercase first-letter:uppercase">
                   {selectedColor}
                 </span>
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {colorAttrValues.map((color) => {
                   const isSelected = color === selectedColor;
                   return (
@@ -324,7 +330,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                       key={color}
                       type="button"
                       onClick={() => setSelectedColor(color)}
-                      className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                      className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
                         isSelected
                           ? 'btn-purple-diamond shadow-xs'
                           : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
@@ -338,7 +344,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </div>
 
             {/* 5B. Selector de Talla / Medida */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
                   Medida / Talla:
@@ -352,7 +358,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {sizeAttrValues.map((size) => {
                   const availableForColor = product.variants.some((v) => {
                     const attrs = v.attributes || [];
@@ -369,7 +375,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                       type="button"
                       disabled={!availableForColor}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                      className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
                         isSelected
                           ? 'btn-purple-diamond shadow-xs'
                           : availableForColor
@@ -399,7 +405,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                 <Ruler size={12} className="text-[#7043A0]" /> Guía de Tallas
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {product.variants.map((v) => {
                 const label =
                   v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
@@ -411,7 +417,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   <button
                     key={v.id}
                     onClick={() => handleSelectSingleVariant(v.id)}
-                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                    className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
                       isSelected
                         ? 'btn-purple-diamond shadow-xs'
                         : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
@@ -442,9 +448,9 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 6. SELECTOR COMPACTO DE PRESENTACIÓN & EMPAQUE CON FOTOS MÚLTIPLES Y VISTA PREVIA */}
+        {/* 6. SELECTOR COMPACTO DE PRESENTACIÓN & EMPAQUE CON PADDING AMPLIO */}
         {product.optionGroupLinks && product.optionGroupLinks.length > 0 && (
-          <div className="space-y-2.5 pt-3 border-t border-[#DFD0EC]">
+          <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
             {product.optionGroupLinks.map((link) => (
               <div key={link.group.id} className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -460,7 +466,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                     <button
                       type="button"
                       onClick={() => scrollPack('left')}
-                      className="p-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
                       aria-label="Presentaciones anteriores"
                     >
                       <ChevronLeft size={15} />
@@ -468,7 +474,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                     <button
                       type="button"
                       onClick={() => scrollPack('right')}
-                      className="p-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
                       aria-label="Ver más presentaciones"
                     >
                       <ChevronRight size={15} />
@@ -476,10 +482,10 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   </div>
                 </div>
 
-                {/* Horizontal Scrollable Presentations Carousel (Flush alignment at left=0) */}
+                {/* Horizontal Scrollable Presentations Carousel (Generous internal padding to prevent left clipping) */}
                 <div
                   ref={packScrollRef}
-                  className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1.5"
+                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-3 py-2 -mx-3"
                 >
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
@@ -494,7 +500,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                             [link.group.id]: opt.id,
                           })
                         }
-                        className={`group relative flex-none w-[175px] sm:w-[195px] flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
+                        className={`group relative flex-none w-[180px] sm:w-[200px] flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
                           isSelected
                             ? 'border-[#3F235F] bg-[#FAF8FC] shadow-md ring-1 ring-[#3F235F]'
                             : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
@@ -669,7 +675,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </span>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-[#FAF8FC] rounded-xl border border-[#DFD0EC]">
-            <Truck size={16} className="text-[#7043A0] shrink-0" />
+            <Truck size={16} className="text-[#7043A0]" shrink-0 />
             <span className="text-[10.5px] font-bold text-zinc-800">
               Envíos a Todo Ecuador
             </span>
@@ -680,149 +686,152 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
       {/* Size Guide Modal */}
       <SizeGuideModal isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
 
-      {/* Packaging Multi-Photo Preview Lightbox Modal */}
-      {previewOption && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none"
-          onClick={() => setPreviewOption(null)}
-        >
+      {/* Packaging Multi-Photo Preview Lightbox Modal via Portal */}
+      {mounted &&
+        previewOption &&
+        createPortal(
           <div
-            className="relative w-full max-w-lg bg-[#FAF8FC] rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[999999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none"
+            onClick={() => setPreviewOption(null)}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[#DFD0EC] bg-white">
-              <div className="flex items-center gap-2">
-                <Gift size={18} className="text-[#7043A0]" />
-                <h3 className="font-sans font-bold text-zinc-900 text-sm sm:text-base">
-                  {previewOption.name}
-                </h3>
+            <div
+              className="relative w-full max-w-lg bg-[#FAF8FC] rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-[#DFD0EC] bg-white">
+                <div className="flex items-center gap-2">
+                  <Gift size={18} className="text-[#7043A0]" />
+                  <h3 className="font-sans font-bold text-zinc-900 text-sm sm:text-base">
+                    {previewOption.name}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewOption(null)}
+                  className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition cursor-pointer"
+                  aria-label="Cerrar vista previa"
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setPreviewOption(null)}
-                className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition cursor-pointer"
-                aria-label="Cerrar vista previa"
-              >
-                <X size={20} />
-              </button>
-            </div>
 
-            {/* Main Active Photo Container */}
-            <div className="relative aspect-square sm:aspect-[4/3] w-full bg-zinc-950 overflow-hidden flex items-center justify-center">
-              <Image
-                src={previewOption.images[previewOption.selectedImgIdx]}
-                alt={previewOption.name}
-                fill
-                sizes="(max-width: 600px) 100vw, 600px"
-                className="object-contain"
-              />
+              {/* Main Active Photo Container */}
+              <div className="relative aspect-square sm:aspect-[4/3] w-full bg-zinc-950 overflow-hidden flex items-center justify-center">
+                <Image
+                  src={previewOption.images[previewOption.selectedImgIdx]}
+                  alt={previewOption.name}
+                  fill
+                  sizes="(max-width: 600px) 100vw, 600px"
+                  className="object-contain"
+                />
 
-              {/* Slider Arrows if more than 1 image */}
+                {/* Slider Arrows if more than 1 image */}
+                {previewOption.images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewOption({
+                          ...previewOption,
+                          selectedImgIdx:
+                            previewOption.selectedImgIdx > 0
+                              ? previewOption.selectedImgIdx - 1
+                              : previewOption.images.length - 1,
+                        });
+                      }}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewOption({
+                          ...previewOption,
+                          selectedImgIdx:
+                            previewOption.selectedImgIdx < previewOption.images.length - 1
+                              ? previewOption.selectedImgIdx + 1
+                              : 0,
+                        });
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </>
+                )}
+
+                {/* Photo Counter */}
+                {previewOption.images.length > 1 && (
+                  <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-xs">
+                    {previewOption.selectedImgIdx + 1} de {previewOption.images.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnails Row if multiple photos */}
               {previewOption.images.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewOption({
-                        ...previewOption,
-                        selectedImgIdx:
-                          previewOption.selectedImgIdx > 0
-                            ? previewOption.selectedImgIdx - 1
-                            : previewOption.images.length - 1,
-                      });
-                    }}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewOption({
-                        ...previewOption,
-                        selectedImgIdx:
-                          previewOption.selectedImgIdx < previewOption.images.length - 1
-                            ? previewOption.selectedImgIdx + 1
-                            : 0,
-                      });
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-md"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </>
-              )}
-
-              {/* Photo Counter */}
-              {previewOption.images.length > 1 && (
-                <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-xs">
-                  {previewOption.selectedImgIdx + 1} de {previewOption.images.length}
+                <div className="flex gap-2 p-3 bg-zinc-100 border-b border-[#DFD0EC] overflow-x-auto justify-center">
+                  {previewOption.images.map((imgUrl, idx) => (
+                    <button
+                      key={imgUrl + idx}
+                      type="button"
+                      onClick={() =>
+                        setPreviewOption({ ...previewOption, selectedImgIdx: idx })
+                      }
+                      className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer ${
+                        previewOption.selectedImgIdx === idx
+                          ? 'border-[#3F235F] ring-2 ring-[#7043A0]'
+                          : 'border-zinc-300 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <Image src={imgUrl} alt="" fill sizes="48px" className="object-cover" />
+                    </button>
+                  ))}
                 </div>
               )}
-            </div>
 
-            {/* Thumbnails Row if multiple photos */}
-            {previewOption.images.length > 1 && (
-              <div className="flex gap-2 p-3 bg-zinc-100 border-b border-[#DFD0EC] overflow-x-auto justify-center">
-                {previewOption.images.map((imgUrl, idx) => (
-                  <button
-                    key={imgUrl + idx}
-                    type="button"
-                    onClick={() =>
-                      setPreviewOption({ ...previewOption, selectedImgIdx: idx })
-                    }
-                    className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer ${
-                      previewOption.selectedImgIdx === idx
-                        ? 'border-[#3F235F] ring-2 ring-[#7043A0]'
-                        : 'border-zinc-300 opacity-60 hover:opacity-100'
+              {/* Modal Footer Description & Selection CTA */}
+              <div className="p-4 bg-white space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-900">
+                    {previewOption.description || 'Presentación oficial de lujo ROISIN.'}
+                  </span>
+                  <span
+                    className={`text-xs font-black uppercase px-3 py-1 rounded-full shadow-xs ${
+                      Number(previewOption.priceModifier) > 0
+                        ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
+                        : 'bg-emerald-100 text-emerald-800'
                     }`}
                   >
-                    <Image src={imgUrl} alt="" fill sizes="48px" className="object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+                    {Number(previewOption.priceModifier) > 0
+                      ? `+$${Number(previewOption.priceModifier).toFixed(2)}`
+                      : 'Incluida'}
+                  </span>
+                </div>
 
-            {/* Modal Footer Description & Selection CTA */}
-            <div className="p-4 bg-white space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-900">
-                  {previewOption.description || 'Presentación oficial de lujo ROISIN.'}
-                </span>
-                <span
-                  className={`text-xs font-black uppercase px-3 py-1 rounded-full shadow-xs ${
-                    Number(previewOption.priceModifier) > 0
-                      ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
-                      : 'bg-emerald-100 text-emerald-800'
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOptions({
+                      ...selectedOptions,
+                      [previewOption.groupId]: previewOption.optionId,
+                    });
+                    setPreviewOption(null);
+                  }}
+                  className="btn-purple-diamond w-full py-3 rounded-2xl text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer"
                 >
-                  {Number(previewOption.priceModifier) > 0
-                    ? `+$${Number(previewOption.priceModifier).toFixed(2)}`
-                    : 'Incluida'}
-                </span>
+                  <Check size={15} />
+                  <span>Elegir esta Presentación para mi Pedido</span>
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedOptions({
-                    ...selectedOptions,
-                    [previewOption.groupId]: previewOption.optionId,
-                  });
-                  setPreviewOption(null);
-                }}
-                className="btn-purple-diamond w-full py-3 rounded-2xl text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer"
-              >
-                <Check size={15} />
-                <span>Elegir esta Presentación para mi Pedido</span>
-              </button>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

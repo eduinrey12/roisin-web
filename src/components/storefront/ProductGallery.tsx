@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -17,6 +18,11 @@ export default function ProductGallery({
 }: ProductGalleryProps) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (selectedImageIndex !== undefined && selectedImageIndex >= 0 && selectedImageIndex < images.length) {
@@ -71,9 +77,9 @@ export default function ProductGallery({
     <>
       {/* Sticky Gallery Container on Desktop */}
       <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-24 self-start items-start w-full">
-        {/* 1. Left Vertical Thumbnails Column */}
+        {/* 1. Left Vertical Thumbnails Column with generous padding */}
         {activeImages.length > 1 && (
-          <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 lg:w-22 shrink-0 max-h-[580px] p-1">
+          <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 lg:w-22 shrink-0 max-h-[580px] p-2">
             {activeImages.map((img, idx) => (
               <button
                 key={img.url + idx}
@@ -131,109 +137,112 @@ export default function ProductGallery({
         </div>
       </div>
 
-      {/* 3. Fullscreen Clean Image Modal / Lightbox (No Scroll, Overlays All) */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden select-none"
-          onClick={() => setIsModalOpen(false)}
-        >
-          {/* Top Header Bar */}
-          <div className="w-full max-w-6xl flex items-center justify-between z-30 shrink-0">
-            <div className="flex items-center gap-2 text-white">
-              <span className="text-sm font-bold truncate max-w-sm sm:max-w-md">{title}</span>
+      {/* 3. Fullscreen Clean Image Modal via React Portal (Renders at body root, above header/all elements) */}
+      {mounted &&
+        isModalOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden select-none"
+            onClick={() => setIsModalOpen(false)}
+          >
+            {/* Top Header Bar */}
+            <div className="w-full max-w-6xl flex items-center justify-between z-30 shrink-0">
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-sm font-bold truncate max-w-sm sm:max-w-md">{title}</span>
+                {activeImages.length > 1 && (
+                  <span className="text-xs text-zinc-400 font-medium">
+                    ({selectedIdx + 1} / {activeImages.length})
+                  </span>
+                )}
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsModalOpen(false);
+                }}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
+                aria-label="Cerrar vista completa"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Center Image Container (Strictly Fits Viewport Height, No Overflow) */}
+            <div
+              className="relative flex-1 w-full max-w-5xl my-2 flex items-center justify-center min-h-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Previous Arrow */}
               {activeImages.length > 1 && (
-                <span className="text-xs text-zinc-400 font-medium">
-                  ({selectedIdx + 1} / {activeImages.length})
-                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrev();
+                  }}
+                  className="absolute left-2 sm:left-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
+                  aria-label="Imagen anterior"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              )}
+
+              {/* Photo in Full View */}
+              <div className="relative w-full h-full">
+                <Image
+                  src={currentImage.url}
+                  alt={currentImage.altText || title}
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
+
+              {/* Next Arrow */}
+              {activeImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                  className="absolute right-2 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
+                  aria-label="Imagen siguiente"
+                >
+                  <ChevronRight size={24} />
+                </button>
               )}
             </div>
 
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsModalOpen(false);
-              }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
-              aria-label="Cerrar vista completa"
-            >
-              <X size={22} />
-            </button>
-          </div>
-
-          {/* Center Image Container (Strictly Fits Viewport Height, No Overflow) */}
-          <div
-            className="relative flex-1 w-full max-w-5xl my-2 flex items-center justify-center min-h-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Previous Arrow */}
+            {/* Bottom Thumbnails Strip */}
             {activeImages.length > 1 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrev();
-                }}
-                className="absolute left-2 sm:left-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
-                aria-label="Imagen anterior"
+              <div
+                className="w-full max-w-md flex items-center justify-center gap-2 z-30 shrink-0 overflow-x-auto py-1"
+                onClick={(e) => e.stopPropagation()}
               >
-                <ChevronLeft size={24} />
-              </button>
+                {activeImages.map((img, idx) => (
+                  <button
+                    key={img.url + idx}
+                    type="button"
+                    onClick={() => setSelectedIdx(idx)}
+                    className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer shrink-0 ${
+                      selectedIdx === idx
+                        ? 'border-white ring-2 ring-white/60 shadow-lg scale-105'
+                        : 'border-white/30 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={img.url} alt="" fill sizes="48px" className="object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
-
-            {/* Photo in Full View */}
-            <div className="relative w-full h-full">
-              <Image
-                src={currentImage.url}
-                alt={currentImage.altText || title}
-                fill
-                priority
-                sizes="100vw"
-                className="object-contain"
-              />
-            </div>
-
-            {/* Next Arrow */}
-            {activeImages.length > 1 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
-                }}
-                className="absolute right-2 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
-                aria-label="Imagen siguiente"
-              >
-                <ChevronRight size={24} />
-              </button>
-            )}
-          </div>
-
-          {/* Bottom Thumbnails Strip */}
-          {activeImages.length > 1 && (
-            <div
-              className="w-full max-w-md flex items-center justify-center gap-2 z-30 shrink-0 overflow-x-auto py-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {activeImages.map((img, idx) => (
-                <button
-                  key={img.url + idx}
-                  type="button"
-                  onClick={() => setSelectedIdx(idx)}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer shrink-0 ${
-                    selectedIdx === idx
-                      ? 'border-white ring-2 ring-white/60 shadow-lg scale-105'
-                      : 'border-white/30 opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <Image src={img.url} alt="" fill sizes="48px" className="object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

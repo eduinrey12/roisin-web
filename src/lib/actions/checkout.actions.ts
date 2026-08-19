@@ -2,7 +2,11 @@
 
 import { createOrderFromCart } from '@/services/order.service';
 import { validateCoupon } from '@/services/coupon.service';
-import { createOrUpdatePayment, submitPaymentEvidence } from '@/services/payment.service';
+import {
+  createOrUpdatePayment,
+  submitPaymentEvidence,
+  processCardPayment,
+} from '@/services/payment.service';
 import { checkoutSchema } from '@/lib/validations';
 import { getCurrentUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
@@ -47,6 +51,24 @@ export async function selectPaymentMethodAction(
     return { success: true, payment };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al registrar método de pago' };
+  }
+}
+
+export async function processCardPaymentAction(
+  orderId: string,
+  cardData: {
+    cardNumber: string;
+    cardHolder: string;
+    expiryDate: string;
+    cvv: string;
+    installments?: number;
+  }
+) {
+  try {
+    const payment = await processCardPayment(orderId, cardData);
+    return { success: true, payment };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al procesar el pago con tarjeta' };
   }
 }
 

@@ -7,7 +7,7 @@ datasource db {
 }
 
 // -----------------------------------------------------------------------------
-// Catalog & Inventory (Phase 1)
+// Catalog & Inventory
 // -----------------------------------------------------------------------------
 
 model Category {
@@ -25,18 +25,53 @@ model Category {
   updatedAt   DateTime   @updatedAt
 
   @@index([slug])
+  @@index([isActive])
+}
+
+model Collection {
+  id          String              @id @default(uuid())
+  slug        String              @unique
+  name        String
+  description String?             @db.Text
+  imageUrl    String?
+  bannerUrl   String?
+  isActive    Boolean             @default(true)
+  products    CollectionProduct[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model CollectionProduct {
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  @@id([collectionId, productId])
+  @@index([collectionId])
+  @@index([productId])
 }
 
 model Product {
   id               String                         @id @default(uuid())
   slug             String                         @unique
   title            String
+  tag              String?                        // e.g., "Más Vendido", "Nuevo", "Oferta", "Edición Limitada"
+  shortDescription String?                        @db.Text
   description      String                         @db.Text
   basePrice        Decimal                        @db.Decimal(10, 2)
+  compareAtPrice   Decimal?                       @db.Decimal(10, 2)
+  discountPercent  Int?                           // e.g., 20 para 20% OFF
   isActive         Boolean                        @default(true)
   isFeatured       Boolean                        @default(false)
   categoryId       String
   category         Category                       @relation(fields: [categoryId], references: [id])
+  collections      CollectionProduct[]
   images           ProductImage[]
   variants         ProductVariant[]
   optionGroupLinks ProductOptionGroupAssignment[]
@@ -46,6 +81,7 @@ model Product {
   @@index([slug])
   @@index([categoryId])
   @@index([isActive])
+  @@index([isFeatured])
 }
 
 model ProductImage {
@@ -54,6 +90,7 @@ model ProductImage {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   url       String
   altText   String?
+  label     String?  // e.g., "Oro", "Plata", "Puesto", "Detalle"
   isPrimary Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -98,7 +135,6 @@ model ProductAttributeValue {
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
 
-  @@unique([attributeId, value])
   @@index([attributeId])
 }
 
@@ -164,14 +200,14 @@ model InventoryMovement {
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
   quantityChange  Int
   reason          String        // e.g., "MANUAL_ADJUSTMENT", "ORDER_PLACED", "RESTOCK"
-  referenceId     String?       // Could be Order ID or null for manual
+  referenceId     String?
   createdAt       DateTime      @default(now())
 
   @@index([inventoryItemId])
 }
 
 // -----------------------------------------------------------------------------
-// Identity & Customers (Phase 2)
+// Identity & Customers
 // -----------------------------------------------------------------------------
 
 enum Role {
@@ -223,13 +259,13 @@ model Address {
 }
 
 // -----------------------------------------------------------------------------
-// Cart (Phase 2)
+// Cart
 // -----------------------------------------------------------------------------
 
 model Cart {
   id         String     @id @default(uuid())
-  guestToken String?    @unique // Used for guest carts before login
-  userId     String?    // Null if guest
+  guestToken String?    @unique
+  userId     String?
   user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   items      CartItem[]
   createdAt  DateTime   @default(now())
@@ -240,15 +276,16 @@ model Cart {
 }
 
 model CartItem {
-  id        String           @id @default(uuid())
-  cartId    String
-  cart      Cart             @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  variantId String
-  variant   ProductVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  quantity  Int              @default(1)
-  options   CartItemOption[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id         String           @id @default(uuid())
+  cartId     String
+  cart       Cart             @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId  String
+  variant    ProductVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity   Int              @default(1)
+  dedication String?          @db.Text // Dedicatoria personalizada para regalo
+  options    CartItemOption[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
   @@unique([cartId, variantId])
   @@index([cartId])
@@ -267,7 +304,7 @@ model CartItemOption {
 }
 
 // -----------------------------------------------------------------------------
-// Checkout & Orders (Phase 3)
+// Checkout & Orders
 // -----------------------------------------------------------------------------
 
 enum OrderStatus {
@@ -291,6 +328,7 @@ model Order {
   shippingAddress String      @db.Text
   city            String
   province        String
+  dedication      String?     @db.Text // Dedicatoria para tarjeta de regalo
   subtotal        Decimal     @db.Decimal(10, 2)
   shippingCost    Decimal     @db.Decimal(10, 2)
   discount        Decimal     @default(0.00) @db.Decimal(10, 2)
@@ -310,35 +348,41 @@ model Order {
 }
 
 model OrderItem {
-  id        String         @id @default(uuid())
-  orderId   String
-  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
-  quantity  Int
-  price     Decimal        @db.Decimal(10, 2)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id         String         @id @default(uuid())
+  orderId    String
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId  String
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  quantity   Int
+  price      Decimal        @db.Decimal(10, 2)
+  dedication String?        @db.Text
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@index([orderId])
   @@index([variantId])
 }
 
 model ShippingRegion {
-  id        String   @id @default(uuid())
-  name      String   @unique // e.g., "Quito Centro", "Valles", "Resto del País"
-  baseRate  Decimal  @db.Decimal(10, 2)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String   @unique // "Guayaquil", "Otros Destinos (Nacional)", "Galápagos"
+  baseRate    Decimal  @db.Decimal(10, 2)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 // -----------------------------------------------------------------------------
-// Payments (Phase 4)
+// Payments
 // -----------------------------------------------------------------------------
 
 enum PaymentMethod {
   BANK_TRANSFER
+  BANK_DEPOSIT
+  CREDIT_CARD
   CASH_ON_DELIVERY
 }
 
@@ -358,6 +402,9 @@ model Payment {
   amount          Decimal       @db.Decimal(10, 2)
   evidenceUrl     String?       @db.Text
   referenceNumber String?
+  cardLastFour    String?
+  cardBrand       String?
+  installments    Int?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -366,8 +413,25 @@ model Payment {
 }
 
 // -----------------------------------------------------------------------------
-// Promotions & Admin (Phase 5)
+// Promotions & Coupons
 // -----------------------------------------------------------------------------
+
+model Promotion {
+  id           String   @id @default(uuid())
+  title        String
+  subtitle     String?
+  badge        String?  // e.g. "Oferta Especial", "Nueva Colección"
+  discountText String?  // e.g. "Hasta 25% OFF", "Envío Gratis"
+  imageUrl     String
+  targetUrl    String   // URL a redireccionar al hacer clic
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
 
 model Coupon {
   id                 String    @id @default(uuid())
@@ -382,4 +446,5 @@ model Coupon {
   updatedAt          DateTime  @updatedAt
 
   @@index([code])
+  @@index([isActive])
 }

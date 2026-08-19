@@ -1,244 +1,266 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getFeaturedProducts, getCategories } from '@/services/catalog.service';
+import { getFeaturedProducts, getCategories, getPromotions } from '@/services/catalog.service';
 import ProductCard from '@/components/storefront/ProductCard';
-import { ArrowRight, Sparkles, ShieldCheck, Heart, Star, Truck, Gift, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Truck, Gift, Star, Tag, CheckCircle2, Flame } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
-import { STORE_CONFIG } from '@/lib/config/store';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [featuredProducts, categories] = await Promise.all([
-    getFeaturedProducts(12),
+  const [featuredProducts, categories, promotions] = await Promise.all([
+    getFeaturedProducts(9),
     getCategories(),
+    getPromotions(),
   ]);
 
   return (
-    <div className="space-y-24 sm:space-y-32 pb-24">
-      {/* 1. Luminous Pink Diamond Hero Section */}
-      <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center bg-[#1A1115] text-white overflow-hidden">
-        {/* Background Image with Radiant Ambient Lighting */}
-        <div className="absolute inset-0 z-0 opacity-40">
-          <Image
-            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2000&auto=format&fit=crop"
-            alt="ROISIN Joyería Fina"
-            fill
-            priority
-            className="object-cover object-center scale-105"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1A1115] via-[#1A1115]/65 to-[#1A1115]/30 z-0" />
-        <div className="absolute inset-0 bg-radial from-[#F08097]/15 via-transparent to-transparent z-0" />
+    <div className="space-y-16 sm:space-y-24 pb-20">
+      {/* 1. TOP CATEGORY BAR (Starts with Descuentos, followed by all categories) */}
+      <section className="border-b border-[#DFD0EC] bg-[#F8F5FA]/80 backdrop-blur-xs py-3 sticky top-[80px] z-30 shadow-2xs">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
+            {/* 1st Item: Descuentos */}
+            <Link
+              href="/productos?ofertas=true"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-xs uppercase font-extrabold tracking-wider shadow-xs hover:shadow-md transition active:scale-95"
+            >
+              <Flame size={14} className="text-amber-300 fill-amber-300" />
+              <span>Descuentos</span>
+            </Link>
 
-        {/* Floating Delicate Diamond Geometric Decor */}
-        <div className="absolute top-1/4 left-12 opacity-30 hidden lg:block animate-float">
-          <RoisinDiamond size={64} color="#F08097" />
-        </div>
-        <div className="absolute bottom-1/4 right-14 opacity-30 hidden lg:block animate-float-delayed">
-          <RoisinDiamond size={84} color="#F08097" />
-        </div>
+            {/* Categories */}
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/productos?category=${cat.slug}`}
+                className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-800 hover:text-[#3F235F] hover:border-[#7043A0] text-xs uppercase font-bold tracking-wider transition shadow-2xs"
+              >
+                <span>{cat.name}</span>
+              </Link>
+            ))}
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 py-20">
-          {/* Radiant Diamond Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-md px-5 py-2 rounded-full border border-[#FAD1DC]/50 text-xs font-bold uppercase tracking-[0.28em] text-[#FFF5F7] shadow-md">
-            <RoisinDiamond size={14} color="#F08097" /> Colección Diamante Rosa 2026
-          </div>
-
-          {/* Main Headline */}
-          <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.08] text-white">
-            Elegancia que celebra <br />
-            <span className="italic font-normal text-[#FAD1DC]">tu historia de amor.</span>
-          </h1>
-
-          <p className="text-sm sm:text-base md:text-lg text-zinc-200 max-w-2xl mx-auto font-light leading-relaxed">
-            Alta joyería en Plata de Ley 925 y Baño de Oro 18k. Diseños creados para momentos inolvidables, promesas eternas y detalles que deslumbran.
-          </p>
-
-          {/* Call to Actions with Vibrant Pink Diamond Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            {/* Ver Catálogo */}
             <Link
               href="/productos"
-              className="w-full sm:w-auto btn-pink-diamond text-xs uppercase tracking-widest font-extrabold px-10 py-4.5 rounded-full transition shadow-xl flex items-center justify-center gap-2 active:scale-95 shimmer-button"
+              className="shrink-0 inline-flex items-center gap-1 px-4 py-2 rounded-full bg-white hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-600 hover:text-[#3F235F] text-xs uppercase font-bold tracking-wider transition shadow-2xs"
             >
-              Explorar Joyas <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/productos?category=anillos"
-              className="w-full sm:w-auto bg-white/15 hover:bg-white/25 text-white border border-[#FAD1DC]/60 text-xs uppercase tracking-widest font-bold px-9 py-4.5 rounded-full transition flex items-center justify-center backdrop-blur-xs shadow-sm hover:border-[#E65573]"
-            >
-              Anillos de Promesa
+              <span>Ver Todo</span>
+              <ArrowRight size={12} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 2. Brand Value Pillars (Romance & Trust) */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 -mt-12 sm:-mt-16 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-          <div className="bg-white p-7 rounded-3xl border border-[#FAD1DC] shadow-sm flex items-center gap-4.5 diamond-glow">
-            <div className="p-3.5 bg-[#FFF5F7] rounded-2xl text-[#D33658] border border-[#FAD1DC] shrink-0">
-              <Sparkles size={26} />
-            </div>
-            <div>
-              <h4 className="font-serif text-base font-bold text-zinc-900">Metales Nobles Certificados</h4>
-              <p className="text-xs text-zinc-500 mt-0.5 font-light">Plata de Ley 925 auténtica & Baño de Oro 18k hipoalergénico.</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-[#FAD1DC] shadow-sm flex items-center gap-4.5 diamond-glow">
-            <div className="p-3.5 bg-[#FFF5F7] rounded-2xl text-[#D33658] border border-[#FAD1DC] shrink-0">
-              <Truck size={26} />
-            </div>
-            <div>
-              <h4 className="font-serif text-base font-bold text-zinc-900">Envíos Rápidos en Ecuador</h4>
-              <p className="text-xs text-zinc-500 mt-0.5 font-light">Entregas seguras en 24h a 48h con seguimiento directo.</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-[#FAD1DC] shadow-sm flex items-center gap-4.5 diamond-glow">
-            <div className="p-3.5 bg-[#FFF5F7] rounded-2xl text-[#D33658] border border-[#FAD1DC] shrink-0">
-              <Gift size={26} />
-            </div>
-            <div>
-              <h4 className="font-serif text-base font-bold text-zinc-900">Presentación para Regalo</h4>
-              <p className="text-xs text-zinc-500 mt-0.5 font-light">Cajas de lujo y lazo de seda listas para sorprender.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Categories Grid */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#D33658]">
-            <RoisinDiamond size={13} color="#E65573" /> Colecciones Exclusivas
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900">
-            Descubre la joya perfecta
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 font-light">
-            Seleccionadas meticulosamente para realzar tu belleza y celebrar momentos únicos.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/productos?category=${cat.slug}`}
-              className="group relative aspect-[3/4] rounded-3xl overflow-hidden shadow-xs border border-[#FAD1DC] bg-zinc-100 flex items-end p-5 sm:p-7 luxury-card-hover"
-            >
-              <Image
-                src={
-                  cat.imageUrl ||
-                  'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop'
-                }
-                alt={cat.name}
-                fill
-                sizes="(max-width: 768px) 50vw, 25vw"
-                className="object-cover group-hover:scale-106 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-              <div className="relative z-10 space-y-1.5 w-full">
-                <div className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest text-[#FAD1DC]">
-                  <RoisinDiamond size={10} color="#F08097" /> Joyería Fina
-                </div>
-                <h3 className="font-serif text-base sm:text-xl font-bold text-white tracking-wide">
-                  {cat.name}
-                </h3>
-                <span className="text-[11px] text-[#FFF5F7] font-semibold inline-flex items-center gap-1 group-hover:text-[#FAD1DC] transition pt-1">
-                  Ver Colección <ArrowRight size={13} />
+      {/* 2. DYNAMIC PROMOTIONAL BANNER (Horizontal/Square Promo Cards Grid from Promotion table) */}
+      {promotions.length > 0 && (
+        <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <RoisinDiamond size={15} color="#7043A0" />
+                <span className="text-xs uppercase font-extrabold tracking-[0.25em] text-[#3F235F]">
+                  Promociones & Destacados
                 </span>
               </div>
-            </Link>
-          ))}
+              <span className="text-[11px] text-zinc-400 font-medium">Desliza para ver más</span>
+            </div>
+
+            {/* Horizontal Promo Cards Carousel / Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {promotions.map((promo) => (
+                <Link
+                  key={promo.id}
+                  href={promo.targetUrl}
+                  className="group relative aspect-[4/3.2] sm:aspect-[4/3.5] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-sm hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 flex flex-col justify-end p-5 bg-[#221235]"
+                >
+                  <Image
+                    src={promo.imageUrl}
+                    alt={promo.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover object-center group-hover:scale-106 transition-transform duration-700 opacity-80 group-hover:opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#221235]/95 via-[#221235]/40 to-transparent" />
+
+                  {/* Promo Badges */}
+                  <div className="relative z-10 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      {promo.badge && (
+                        <span className="bg-white/95 text-[#3F235F] text-[9px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-xs">
+                          {promo.badge}
+                        </span>
+                      )}
+                      {promo.discountText && (
+                        <span className="bg-gradient-to-r from-[#7043A0] to-[#3F235F] text-white text-[9.5px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-sm">
+                          {promo.discountText}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-sans text-base sm:text-lg font-bold text-white leading-snug group-hover:text-[#DFD0EC] transition-colors">
+                      {promo.title}
+                    </h3>
+                    {promo.subtitle && (
+                      <p className="text-[11px] text-zinc-300 font-light line-clamp-1">
+                        {promo.subtitle}
+                      </p>
+                    )}
+                    <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#DFD0EC] group-hover:text-white pt-1">
+                      Aprovechar Promoción <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 3. BRAND VALUE PILLARS */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white p-6 rounded-3xl border border-[#DFD0EC] shadow-xs flex items-center gap-4 diamond-glow">
+            <div className="p-3 bg-[#F8F5FA] rounded-2xl text-[#3F235F] border border-[#DFD0EC] shrink-0">
+              <Sparkles size={24} />
+            </div>
+            <div>
+              <h4 className="font-sans text-sm sm:text-base font-bold text-zinc-900">
+                Metales Nobles Certificados
+              </h4>
+              <p className="text-xs text-zinc-500 mt-0.5 font-light">
+                Plata de Ley 925 auténtica & Baño de Oro 18k hipoalergénico.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-[#DFD0EC] shadow-xs flex items-center gap-4 diamond-glow">
+            <div className="p-3 bg-[#F8F5FA] rounded-2xl text-[#3F235F] border border-[#DFD0EC] shrink-0">
+              <Truck size={24} />
+            </div>
+            <div>
+              <h4 className="font-sans text-sm sm:text-base font-bold text-zinc-900">
+                Envíos Rápidos en Ecuador
+              </h4>
+              <p className="text-xs text-zinc-500 mt-0.5 font-light">
+                Entregas seguras en Guayaquil ($3), Nacional ($6) y Galápagos ($12).
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-[#DFD0EC] shadow-xs flex items-center gap-4 diamond-glow">
+            <div className="p-3 bg-[#F8F5FA] rounded-2xl text-[#3F235F] border border-[#DFD0EC] shrink-0">
+              <Gift size={24} />
+            </div>
+            <div>
+              <h4 className="font-sans text-sm sm:text-base font-bold text-zinc-900">
+                Presentación & Dedicatoria
+              </h4>
+              <p className="text-xs text-zinc-500 mt-0.5 font-light">
+                Caja de regalo de lujo y tarjeta con mensaje personalizado.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 4. Featured Best-Sellers (Product Cards Grid) */}
+      {/* 4. FEATURED BEST-SELLERS (First product spans 2 vertical rows, remaining compact) */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4 border-b border-[#FAD1DC] pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4 border-b border-[#DFD0EC] pb-5">
           <div>
-            <span className="text-xs uppercase font-bold tracking-[0.3em] text-[#D33658]">
-              Selección Especial
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 mt-1">
+            <div className="flex items-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#3F235F]">
+              <RoisinDiamond size={13} color="#7043A0" /> Selección Especial
+            </div>
+            <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 mt-1">
               Piezas Más Deseadas
             </h2>
           </div>
+          {/* Removed parenthesized count as requested in Requirement 6 */}
           <Link
             href="/productos"
-            className="text-xs uppercase font-bold tracking-widest text-[#D33658] hover:text-[#93203A] transition-all flex items-center gap-2 group px-4 py-2.5 bg-[#FFF5F7] hover:bg-[#FDE8ED] rounded-full border border-[#FAD1DC] shadow-2xs"
+            className="text-xs uppercase font-bold tracking-widest text-[#3F235F] hover:text-[#7043A0] transition-all flex items-center gap-2 group px-4 py-2.5 bg-[#F8F5FA] hover:bg-[#F0E9F5] rounded-full border border-[#DFD0EC] shadow-2xs"
           >
-            <span>Ver Catálogo Completo ({featuredProducts.length} joyas)</span>
+            <span>Ver Catálogo Completo</span>
             <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-          {featuredProducts.map((p) => (
-            <ProductCard
+        {/* Asymmetrical Grid: First product larger spanning 2 vertical rows on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 auto-rows-fr">
+          {featuredProducts.map((p, index) => (
+            <div
               key={p.id}
-              product={{
-                id: p.id,
-                title: p.title,
-                slug: p.slug,
-                basePrice: p.basePrice,
-                category: p.category,
-                images: p.images,
-                variants: p.variants,
-                description: p.description,
-              }}
-            />
+              className={
+                index === 0
+                  ? 'col-span-2 md:col-span-2 md:row-span-2 flex flex-col'
+                  : 'flex flex-col'
+              }
+            >
+              <ProductCard
+                featuredLarge={index === 0}
+                product={{
+                  id: p.id,
+                  title: p.title,
+                  slug: p.slug,
+                  tag: p.tag,
+                  shortDescription: p.shortDescription,
+                  basePrice: p.basePrice,
+                  compareAtPrice: p.compareAtPrice,
+                  discountPercent: p.discountPercent,
+                  category: p.category,
+                  images: p.images,
+                  variants: p.variants,
+                  description: p.description,
+                }}
+              />
+            </div>
           ))}
         </div>
       </section>
 
-      {/* 5. The Perfect Gift / Romance Experience Banner */}
-      <section className="bg-[#FFF5F7] py-20 sm:py-24 border-y border-[#FAD1DC] relative overflow-hidden">
+      {/* 5. THE PERFECT GIFT / DEDICATION EXPERIENCE BANNER */}
+      <section className="bg-[#F8F5FA] py-16 sm:py-20 border-y border-[#DFD0EC] relative overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full border border-[#FAD1DC] text-[10px] uppercase font-bold tracking-widest text-[#D33658] shadow-xs">
-                <Heart size={13} className="fill-[#E65573] text-[#E65573]" /> Momentos Inolvidables
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full border border-[#DFD0EC] text-[10px] uppercase font-bold tracking-widest text-[#3F235F] shadow-xs">
+                <Sparkles size={13} className="text-[#7043A0]" /> Experiencia Diamante Morado
               </div>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-zinc-900 leading-tight">
-                El detalle perfecto para quien hace latir tu corazón.
+              <h2 className="font-sans text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
+                El detalle perfecto con dedicatoria personalizada.
               </h2>
-              <p className="text-sm text-zinc-600 leading-relaxed font-light">
-                Cada joya de Roisin llega en un empaque cuidado hasta el último detalle: caja rígida grabada, lazo de seda y tarjeta para dedicatoria personalizada. Porque regalar una joya es entregar un recuerdo para siempre.
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed font-light">
+                Cada joya de Roisin llega en un empaque cuidado hasta el último detalle: caja rígida grabada, lazo de seda y tarjeta para dedicatoria personalizada que puedes escribir directamente al agregar tu joya.
               </p>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-2.5 pt-1">
                 <div className="flex items-center gap-3 text-xs font-medium text-zinc-800">
-                  <CheckCircle2 size={16} className="text-[#D33658]" />
+                  <CheckCircle2 size={16} className="text-[#3F235F]" />
                   <span>Garantía de autenticidad en plata 925 y baño de oro 18k</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-medium text-zinc-800">
-                  <CheckCircle2 size={16} className="text-[#D33658]" />
-                  <span>Opción de caja de regalo de lujo y bolsa de terciopelo rosa</span>
+                  <CheckCircle2 size={16} className="text-[#3F235F]" />
+                  <span>Dedicatoria personalizada incluida en la orden</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-medium text-zinc-800">
-                  <CheckCircle2 size={16} className="text-[#D33658]" />
-                  <span>Asesoría personalizada por WhatsApp para elegir la talla ideal</span>
+                  <CheckCircle2 size={16} className="text-[#3F235F]" />
+                  <span>Asesoría directa para elegir la talla ideal</span>
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-2">
                 <Link
                   href="/productos"
-                  className="inline-flex items-center gap-2 btn-pink-diamond text-xs uppercase tracking-widest font-bold px-9 py-4 rounded-full transition shadow-md shimmer-button"
+                  className="inline-flex items-center gap-2 btn-purple-diamond text-xs uppercase tracking-widest font-bold px-8 py-3.5 rounded-full transition shadow-md cursor-pointer"
                 >
                   Elegir Joya para Regalo <ArrowRight size={15} />
                 </Link>
               </div>
             </div>
 
-            <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl border border-[#FAD1DC]">
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg border border-[#DFD0EC]">
               <Image
                 src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1000&auto=format&fit=crop"
-                alt="Empaque de Regalo Roisin"
+                alt="Empaque de Regalo Roisin Diamante Morado"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
@@ -248,35 +270,35 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. Customer Experiences / Testimonials */}
+      {/* 6. CUSTOMER EXPERIENCES / TESTIMONIALS */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-          <span className="text-xs uppercase font-bold tracking-[0.3em] text-[#D33658]">
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+          <span className="text-xs uppercase font-bold tracking-[0.3em] text-[#3F235F]">
             Experiencias Reales
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900">
+          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900">
             Clientas que brillan con ROISIN
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          <div className="bg-white p-7 sm:p-8 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-4 luxury-card-hover diamond-glow">
-            <div className="flex text-[#E5C058]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-3.5 luxury-card-hover diamond-glow">
+            <div className="flex text-[#D4AF37]">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={15} fill="currentColor" />
               ))}
             </div>
             <p className="text-xs text-zinc-600 leading-relaxed italic font-light">
-              &ldquo;Compré el anillo solitario en plata y el brillo es simplemente espectacular. La presentación para regalo superó mis expectativas y llegó en menos de 24h a Quito.&rdquo;
+              &ldquo;Compré el anillo solitario en plata y el brillo es simplemente espectacular. La presentación para regalo superó mis expectativas y llegó muy rápido a Guayaquil.&rdquo;
             </p>
-            <div className="pt-2 border-t border-[#FFF5F7]">
+            <div className="pt-2 border-t border-[#F8F5FA]">
               <p className="text-xs font-bold text-zinc-900">Camila M.</p>
-              <span className="text-[10px] text-zinc-400">Quito, Ecuador</span>
+              <span className="text-[10px] text-zinc-400">Guayaquil, Ecuador</span>
             </div>
           </div>
 
-          <div className="bg-white p-7 sm:p-8 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-4 luxury-card-hover diamond-glow">
-            <div className="flex text-[#E5C058]">
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-3.5 luxury-card-hover diamond-glow">
+            <div className="flex text-[#D4AF37]">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={15} fill="currentColor" />
               ))}
@@ -284,14 +306,14 @@ export default async function HomePage() {
             <p className="text-xs text-zinc-600 leading-relaxed italic font-light">
               &ldquo;La pulsera tennis tiene un acabado finísimo y un peso perfecto. Me ayudaron con la medida por WhatsApp y la atención fue sumamente cálida y atenta.&rdquo;
             </p>
-            <div className="pt-2 border-t border-[#FFF5F7]">
+            <div className="pt-2 border-t border-[#F8F5FA]">
               <p className="text-xs font-bold text-zinc-900">Valeria S.</p>
-              <span className="text-[10px] text-zinc-400">Guayaquil, Ecuador</span>
+              <span className="text-[10px] text-zinc-400">Quito, Ecuador</span>
             </div>
           </div>
 
-          <div className="bg-white p-7 sm:p-8 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-4 luxury-card-hover diamond-glow">
-            <div className="flex text-[#E5C058]">
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-3.5 luxury-card-hover diamond-glow">
+            <div className="flex text-[#D4AF37]">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={15} fill="currentColor" />
               ))}
@@ -299,7 +321,7 @@ export default async function HomePage() {
             <p className="text-xs text-zinc-600 leading-relaxed italic font-light">
               &ldquo;Los aretes huggies no me los quito para nada; son súper cómodos, no pesan y no pierden el brillo. 100% recomendados para cualquier ocasión.&rdquo;
             </p>
-            <div className="pt-2 border-t border-[#FFF5F7]">
+            <div className="pt-2 border-t border-[#F8F5FA]">
               <p className="text-xs font-bold text-zinc-900">Sofía N.</p>
               <span className="text-[10px] text-zinc-400">Cuenca, Ecuador</span>
             </div>
@@ -309,3 +331,4 @@ export default async function HomePage() {
     </div>
   );
 }
+

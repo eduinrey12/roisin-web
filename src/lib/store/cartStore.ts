@@ -14,7 +14,7 @@ interface CartState {
   openCart: () => void;
   closeCart: () => void;
   initCart: () => Promise<void>;
-  addItem: (variantId: string, quantity?: number, optionIds?: string[]) => Promise<boolean>;
+  addItem: (variantId: string, quantity?: number, optionIds?: string[], dedication?: string) => Promise<boolean>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
 }
@@ -39,10 +39,10 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
-  addItem: async (variantId: string, quantity = 1, optionIds: string[] = []) => {
+  addItem: async (variantId: string, quantity = 1, optionIds: string[] = [], dedication?: string) => {
     set({ loading: true });
     try {
-      const res = await addToCartAction(variantId, quantity, optionIds);
+      const res = await addToCartAction(variantId, quantity, optionIds, dedication);
       if (res.success) {
         set({ cart: res.cart, isOpen: true, loading: false });
         return true;

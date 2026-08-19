@@ -16,14 +16,14 @@ export async function createOrUpdatePayment(
   });
 
   const nextOrderStatus: OrderStatus =
-    method === 'BANK_TRANSFER' ? 'PAYMENT_PENDING' : 'PROCESSING';
+    method === 'CREDIT_CARD' ? 'PROCESSING' : 'PAYMENT_PENDING';
 
   if (existing) {
     const updatedPayment = await prisma.payment.update({
       where: { id: existing.id },
       data: {
         method,
-        status: 'PENDING',
+        status: method === 'CREDIT_CARD' ? 'COMPLETED' : 'PENDING',
       },
     });
 
@@ -40,13 +40,69 @@ export async function createOrUpdatePayment(
       orderId,
       method,
       amount: order.total,
-      status: 'PENDING',
+      status: method === 'CREDIT_CARD' ? 'COMPLETED' : 'PENDING',
     },
   });
 
   await prisma.order.update({
     where: { id: orderId },
     data: { status: nextOrderStatus },
+  });
+
+  return payment;
+}
+
+export async function processCardPayment(
+  orderId: string,
+  cardData: {
+    cardNumber: string;
+    cardHolder: string;
+    expiryDate: string;
+    cvv: string;
+    installments?: number;
+  }
+) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!order) throw new Error('Orden no encontrada');
+
+  const cleanNumber = cardData.cardNumber.replace(/\s+/g, '');
+  const lastFour = cleanNumber.slice(-4);
+  const cardBrand = cleanNumber.startsWith('4')
+    ? 'Visa'
+    : cleanNumber.startsWith('5')
+    ? 'Mastercard'
+    : cleanNumber.startsWith('3')
+    ? 'American Express'
+    : 'Tarjeta';
+
+  const payment = await prisma.payment.upsert({
+    where: { orderId },
+    create: {
+      orderId,
+      method: 'CREDIT_CARD',
+      status: 'COMPLETED',
+      amount: order.total,
+      cardLastFour: lastFour,
+      cardBrand,
+      installments: cardData.installments || 1,
+      referenceNumber: `AUTH-${Math.floor(100000 + Math.random() * 900000)}`,
+    },
+    update: {
+      method: 'CREDIT_CARD',
+      status: 'COMPLETED',
+      cardLastFour: lastFour,
+      cardBrand,
+      installments: cardData.installments || 1,
+      referenceNumber: `AUTH-${Math.floor(100000 + Math.random() * 900000)}`,
+    },
+  });
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { status: 'PROCESSING' },
   });
 
   return payment;
@@ -100,3 +156,4 @@ export async function adminVerifyPayment(paymentId: string, isApproved: boolean)
     }),
   ]);
 }
+

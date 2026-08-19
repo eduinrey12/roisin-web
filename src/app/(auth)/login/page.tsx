@@ -7,7 +7,6 @@ import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
 import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 import RoisinLogo from '@/components/branding/RoisinLogo';
-import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,12 +43,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:py-16">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#FAD1DC] shadow-xl">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#DFD0EC] shadow-xl">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-2">
             <RoisinLogo />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900">
             Bienvenida de Vuelta
           </h1>
           <p className="text-xs text-zinc-500 font-light">
@@ -75,7 +74,7 @@ export default function LoginPage() {
                 placeholder="tu@correo.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white transition text-zinc-900"
+                className="w-full pl-11 pr-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition text-zinc-900"
               />
             </div>
           </div>
@@ -90,7 +89,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white transition text-zinc-900"
+                className="w-full pl-11 pr-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition text-zinc-900"
               />
             </div>
           </div>
@@ -98,16 +97,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-pink-diamond py-4 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 shadow-md pt-3.5 mt-2 shimmer-button cursor-pointer"
+            className="w-full btn-purple-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 shadow-md pt-3.5 mt-2 cursor-pointer"
           >
             {loading ? 'Iniciando sesión...' : 'Entrar a mi Cuenta'}
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="pt-4 border-t border-[#FAD1DC] text-center text-xs text-zinc-500">
+        <div className="pt-4 border-t border-[#DFD0EC] text-center text-xs text-zinc-500">
           ¿Aún no tienes una cuenta?{' '}
-          <Link href="/registro" className="font-bold text-[#D33658] hover:text-[#93203A] transition">
+          <Link href="/registro" className="font-bold text-[#3F235F] hover:text-[#7043A0] transition">
             Crear cuenta aquí
           </Link>
         </div>
@@ -115,3 +114,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

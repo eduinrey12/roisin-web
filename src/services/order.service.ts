@@ -13,6 +13,7 @@ export interface CheckoutInput {
   city: string;
   province: string;
   regionId: string;
+  dedication?: string;
   couponCode?: string;
 }
 
@@ -61,6 +62,9 @@ export async function createOrderFromCart(
   const total = subtotal - discount + shippingCost;
   const orderNumber = `ROI-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  // Find general dedication from input or cart item
+  const finalDedication = input.dedication || cart.items.find((i) => i.dedication)?.dedication || null;
+
   // Create order in an ACID transaction with stock deduction
   const order = await prisma.$transaction(async (tx) => {
     // 1. Create the order record
@@ -74,6 +78,7 @@ export async function createOrderFromCart(
         shippingAddress: input.address,
         city: input.city,
         province: input.province,
+        dedication: finalDedication,
         subtotal: new Prisma.Decimal(subtotal.toFixed(2)),
         shippingCost: new Prisma.Decimal(shippingCost.toFixed(2)),
         discount: new Prisma.Decimal(discount.toFixed(2)),
@@ -91,6 +96,7 @@ export async function createOrderFromCart(
               quantity: item.quantity,
               price: new Prisma.Decimal((itemPrice + optionsPrice).toFixed(2)),
               variantId: item.variantId,
+              dedication: item.dedication || null,
             };
           }),
         },

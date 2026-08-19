@@ -9,7 +9,7 @@ interface RoisinDiamondProps extends React.SVGProps<SVGSVGElement> {
 export default function RoisinDiamond({
   size = 20,
   className = '',
-  color = 'currentColor',
+  color = '#3F235F',
   ...props
 }: RoisinDiamondProps) {
   return (
@@ -30,3 +30,4 @@ export default function RoisinDiamond({
     </svg>
   );
 }
+

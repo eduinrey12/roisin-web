@@ -20,10 +20,11 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={loading}
-      className="text-xs uppercase tracking-wider font-bold border border-[#FAD1DC] bg-white text-[#D33658] hover:bg-[#FFF5F7] hover:border-[#E65573] px-5 py-3 rounded-2xl transition flex items-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
+      className="text-xs uppercase tracking-wider font-bold border border-[#DFD0EC] bg-white text-[#3F235F] hover:bg-[#F8F5FA] hover:border-[#7043A0] px-5 py-3 rounded-2xl transition flex items-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
     >
       <LogOut size={14} />
       {loading ? 'Saliendo...' : 'Cerrar Sesión'}
     </button>
   );
 }
+

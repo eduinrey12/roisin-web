@@ -5,7 +5,7 @@ import ProductGallery from '@/components/storefront/ProductGallery';
 import AddToCartSection from '@/components/storefront/AddToCartSection';
 import ProductCard from '@/components/storefront/ProductCard';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
-import { Sparkles, ShieldCheck, Truck, RefreshCw, Heart, Gift } from 'lucide-react';
+import { Sparkles, Truck, Gift } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -23,10 +23,10 @@ export async function generateMetadata({
 
   return {
     title: `${product.title} | ROISIN Joyas`,
-    description: product.description.substring(0, 160),
+    description: product.shortDescription || product.description.substring(0, 160),
     openGraph: {
       title: `${product.title} - ROISIN Joyas`,
-      description: product.description.substring(0, 160),
+      description: product.shortDescription || product.description.substring(0, 160),
       url: `https://roisinjoyas.com/productos/${product.slug}`,
       images: primaryImg ? [{ url: primaryImg }] : [],
     },
@@ -71,7 +71,7 @@ export default async function ProductDetailPage({
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12 space-y-16">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-14">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -79,15 +79,15 @@ export default async function ProductDetailPage({
 
       {/* Breadcrumb Navigation */}
       <nav className="text-[11px] text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-        <Link href="/" className="hover:text-[#D33658] transition">Inicio</Link>
+        <Link href="/" className="hover:text-[#3F235F] transition">Inicio</Link>
         <span>/</span>
-        <Link href="/productos" className="hover:text-[#D33658] transition">Catálogo</Link>
+        <Link href="/productos" className="hover:text-[#3F235F] transition">Catálogo</Link>
         <span>/</span>
         {product.category && (
           <>
             <Link
               href={`/productos?category=${product.category.slug}`}
-              className="hover:text-[#D33658] transition"
+              className="hover:text-[#3F235F] transition"
             >
               {product.category.name}
             </Link>
@@ -99,56 +99,47 @@ export default async function ProductDetailPage({
         </span>
       </nav>
 
-      {/* Main Grid: Gallery + Purchasing Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-start">
-        {/* Left Column: Gallery */}
+      {/* Main Grid: Gallery (Left) + Purchasing Details in Exact Order (Right) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 items-start">
+        {/* Left Column: Gallery with thumbnails and variant image switching */}
         <ProductGallery images={product.images} title={product.title} />
 
-        {/* Right Column: Details & Purchasing */}
-        <div className="flex flex-col space-y-7">
+        {/* Right Column: Title -> Short Desc -> Long Desc -> Variants -> Dedication -> Add to Cart */}
+        <div className="flex flex-col space-y-6">
           <div className="space-y-1.5">
             {product.category && (
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658]">
-                <RoisinDiamond size={11} color="#E65573" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F]">
+                <RoisinDiamond size={11} color="#7043A0" />
                 {product.category.name}
               </span>
             )}
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
+            {/* 1. Title / Name */}
+            <h1 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
               {product.title}
             </h1>
           </div>
 
-          {/* Interactive Pricing, Variant Selection and AddToCart */}
+          {/* Interactive Pricing, Short/Long Description, Size Selector, Dedication, AddToCart/BuyNow */}
           <AddToCartSection product={product} />
 
-          {/* Description & Materials Accordion */}
-          <div className="pt-6 border-t border-[#FAD1DC] space-y-4">
-            <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2">
-              <RoisinDiamond size={13} color="#E65573" /> Descripción & Detalles de la Joya
-            </h2>
-            <div className="text-xs text-zinc-600 leading-relaxed whitespace-pre-line space-y-2 font-light">
-              <p>{product.description}</p>
-            </div>
-          </div>
-
           {/* Luxury Gift Presentation Box Info */}
-          <div className="bg-[#FFF5F7] p-6 rounded-3xl border border-[#FAD1DC] space-y-2">
+          <div className="bg-[#F8F5FA] p-5 rounded-3xl border border-[#DFD0EC] space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 uppercase tracking-wider">
-              <Gift size={16} className="text-[#D33658]" />
-              <span>Experiencia de Regalo ROISIN</span>
+              <Gift size={16} className="text-[#3F235F]" />
+              <span>Experiencia de Regalo ROISIN Diamante Morado</span>
             </div>
             <p className="text-[11px] text-zinc-600 leading-relaxed font-light">
-              Tu joya se entrega cuidadosamente protegida en un estuche de terciopelo o caja rígida de regalo lista para entregar, con tarjeta de dedicatoria incluida.
+              Tu joya se entrega protegida en un estuche rígido de lujo con lazo de seda y tarjeta para dedicatoria personalizada lista para entregar.
             </p>
           </div>
 
           {/* Care Tips */}
-          <div className="bg-white p-6 rounded-3xl border border-[#FAD1DC] space-y-2 text-xs">
+          <div className="bg-white p-5 rounded-3xl border border-[#DFD0EC] space-y-2 text-xs">
             <h3 className="font-semibold text-zinc-900 flex items-center gap-2">
-              <Sparkles size={15} className="text-[#E65573]" /> Cuidados y Mantenimiento:
+              <Sparkles size={15} className="text-[#7043A0]" /> Cuidados y Mantenimiento:
             </h3>
             <p className="text-[11px] text-zinc-500 leading-relaxed font-light">
-              Para conservar el brillo intacto de la plata 925 y el baño de oro 18k, evita el contacto directo con perfumes o químicos agresivos. Limpia suavemente con un paño de microfibra tras cada uso.
+              Para conservar el brillo intacto de la plata 925 y el baño de oro 18k, evita el contacto con perfumes o químicos agresivos. Limpia suavemente con el paño de microfibra tras cada uso.
             </p>
           </div>
         </div>
@@ -156,17 +147,17 @@ export default async function ProductDetailPage({
 
       {/* Related Products Section */}
       {filteredRelated.length > 0 && (
-        <section className="pt-16 border-t border-[#FAD1DC] space-y-8">
-          <div className="text-center max-w-xl mx-auto space-y-1.5">
-            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#D33658]">
+        <section className="pt-12 border-t border-[#DFD0EC] space-y-6">
+          <div className="text-center max-w-xl mx-auto space-y-1">
+            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#3F235F]">
               Sugerencias para Ti
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900">
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900">
               También te podría enamorar
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
             {filteredRelated.map((p) => (
               <ProductCard
                 key={p.id}
@@ -174,7 +165,11 @@ export default async function ProductDetailPage({
                   id: p.id,
                   title: p.title,
                   slug: p.slug,
+                  tag: p.tag,
+                  shortDescription: p.shortDescription,
                   basePrice: p.basePrice,
+                  compareAtPrice: p.compareAtPrice,
+                  discountPercent: p.discountPercent,
                   category: p.category,
                   images: p.images,
                   variants: p.variants,
@@ -188,3 +183,4 @@ export default async function ProductDetailPage({
     </div>
   );
 }
+

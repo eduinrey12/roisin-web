@@ -64,7 +64,8 @@ export async function addItemToCart(
   userId: string | undefined,
   variantId: string,
   quantity = 1,
-  optionIds: string[] = []
+  optionIds: string[] = [],
+  dedication?: string
 ) {
   const cart = await getOrCreateCart(guestToken, userId);
 
@@ -81,7 +82,10 @@ export async function addItemToCart(
   if (existingItem) {
     await prisma.cartItem.update({
       where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity + quantity },
+      data: {
+        quantity: existingItem.quantity + quantity,
+        ...(dedication !== undefined && { dedication }),
+      },
     });
   } else {
     await prisma.cartItem.create({
@@ -89,6 +93,7 @@ export async function addItemToCart(
         cartId: cart.id,
         variantId,
         quantity,
+        dedication: dedication || null,
         options: {
           create: optionIds.map((optionId) => ({
             optionId,

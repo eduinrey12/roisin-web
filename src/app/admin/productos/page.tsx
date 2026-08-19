@@ -1,6 +1,6 @@
 import { adminGetAllProducts } from '@/services/catalog.service';
 import Link from 'next/link';
-import { Plus, PlusCircle, Sparkles } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import ProductListClient from './ProductListClient';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
@@ -11,12 +11,12 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#FAD1DC] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#DFD0EC] pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658] mb-1">
-            <RoisinDiamond size={13} color="#E65573" /> Colecciones & Piezas
+          <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F] mb-1">
+            <RoisinDiamond size={13} color="#7043A0" /> Colecciones & Piezas
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
+          <h1 className="font-sans text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
             Catálogo de Joyería
           </h1>
           <p className="text-xs text-zinc-500 font-light mt-0.5">
@@ -26,7 +26,7 @@ export default async function AdminProductsPage() {
 
         <Link
           href="/admin/productos/nuevo"
-          className="btn-pink-diamond text-xs uppercase tracking-wider font-bold px-6 py-3.5 rounded-2xl flex items-center gap-2 shadow-md shimmer-button"
+          className="btn-purple-diamond text-xs uppercase tracking-wider font-bold px-6 py-3.5 rounded-2xl flex items-center gap-2 shadow-md cursor-pointer"
         >
           <PlusCircle size={16} /> Crear Nueva Joya
         </Link>
@@ -48,3 +48,4 @@ export default async function AdminProductsPage() {
     </div>
   );
 }
+

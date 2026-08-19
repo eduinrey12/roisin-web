@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { registerAction } from '@/lib/actions/auth.actions';
 import { useCartStore } from '@/lib/store/cartStore';
 import Link from 'next/link';
-import { Lock, Mail, User, Phone, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Lock, Mail, Phone, AlertCircle, ArrowRight } from 'lucide-react';
 import RoisinLogo from '@/components/branding/RoisinLogo';
-import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -43,12 +42,12 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:py-16">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#FAD1DC] shadow-xl">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#DFD0EC] shadow-xl">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-2">
             <RoisinLogo />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900">
             Crear Cuenta Exclusiva
           </h1>
           <p className="text-xs text-zinc-500 font-light">
@@ -73,7 +72,7 @@ export default function RegisterPage() {
                 placeholder="Nombre"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+                className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
               />
             </div>
             <div>
@@ -84,7 +83,7 @@ export default function RegisterPage() {
                 placeholder="Apellido"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+                className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
               />
             </div>
           </div>
@@ -99,7 +98,7 @@ export default function RegisterPage() {
                 placeholder="tu@correo.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+                className="w-full pl-11 pr-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
               />
             </div>
           </div>
@@ -113,7 +112,7 @@ export default function RegisterPage() {
                 placeholder="0999999999"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+                className="w-full pl-11 pr-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
               />
             </div>
           </div>
@@ -129,7 +128,7 @@ export default function RegisterPage() {
                 placeholder="Mínimo 6 caracteres"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-11 pr-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+                className="w-full pl-11 pr-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
               />
             </div>
           </div>
@@ -137,16 +136,16 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-pink-diamond py-4 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 shadow-md pt-3.5 mt-2 shimmer-button cursor-pointer"
+            className="w-full btn-purple-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 shadow-md pt-3.5 mt-2 cursor-pointer"
           >
             {loading ? 'Creando cuenta...' : 'Crear mi Cuenta VIP'}
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="pt-4 border-t border-[#FAD1DC] text-center text-xs text-zinc-500">
+        <div className="pt-4 border-t border-[#DFD0EC] text-center text-xs text-zinc-500">
           ¿Ya tienes una cuenta registrada?{' '}
-          <Link href="/login" className="font-bold text-[#D33658] hover:text-[#93203A] transition">
+          <Link href="/login" className="font-bold text-[#3F235F] hover:text-[#7043A0] transition">
             Iniciar sesión
           </Link>
         </div>
@@ -154,3 +153,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

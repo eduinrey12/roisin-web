@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { submitOrderAction, validateCouponAction } from '@/lib/actions/checkout.actions';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShieldCheck, Truck, ArrowRight, Tag, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { Lock, ArrowRight, Tag, AlertCircle, PenTool, Truck } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export default function CheckoutPage() {
@@ -23,6 +23,7 @@ export default function CheckoutPage() {
     city: '',
     province: '',
     regionId: '',
+    dedication: '',
     couponCode: '',
   });
 
@@ -114,16 +115,16 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-md mx-auto px-4 py-24 text-center space-y-4">
-        <div className="p-4 bg-[#FAF4F5] rounded-full w-16 h-16 mx-auto flex items-center justify-center border border-[#EFCFD6]">
-          <RoisinDiamond size={28} color="#BE6C7C" />
+        <div className="p-4 bg-[#F8F5FA] rounded-full w-16 h-16 mx-auto flex items-center justify-center border border-[#DFD0EC]">
+          <RoisinDiamond size={28} color="#7043A0" />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-zinc-900">Tu bolsa está vacía</h2>
+        <h2 className="text-2xl font-sans font-bold text-zinc-900">Tu carrito está vacío</h2>
         <p className="text-xs text-zinc-500">
           No tienes piezas seleccionadas en tu carrito para realizar el pedido.
         </p>
         <Link
           href="/productos"
-          className="inline-block text-xs uppercase tracking-widest bg-zinc-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-black transition shadow-xs"
+          className="inline-block text-xs uppercase tracking-widest btn-purple-diamond px-8 py-3.5 rounded-full font-bold transition shadow-md cursor-pointer"
         >
           Explorar Joyas
         </Link>
@@ -132,15 +133,17 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="mb-8 space-y-1">
-        <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#BE6C7C]">
-          <Lock size={12} /> Checkout Seguro & Privado
+        <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F]">
+          <Lock size={12} /> Checkout Seguro & Privado • Diamante Morado
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-zinc-900">
+        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-zinc-900">
           Finaliza tu Pedido
         </h1>
-        <p className="text-xs text-zinc-500">Completa tus datos de envío para preparar tu joya de forma exclusiva</p>
+        <p className="text-xs text-zinc-500">
+          Completa tus datos de envío para preparar tu joya de forma exclusiva
+        </p>
       </div>
 
       {errorMessage && (
@@ -150,12 +153,12 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* Left: Form */}
         <form onSubmit={handleSubmit} id="checkout-form" className="lg:col-span-7 space-y-6">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#F0E6E8] shadow-xs space-y-6">
-            <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2 border-b border-[#F0E6E8] pb-3">
-              <RoisinDiamond size={13} color="#E2A3B0" /> 1. Datos de Contacto y Entrega
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-6">
+            <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2 border-b border-[#DFD0EC] pb-3">
+              <RoisinDiamond size={13} color="#7043A0" /> 1. Datos de Contacto y Entrega
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -167,7 +170,7 @@ export default function CheckoutPage() {
                   placeholder="Tu nombre"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                  className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                 />
               </div>
               <div>
@@ -178,7 +181,7 @@ export default function CheckoutPage() {
                   placeholder="Tu apellido"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                  className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                 />
               </div>
             </div>
@@ -192,7 +195,7 @@ export default function CheckoutPage() {
                   placeholder="ejemplo@correo.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                  className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                 />
               </div>
               <div>
@@ -203,7 +206,7 @@ export default function CheckoutPage() {
                   placeholder="0991234567"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                  className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                 />
               </div>
             </div>
@@ -217,7 +220,7 @@ export default function CheckoutPage() {
                   placeholder="Calle principal, número de casa/departamento, referencia"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                  className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                 />
               </div>
 
@@ -227,10 +230,10 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Quito, Guayaquil, Cuenca..."
+                    placeholder="Guayaquil, Quito, Cuenca..."
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                    className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                   />
                 </div>
                 <div>
@@ -238,19 +241,35 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Pichincha, Guayas, Azuay..."
+                    placeholder="Guayas, Pichincha, Azuay..."
                     value={formData.province}
                     onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="w-full px-4 py-3 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C] focus:bg-white transition"
+                    className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition"
                   />
                 </div>
               </div>
             </div>
 
+            {/* Optional Gift Dedication Field */}
+            <div className="space-y-2 pt-2 border-t border-[#DFD0EC]">
+              <label className="text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <PenTool size={13} className="text-[#7043A0]" />
+                <span>Dedicatoria para la Tarjeta de Regalo (Opcional)</span>
+              </label>
+              <textarea
+                value={formData.dedication}
+                onChange={(e) => setFormData({ ...formData, dedication: e.target.value })}
+                rows={2}
+                placeholder="Escribe el mensaje especial que deseas incluir en la tarjeta de regalo..."
+                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition resize-none placeholder:text-zinc-400"
+              />
+            </div>
+
             {/* Shipping Region Selector */}
-            <div className="space-y-2 pt-2">
-              <label className="text-xs font-semibold text-zinc-700 block">
-                Zona de Envíos en Ecuador *
+            <div className="space-y-2 pt-2 border-t border-[#DFD0EC]">
+              <label className="text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <Truck size={14} className="text-[#3F235F]" />
+                <span>Zona de Envío en Ecuador *</span>
               </label>
               <div className="grid grid-cols-1 gap-2.5">
                 {regions.map((r) => {
@@ -260,8 +279,8 @@ export default function CheckoutPage() {
                       key={r.id}
                       className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer text-xs transition ${
                         isSelected
-                          ? 'border-[#BE6C7C] bg-[#FAF4F5] font-semibold text-zinc-900 ring-1 ring-[#BE6C7C]'
-                          : 'border-[#F0E6E8] bg-white text-zinc-700 hover:border-[#EFCFD6]'
+                          ? 'border-[#3F235F] bg-[#F0E9F5] font-semibold text-zinc-900 ring-1 ring-[#7043A0]'
+                          : 'border-[#DFD0EC] bg-white text-zinc-700 hover:border-[#7043A0]'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -271,11 +290,16 @@ export default function CheckoutPage() {
                           value={r.id}
                           checked={isSelected}
                           onChange={() => setFormData({ ...formData, regionId: r.id })}
-                          className="accent-[#BE6C7C]"
+                          className="accent-[#3F235F]"
                         />
-                        <span>{r.name}</span>
+                        <div>
+                          <span className="font-bold">{r.name}</span>
+                          {r.description && (
+                            <span className="text-[11px] text-zinc-500 block">{r.description}</span>
+                          )}
+                        </div>
                       </div>
-                      <span className="font-bold text-zinc-900">${Number(r.baseRate).toFixed(2)}</span>
+                      <span className="font-bold text-[#3F235F]">${Number(r.baseRate).toFixed(2)}</span>
                     </label>
                   );
                 })}
@@ -286,16 +310,18 @@ export default function CheckoutPage() {
 
         {/* Right: Order Summary */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#F0E6E8] shadow-xs space-y-5">
-            <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2 border-b border-[#F0E6E8] pb-3">
-              <RoisinDiamond size={13} color="#E2A3B0" /> 2. Resumen del Pedido
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-5">
+            <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-2 border-b border-[#DFD0EC] pb-3">
+              <RoisinDiamond size={13} color="#7043A0" /> 2. Resumen del Pedido
             </h2>
 
             {/* Item List */}
-            <div className="divide-y divide-[#FAF4F5] max-h-60 overflow-y-auto pr-1">
+            <div className="divide-y divide-[#F8F5FA] max-h-60 overflow-y-auto pr-1">
               {items.map((item: any) => {
                 const product = item.variant.product;
-                const primaryImg = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop';
+                const primaryImg =
+                  product.images?.[0]?.url ||
+                  'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop';
                 const itemPrice = Number(item.variant.price);
                 const optionsPrice = (item.options || []).reduce(
                   (optSum: number, o: any) => optSum + Number(o.option.priceModifier || 0),
@@ -305,7 +331,7 @@ export default function CheckoutPage() {
 
                 return (
                   <div key={item.id} className="py-3 first:pt-0 flex gap-3.5 items-center">
-                    <div className="w-14 h-14 bg-[#FAF7F8] rounded-xl overflow-hidden shrink-0 relative border border-[#F0E6E8]">
+                    <div className="w-14 h-14 bg-[#F8F5FA] rounded-xl overflow-hidden shrink-0 relative border border-[#DFD0EC]">
                       <Image
                         src={primaryImg}
                         alt={product.title}
@@ -315,14 +341,19 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-serif font-bold text-zinc-900 truncate">
+                      <p className="text-xs font-sans font-bold text-zinc-900 truncate">
                         {product.title}
                       </p>
                       <p className="text-[11px] text-zinc-500">
                         Cant: {item.quantity} • {item.variant.sku.split('-').pop() || item.variant.sku}
                       </p>
+                      {item.dedication && (
+                        <p className="text-[10px] text-zinc-500 italic truncate">
+                          Dedicatoria: &ldquo;{item.dedication}&rdquo;
+                        </p>
+                      )}
                     </div>
-                    <span className="font-serif font-bold text-xs text-zinc-900 shrink-0">
+                    <span className="font-sans font-bold text-xs text-[#3F235F] shrink-0">
                       ${(unitTotal * item.quantity).toFixed(2)}
                     </span>
                   </div>
@@ -331,20 +362,20 @@ export default function CheckoutPage() {
             </div>
 
             {/* Coupon Code Input */}
-            <div className="pt-2 border-t border-[#F0E6E8] space-y-2">
+            <div className="pt-2 border-t border-[#DFD0EC] space-y-2">
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Código de cupón (Ej: BIENVENIDA10)"
+                  placeholder="Código de cupón (Ej: MORADO10)"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  className="flex-1 px-3.5 py-2.5 text-xs bg-[#FAF4F5] border border-[#EFCFD6] rounded-xl focus:outline-none focus:border-[#BE6C7C]"
+                  className="flex-1 px-3.5 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
                 />
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
                   disabled={couponLoading || !couponInput.trim()}
-                  className="px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-black transition disabled:opacity-50"
+                  className="px-4 py-2.5 btn-purple-diamond rounded-xl text-xs font-bold transition disabled:opacity-50 cursor-pointer"
                 >
                   {couponLoading ? '...' : 'Aplicar'}
                 </button>
@@ -361,7 +392,7 @@ export default function CheckoutPage() {
                       setAppliedCoupon(null);
                       setFormData((prev) => ({ ...prev, couponCode: '' }));
                     }}
-                    className="text-emerald-700 hover:text-emerald-900 font-bold"
+                    className="text-emerald-700 hover:text-emerald-900 font-bold cursor-pointer"
                   >
                     Quitar
                   </button>
@@ -370,7 +401,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Financial Breakdown */}
-            <div className="space-y-2 pt-2 border-t border-[#F0E6E8] text-xs">
+            <div className="space-y-2 pt-2 border-t border-[#DFD0EC] text-xs">
               <div className="flex justify-between text-zinc-600">
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
@@ -385,9 +416,9 @@ export default function CheckoutPage() {
                 <span>Envío ({selectedRegion?.name || 'Por definir'})</span>
                 <span>${shippingCost.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-[#F0E6E8]">
+              <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-[#DFD0EC]">
                 <span>Total a Pagar</span>
-                <span className="font-serif text-lg font-bold">${total.toFixed(2)}</span>
+                <span className="font-sans text-xl font-bold text-[#3F235F]">${total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -396,7 +427,7 @@ export default function CheckoutPage() {
               type="submit"
               form="checkout-form"
               disabled={loading}
-              className="w-full btn-pink-diamond py-4 px-6 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-xl active:scale-[0.99] disabled:opacity-50 shimmer-button"
+              className="w-full btn-purple-diamond py-4 px-6 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition shadow-xl active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               {loading ? 'Generando Pedido...' : 'Continuar al Pago'}
               <ArrowRight size={16} />
@@ -407,3 +438,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

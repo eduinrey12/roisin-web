@@ -39,11 +39,12 @@ export async function fetchCartAction() {
 export async function addToCartAction(
   variantId: string,
   quantity = 1,
-  optionIds: string[] = []
+  optionIds: string[] = [],
+  dedication?: string
 ) {
   try {
     const { guestToken, userId } = await getTokens();
-    const cart = await addItemToCart(guestToken, userId, variantId, quantity, optionIds);
+    const cart = await addItemToCart(guestToken, userId, variantId, quantity, optionIds, dedication);
     return { success: true, cart };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al agregar al carrito' };

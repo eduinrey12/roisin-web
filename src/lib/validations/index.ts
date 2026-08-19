@@ -22,20 +22,27 @@ export const checkoutSchema = z.object({
   city: z.string().min(2, 'Ciudad requerida'),
   province: z.string().min(2, 'Provincia requerida'),
   regionId: z.string().uuid('Zona de envío no seleccionada'),
+  dedication: z.string().optional(),
   couponCode: z.string().optional(),
 });
 
 export const productSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
   slug: z.string().min(3, 'Slug no válido').regex(/^[a-z0-9-]+$/, 'Solo letras minúsculas, números y guiones'),
+  shortDescription: z.string().optional(),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
+  tag: z.string().optional(),
   basePrice: z.number().positive('El precio debe ser mayor a 0'),
+  compareAtPrice: z.number().positive().optional(),
+  discountPercent: z.number().min(0).max(100).optional(),
   categoryId: z.string().uuid('Categoría inválida'),
+  collectionIds: z.array(z.string().uuid()).optional(),
   isFeatured: z.boolean().default(false),
   images: z.array(
     z.object({
       url: z.string().url('URL de imagen no válida'),
       altText: z.string().optional(),
+      label: z.string().optional(),
       isPrimary: z.boolean().optional(),
     })
   ).min(1, 'Se requiere al menos una imagen'),

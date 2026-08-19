@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import { STORE_CONFIG } from '@/lib/config/store';
+import { getOrderStatusLabel, getOrderStatusColor, getPaymentMethodLabel } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Mi Cuenta VIP | ROISIN Joyas',
+  title: 'Mi Cuenta VIP | ROISIN Diamante Morado',
   description: 'Historial de joyas adquiridas, estado de pedidos y perfil exclusivo en ROISIN.',
 };
 
@@ -45,29 +46,29 @@ export default async function AccountPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-10">
       {/* 1. VIP Profile Header Banner */}
-      <div className="relative bg-gradient-to-r from-[#FFF5F7] via-white to-[#FDE8ED] p-7 sm:p-10 rounded-3xl border border-[#FAD1DC] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#F8F5FA] via-white to-[#F0E9F5] p-7 sm:p-10 rounded-3xl border border-[#DFD0EC] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
         {/* Subtle Ambient Diamond Glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-[#F08097]/15 to-transparent pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-[#7043A0]/15 to-transparent pointer-events-none -mr-20 -mt-20" />
 
         <div className="flex items-center gap-5 relative z-10">
-          {/* Avatar with Pink Diamond Rim */}
-          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-[#F08097] via-[#E65573] to-[#C22648] text-white rounded-3xl flex items-center justify-center font-serif font-black text-2xl sm:text-3xl shadow-lg border-2 border-white">
+          {/* Avatar with Purple Diamond Rim */}
+          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-[#7043A0] via-[#522D7B] to-[#3F235F] text-white rounded-3xl flex items-center justify-center font-sans font-black text-2xl sm:text-3xl shadow-lg border-2 border-white">
             {profile?.firstName?.[0] || user.email[0].toUpperCase()}
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#D33658] bg-white px-3 py-1 rounded-full border border-[#FAD1DC] shadow-xs">
-                <RoisinDiamond size={11} color="#E65573" /> Cliente VIP Roisin
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F] bg-white px-3 py-1 rounded-full border border-[#DFD0EC] shadow-xs">
+                <RoisinDiamond size={11} color="#7043A0" /> Cliente VIP Roisin
               </span>
               {user.role === 'ADMIN' && (
-                <span className="text-[10px] uppercase font-bold tracking-wider bg-[#141013] text-[#FAD1DC] px-3 py-1 rounded-full border border-[#3D1E26]">
+                <span className="text-[10px] uppercase font-bold tracking-wider bg-[#1B1124] text-[#DFD0EC] px-3 py-1 rounded-full border border-[#4B2F66]">
                   Administrador
                 </span>
               )}
             </div>
 
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-900 leading-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900 leading-tight">
               {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Mi Espacio Exclusivo'}
             </h1>
             <p className="text-xs text-zinc-500 font-light">{user.email}</p>
@@ -79,7 +80,7 @@ export default async function AccountPage() {
           {user.role === 'ADMIN' && (
             <Link
               href="/admin"
-              className="btn-pink-outline text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-xs"
+              className="btn-purple-outline text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <ShieldCheck size={16} /> Panel de Control
             </Link>
@@ -88,7 +89,7 @@ export default async function AccountPage() {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-5 py-3 rounded-2xl transition shadow-xs"
+            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-5 py-3 rounded-2xl transition shadow-xs cursor-pointer"
           >
             <MessageCircle size={15} /> Asistencia VIP
           </a>
@@ -100,16 +101,16 @@ export default async function AccountPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left 2 Cols: Orders History */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between border-b border-[#FAD1DC] pb-4">
+          <div className="flex items-center justify-between border-b border-[#DFD0EC] pb-4">
             <div className="flex items-center gap-2.5">
-              <RoisinDiamond size={18} color="#E65573" />
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-zinc-900">
+              <RoisinDiamond size={18} color="#7043A0" />
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-zinc-900">
                 Historial de Joyas & Pedidos ({orders.length})
               </h2>
             </div>
             <Link
               href="/productos"
-              className="text-xs uppercase font-bold tracking-widest text-[#D33658] hover:text-[#93203A] transition hidden sm:inline-flex items-center gap-1.5"
+              className="text-xs uppercase font-bold tracking-widest text-[#3F235F] hover:text-[#7043A0] transition hidden sm:inline-flex items-center gap-1.5 cursor-pointer"
             >
               <span>Explorar Catálogo</span>
               <ArrowRight size={13} />
@@ -117,22 +118,22 @@ export default async function AccountPage() {
           </div>
 
           {orders.length === 0 ? (
-            <div className="bg-[#FFF5F7] p-10 rounded-3xl border border-[#FAD1DC] text-center space-y-4 shadow-xs">
-              <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto flex items-center justify-center border border-[#FAD1DC] shadow-xs">
-                <ShoppingBag size={28} className="text-[#E65573]" />
+            <div className="bg-[#F8F5FA] p-10 rounded-3xl border border-[#DFD0EC] text-center space-y-4 shadow-xs">
+              <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto flex items-center justify-center border border-[#DFD0EC] shadow-xs">
+                <ShoppingBag size={28} className="text-[#7043A0]" />
               </div>
               <div className="space-y-1 max-w-sm mx-auto">
-                <h3 className="font-serif text-lg font-bold text-zinc-900">
+                <h3 className="font-sans text-lg font-bold text-zinc-900">
                   Aún no has adquirido joyas en tu cuenta
                 </h3>
                 <p className="text-xs text-zinc-500 font-light leading-relaxed">
-                  Descubre piezas en Plata de Ley 925 y Baño de Oro 18k con envío seguro a todo el país.
+                  Descubre piezas en Plata de Ley 925 y Baño de Oro 18k con gema amatista morada.
                 </p>
               </div>
               <div className="pt-2">
                 <Link
                   href="/productos"
-                  className="btn-pink-diamond text-xs uppercase tracking-widest px-8 py-3.5 rounded-full font-bold transition shadow-md shimmer-button inline-flex items-center gap-2"
+                  className="btn-purple-diamond text-xs uppercase tracking-widest px-8 py-3.5 rounded-full font-bold transition shadow-md inline-flex items-center gap-2 cursor-pointer"
                 >
                   Ver Joyas <ArrowRight size={15} />
                 </Link>
@@ -147,17 +148,17 @@ export default async function AccountPage() {
                 return (
                   <div
                     key={order.id}
-                    className="bg-white p-6 sm:p-7 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-5 luxury-card-hover"
+                    className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-5"
                   >
                     {/* Order Header */}
-                    <div className="flex flex-wrap justify-between items-center gap-3 pb-4 border-b border-[#FFF0F3]">
+                    <div className="flex flex-wrap justify-between items-center gap-3 pb-4 border-b border-[#F0E9F5]">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold text-sm text-zinc-900">
                             #{order.orderNumber}
                           </span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#FFF5F7] text-[#D33658] border border-[#FAD1DC]">
-                            {order.payment?.method === 'BANK_TRANSFER' ? 'Transferencia' : 'Contra Entrega'}
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#F8F5FA] text-[#3F235F] border border-[#DFD0EC]">
+                            {getPaymentMethodLabel(order.payment?.method)}
                           </span>
                         </div>
                         <span className="text-xs text-zinc-400 block font-light">
@@ -173,25 +174,13 @@ export default async function AccountPage() {
 
                       <div className="flex items-center gap-3">
                         <span
-                          className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                            order.status === 'DELIVERED'
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                              : order.status === 'CANCELLED'
-                              ? 'bg-red-50 text-red-700 border border-red-200'
-                              : 'bg-[#FFF5F7] text-[#D33658] border border-[#FAD1DC]'
-                          }`}
+                          className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${getOrderStatusColor(
+                            order.status
+                          )}`}
                         >
-                          {order.status === 'PENDING'
-                            ? 'Pendiente'
-                            : order.status === 'PROCESSING'
-                            ? 'En Preparación'
-                            : order.status === 'SHIPPED'
-                            ? 'En Camino'
-                            : order.status === 'DELIVERED'
-                            ? 'Entregado'
-                            : 'Cancelado'}
+                          {getOrderStatusLabel(order.status)}
                         </span>
-                        <span className="font-serif font-bold text-lg text-zinc-900">
+                        <span className="font-sans font-bold text-lg text-[#3F235F]">
                           ${Number(order.total).toFixed(2)}
                         </span>
                       </div>
@@ -202,18 +191,23 @@ export default async function AccountPage() {
                       {order.items.map((i) => (
                         <div
                           key={i.id}
-                          className="flex justify-between items-center py-2 px-3 bg-[#FFF8FA] rounded-2xl border border-[#FAD1DC]/60"
+                          className="flex justify-between items-center py-2 px-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]/60"
                         >
                           <div className="flex items-center gap-2 truncate pr-2">
-                            <RoisinDiamond size={11} color="#E65573" />
+                            <RoisinDiamond size={11} color="#7043A0" />
                             <span className="font-medium text-zinc-900 truncate">
                               {i.variant.product.title}
                             </span>
                             <span className="text-zinc-500 font-semibold">
                               (x{i.quantity})
                             </span>
+                            {i.dedication && (
+                              <span className="text-zinc-400 italic text-[10px]">
+                                - &ldquo;{i.dedication}&rdquo;
+                              </span>
+                            )}
                           </div>
-                          <span className="font-serif font-bold text-zinc-900 shrink-0">
+                          <span className="font-sans font-bold text-[#3F235F] shrink-0">
                             ${(Number(i.price) * i.quantity).toFixed(2)}
                           </span>
                         </div>
@@ -221,14 +215,14 @@ export default async function AccountPage() {
                     </div>
 
                     {/* Order Footer & Action Links */}
-                    <div className="pt-3 border-t border-[#FFF0F3] flex flex-wrap items-center justify-between gap-3">
+                    <div className="pt-3 border-t border-[#F0E9F5] flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2 text-xs text-zinc-500">
                         {isPaid ? (
                           <span className="inline-flex items-center gap-1.5 text-emerald-700 font-semibold">
                             <CheckCircle2 size={14} /> Pago Confirmado
                           </span>
                         ) : isVerifying ? (
-                          <span className="inline-flex items-center gap-1.5 text-[#D33658] font-semibold">
+                          <span className="inline-flex items-center gap-1.5 text-[#3F235F] font-semibold">
                             <Clock size={14} /> Comprobante en Verificación
                           </span>
                         ) : (
@@ -241,7 +235,7 @@ export default async function AccountPage() {
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/orden-confirmada/${order.id}`}
-                          className="btn-pink-diamond text-[11px] uppercase font-bold tracking-wider px-4 py-2 rounded-xl transition inline-flex items-center gap-1.5 shadow-xs"
+                          className="btn-purple-diamond text-[11px] uppercase font-bold tracking-wider px-4 py-2 rounded-xl transition inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                         >
                           <span>Ver Resumen & Recibo</span>
                           <ArrowRight size={12} />
@@ -257,16 +251,16 @@ export default async function AccountPage() {
 
         {/* Right 1 Col: VIP Profile Card & Delivery Info */}
         <div className="space-y-6">
-          <div className="bg-white p-7 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-5">
-            <div className="flex items-center gap-2 border-b border-[#FAD1DC] pb-4">
-              <RoisinDiamond size={15} color="#E65573" />
-              <h3 className="font-serif font-bold text-base text-zinc-900">
+          <div className="bg-white p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-5">
+            <div className="flex items-center gap-2 border-b border-[#DFD0EC] pb-4">
+              <RoisinDiamond size={15} color="#7043A0" />
+              <h3 className="font-sans font-bold text-base text-zinc-900">
                 Información de Contacto
               </h3>
             </div>
 
             <div className="space-y-3.5 text-xs text-zinc-700">
-              <div className="p-3.5 bg-[#FFF8FA] rounded-2xl border border-[#FAD1DC]/80 space-y-1">
+              <div className="p-3.5 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]/80 space-y-1">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
                   Nombre Completo
                 </span>
@@ -275,14 +269,14 @@ export default async function AccountPage() {
                 </p>
               </div>
 
-              <div className="p-3.5 bg-[#FFF8FA] rounded-2xl border border-[#FAD1DC]/80 space-y-1">
+              <div className="p-3.5 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]/80 space-y-1">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
                   Correo Electrónico
                 </span>
                 <p className="font-bold text-zinc-900 truncate">{user.email}</p>
               </div>
 
-              <div className="p-3.5 bg-[#FFF8FA] rounded-2xl border border-[#FAD1DC]/80 space-y-1">
+              <div className="p-3.5 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]/80 space-y-1">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
                   Teléfono / WhatsApp
                 </span>
@@ -292,21 +286,21 @@ export default async function AccountPage() {
           </div>
 
           {/* Benefits Card */}
-          <div className="bg-[#FFF5F7] p-7 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-4">
-            <h4 className="font-serif font-bold text-sm text-zinc-900 flex items-center gap-2">
-              <Sparkles size={16} className="text-[#E65573]" /> Garantías de tu Cuenta VIP
+          <div className="bg-[#F8F5FA] p-7 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-4">
+            <h4 className="font-sans font-bold text-sm text-zinc-900 flex items-center gap-2">
+              <Sparkles size={16} className="text-[#7043A0]" /> Garantías de tu Cuenta VIP
             </h4>
             <div className="space-y-2.5 text-xs text-zinc-600 font-light">
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-[#D33658] shrink-0" />
+                <CheckCircle2 size={15} className="text-[#3F235F] shrink-0" />
                 <span>Certificado digital de autenticidad en cada compra</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-[#D33658] shrink-0" />
-                <span>Acceso anticipado a lanzamientos de colecciones</span>
+                <CheckCircle2 size={15} className="text-[#3F235F] shrink-0" />
+                <span>Acceso anticipado a colecciones de Diamante Morado</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-[#D33658] shrink-0" />
+                <CheckCircle2 size={15} className="text-[#3F235F] shrink-0" />
                 <span>Atención prioritaria y personalizada por WhatsApp</span>
               </div>
             </div>
@@ -316,3 +310,4 @@ export default async function AccountPage() {
     </div>
   );
 }
+

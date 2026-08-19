@@ -1,30 +1,29 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google';
+import { Open_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/storefront/Header';
 import Footer from '@/components/storefront/Footer';
 import CartDrawer from '@/components/storefront/CartDrawer';
+import PageTransitionLoader from '@/components/ui/PageTransitionLoader';
 import { getCurrentUser } from '@/lib/auth';
+import { Suspense } from 'react';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const openSans = Open_Sans({
+  variable: '--font-open-sans',
   subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  display: 'swap',
 });
 
 const playfair = Playfair_Display({
   variable: '--font-serif',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://roisinjoyas.com'),
   title: {
-    default: 'ROISIN Joyas & Accesorios | Plata 925 y Oro 18k en Ecuador',
+    default: 'ROISIN Joyas | Diamante Morado & Alta Joyería en Ecuador',
     template: '%s | ROISIN Joyas',
   },
   description:
@@ -35,11 +34,12 @@ export const metadata: Metadata = {
     'anillos de promesa',
     'pulseras tennis',
     'collares oro',
+    'diamante morado',
     'joyeria fina',
     'roisin joyas',
   ],
   openGraph: {
-    title: 'ROISIN Joyas & Accesorios | Elegancia en cada detalle',
+    title: 'ROISIN Joyas & Accesorios | Diamante Morado Elegante',
     description: 'Exclusiva joyería en Plata 925 y Baño de Oro 18k con envíos a todo Ecuador.',
     url: 'https://roisinjoyas.com',
     siteName: 'ROISIN Joyas',
@@ -58,8 +58,11 @@ export default async function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-black selection:text-white flex flex-col min-h-screen`}
+        className={`${openSans.variable} ${playfair.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-[#DFD0EC] selection:text-[#221235] flex flex-col min-h-screen`}
       >
+        <Suspense fallback={null}>
+          <PageTransitionLoader />
+        </Suspense>
         <Header user={user ? { email: user.email, role: user.role } : null} />
         <main className="flex-1">{children}</main>
         <Footer />

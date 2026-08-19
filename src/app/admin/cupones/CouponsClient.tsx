@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { adminCreateCouponAction, adminToggleCouponAction } from '@/lib/actions/admin.actions';
-import { Tag, Plus, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Plus, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface CouponItem {
@@ -68,9 +68,9 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
   return (
     <div className="space-y-8">
       {/* 1. Creation Form */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#FAD1DC] shadow-xs space-y-5">
-        <div className="flex items-center gap-2 border-b border-[#FAD1DC] pb-3.5">
-          <RoisinDiamond size={15} color="#E65573" />
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-5">
+        <div className="flex items-center gap-2 border-b border-[#DFD0EC] pb-3.5">
+          <RoisinDiamond size={15} color="#7043A0" />
           <h2 className="text-xs uppercase font-bold tracking-wider text-zinc-900">
             Crear Nuevo Cupón de Descuento
           </h2>
@@ -92,7 +92,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
               placeholder="EJ: AMOR2026"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl font-mono uppercase font-bold focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 transition"
+              className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl font-mono uppercase font-bold focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 transition"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
               placeholder="15"
               value={formData.discountPercentage}
               onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
-              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 font-bold transition text-center"
+              className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-[#3F235F] font-bold transition text-center"
             />
           </div>
 
@@ -118,7 +118,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
               placeholder="Ilimitado"
               value={formData.maxUses}
               onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
-              className="w-full px-4 py-3 text-xs bg-[#FFF8FA] border border-[#FAD1DC] rounded-2xl focus:outline-none focus:border-[#D33658] focus:bg-white text-zinc-900 font-bold transition text-center"
+              className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 font-bold transition text-center"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-pink-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 shadow-md shimmer-button flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full btn-purple-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold transition active:scale-[0.99] disabled:opacity-50 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus size={15} /> {loading ? '...' : 'Crear Cupón'}
             </button>
@@ -135,11 +135,11 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
       </div>
 
       {/* 2. Coupons Table */}
-      <div className="bg-white rounded-3xl border border-[#FAD1DC] shadow-xs overflow-hidden">
+      <div className="bg-white rounded-3xl border border-[#DFD0EC] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[#FAD1DC] bg-[#FFF5F7] text-zinc-900 font-bold">
+              <tr className="border-b border-[#DFD0EC] bg-[#F8F5FA] text-zinc-900 font-bold">
                 <th className="p-4 uppercase tracking-wider">Código</th>
                 <th className="p-4 uppercase tracking-wider">Descuento</th>
                 <th className="p-4 uppercase tracking-wider">Usos (Actual / Máx)</th>
@@ -147,15 +147,15 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
                 <th className="p-4 uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#FAD1DC]/60">
+            <tbody className="divide-y divide-[#DFD0EC]/60">
               {coupons.map((coupon) => (
-                <tr key={coupon.id} className="hover:bg-[#FFF8FA] transition">
+                <tr key={coupon.id} className="hover:bg-[#F8F5FA]/50 transition">
                   <td className="p-4 font-mono font-bold text-zinc-900 tracking-wider text-sm">
-                    <span className="bg-[#FFF5F7] px-3 py-1 rounded-full border border-[#FAD1DC] text-[#D33658]">
+                    <span className="bg-[#F8F5FA] px-3 py-1 rounded-full border border-[#DFD0EC] text-[#3F235F]">
                       {coupon.code}
                     </span>
                   </td>
-                  <td className="p-4 font-serif font-bold text-zinc-900 text-sm">{coupon.discountPercentage}% OFF</td>
+                  <td className="p-4 font-sans font-bold text-[#3F235F] text-sm">{coupon.discountPercentage}% OFF</td>
                   <td className="p-4 text-zinc-700 font-medium">
                     {coupon.currentUses} / {coupon.maxUses || 'Ilimitado'}
                   </td>
@@ -174,7 +174,7 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
                   <td className="p-4 text-right">
                     <button
                       onClick={() => handleToggle(coupon.id, coupon.isActive)}
-                      className="text-xs font-bold text-[#D33658] hover:text-[#93203A] transition cursor-pointer px-3 py-1.5 rounded-xl hover:bg-[#FFF5F7]"
+                      className="text-xs font-bold text-[#3F235F] hover:text-[#7043A0] transition cursor-pointer px-3 py-1.5 rounded-xl hover:bg-[#F8F5FA]"
                     >
                       {coupon.isActive ? 'Desactivar' : 'Activar'}
                     </button>
@@ -195,3 +195,4 @@ export default function CouponsClient({ coupons: initialCoupons }: { coupons: Co
     </div>
   );
 }
+

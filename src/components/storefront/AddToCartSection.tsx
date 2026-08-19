@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCartStore } from '@/lib/store/cartStore';
@@ -15,6 +15,8 @@ import {
   Gift,
   ShieldCheck,
   Zap,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import SizeGuideModal from './SizeGuideModal';
@@ -60,10 +62,10 @@ interface AddToCartSectionProps {
 
 export default function AddToCartSection({ product, onVariantChange }: AddToCartSectionProps) {
   const router = useRouter();
-  const { addItem, openCart, loading } = useCartStore();
+  const { addItem, openCart } = useCartStore();
+  const packScrollRef = useRef<HTMLDivElement>(null);
 
   // --- Attribute & Variant Extraction ---
-  // Detect distinct attribute types across variants (e.g. Color/Material vs Talla/Medida)
   const { colorAttrValues, sizeAttrValues, hasMultiAttributes } = useMemo(() => {
     const colors = new Set<string>();
     const sizes = new Set<string>();
@@ -121,7 +123,6 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   useEffect(() => {
     if (!hasMultiAttributes) return;
 
-    // Find variant matching both selected color and selected size
     let match = product.variants.find((v) => {
       const attrs = v.attributes || [];
       const hasColor = attrs.some((a) => a.attributeValue.value === selectedColor);
@@ -129,14 +130,12 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
       return hasColor && hasSize;
     });
 
-    // If no exact match (size not available for this color), fallback to first variant with this color
     if (!match) {
       match = product.variants.find((v) => {
         const attrs = v.attributes || [];
         return attrs.some((a) => a.attributeValue.value === selectedColor);
       });
       if (match) {
-        // Update selected size to match this variant's size
         const sizeAttr = match.attributes?.find((a) => {
           const name = a.attributeValue.attribute.name.toLowerCase();
           return name.includes('talla') || name.includes('medida');
@@ -177,10 +176,15 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   const stock = currentVariant?.inventory?.quantity ?? 10;
   const isOutOfStock = stock <= 0;
 
-  // Single-dimension variant selection handler
   const handleSelectSingleVariant = (variantId: string) => {
     setSelectedVariantId(variantId);
     if (onVariantChange) onVariantChange(variantId);
+  };
+
+  const scrollPack = (direction: 'left' | 'right') => {
+    if (!packScrollRef.current) return;
+    const amount = direction === 'left' ? -280 : 280;
+    packScrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
   };
 
   const handleAction = async (directCheckout = false) => {
@@ -215,8 +219,32 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   return (
     <>
       <div className="space-y-6">
-        {/* 1. Price Header & Stock Status */}
-        <div className="flex items-baseline justify-between border-b border-[#DFD0EC] pb-4">
+        {/* 1. NOMBRE PRINCIPAL DEL PRODUCTO */}
+        <div className="space-y-1.5">
+          <h1 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+            {product.title}
+          </h1>
+
+          {/* 2. DESCRIPCIÓN CORTA */}
+          {product.shortDescription && (
+            <p className="text-xs sm:text-sm text-zinc-600 font-medium leading-relaxed">
+              {product.shortDescription}
+            </p>
+          )}
+        </div>
+
+        {/* 3. DESCRIPCIÓN LARGA / DETALLES */}
+        <div className="bg-[#FAF8FC] p-4 sm:p-5 rounded-3xl border border-[#DFD0EC] space-y-2">
+          <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-1.5">
+            <RoisinDiamond size={11} color="#7043A0" /> Detalles de la Joya
+          </h3>
+          <p className="text-xs text-zinc-600 leading-relaxed font-light whitespace-pre-line">
+            {product.description}
+          </p>
+        </div>
+
+        {/* 4. PRECIO & DISPONIBILIDAD */}
+        <div className="flex items-baseline justify-between border-b border-[#DFD0EC] pb-4 pt-1">
           <div className="flex items-baseline gap-3">
             <span className="font-sans text-3xl sm:text-4xl font-bold text-[#3F235F]">
               ${finalUnitPrice.toFixed(2)}
@@ -244,29 +272,10 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </span>
         </div>
 
-        {/* 2. Short Description */}
-        {product.shortDescription && (
-          <div className="bg-[#F8F5FA] p-3.5 rounded-2xl border border-[#DFD0EC]">
-            <p className="text-xs text-zinc-700 leading-relaxed font-medium">
-              {product.shortDescription}
-            </p>
-          </div>
-        )}
-
-        {/* 3. Long Description / Details */}
-        <div className="space-y-2">
-          <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-1.5">
-            <RoisinDiamond size={11} color="#7043A0" /> Detalles de la Joya
-          </h3>
-          <p className="text-xs text-zinc-600 leading-relaxed font-light whitespace-pre-line">
-            {product.description}
-          </p>
-        </div>
-
-        {/* 4. Multi-Attribute Variant Selectors (Color & Size) */}
+        {/* 5. VARIANTES CONECTADAS (Color / Material & Tallas) */}
         {hasMultiAttributes ? (
-          <div className="space-y-4 pt-3 border-t border-[#DFD0EC]">
-            {/* 4A. Color / Material Selector */}
+          <div className="space-y-4 pt-2 border-t border-[#DFD0EC]">
+            {/* 5A. Selector de Color / Material */}
             <div className="space-y-2">
               <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
                 <span>Color / Material:</span>
@@ -295,7 +304,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               </div>
             </div>
 
-            {/* 4B. Size / Talla Selector filtered by selected color */}
+            {/* 5B. Selector de Talla / Medida */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
@@ -312,7 +321,6 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
 
               <div className="flex flex-wrap gap-2.5">
                 {sizeAttrValues.map((size) => {
-                  // Check if this size exists for the currently selected color
                   const availableForColor = product.variants.some((v) => {
                     const attrs = v.attributes || [];
                     const matchesColor = attrs.some((a) => a.attributeValue.value === selectedColor);
@@ -345,7 +353,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         ) : product.variants.length > 1 ? (
           /* Single-Attribute Variant List */
-          <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
+          <div className="space-y-3 pt-2 border-t border-[#DFD0EC]">
             <div className="flex justify-between items-center">
               <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
                 Seleccionar Medida / Variante
@@ -383,7 +391,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </div>
           </div>
         ) : (
-          /* Single variant default: Size Guide button */
+          /* Single variant default button */
           <div className="pt-2 border-t border-[#DFD0EC]">
             <button
               type="button"
@@ -401,7 +409,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 5. VISUAL PRESENTATION & PACKAGING SELECTOR WITH PHOTOS */}
+        {/* 6. SELECTOR HORIZONTAL DE PRESENTACIÓN & EMPAQUE CON FLECHAS DE NAVEGACIÓN Y PRECIOS DESTACADOS */}
         {product.optionGroupLinks && product.optionGroupLinks.length > 0 && (
           <div className="space-y-3 pt-4 border-t border-[#DFD0EC]">
             {product.optionGroupLinks.map((link) => (
@@ -413,12 +421,33 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                       {link.group.name}
                     </label>
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#7043A0] bg-[#F0E9F5] px-2.5 py-0.5 rounded-full border border-[#DFD0EC]">
-                    Foto Real
-                  </span>
+
+                  {/* Carousel Navigation Arrows */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => scrollPack('left')}
+                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      aria-label="Presentaciones anteriores"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollPack('right')}
+                      className="p-1.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] text-zinc-700 hover:text-[#3F235F] transition cursor-pointer shadow-2xs"
+                      aria-label="Ver más presentaciones"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Horizontal Scrollable Presentations Carousel */}
+                <div
+                  ref={packScrollRef}
+                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1"
+                >
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
                     const modifier = Number(opt.priceModifier || 0);
@@ -433,13 +462,13 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                             [link.group.id]: opt.id,
                           })
                         }
-                        className={`group relative flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer ${
+                        className={`group relative flex-none w-[240px] sm:w-[260px] flex flex-col rounded-3xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
                           isSelected
-                            ? 'border-[#3F235F] bg-[#F8F5FA] ring-2 ring-[#7043A0]/30 shadow-md scale-102'
-                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
+                            ? 'border-[#3F235F] bg-[#F8F5FA] ring-2 ring-[#7043A0]/30 shadow-md scale-101'
+                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-sm'
                         }`}
                       >
-                        {/* Packaging Photo Thumbnail */}
+                        {/* Packaging Photo */}
                         <div className="relative aspect-[16/11] bg-[#F0E9F5] overflow-hidden">
                           <Image
                             src={
@@ -448,17 +477,19 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                             }
                             alt={opt.name}
                             fill
-                            sizes="(max-width: 640px) 100vw, 33vw"
+                            sizes="260px"
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           {isSelected && (
-                            <div className="absolute top-2 right-2 bg-[#3F235F] text-white p-1 rounded-full shadow-md">
-                              <Check size={11} />
+                            <div className="absolute top-2.5 right-2.5 bg-[#3F235F] text-white p-1.5 rounded-full shadow-md z-10">
+                              <Check size={13} />
                             </div>
                           )}
-                          <div className="absolute bottom-2 left-2">
+
+                          {/* Large Prominent Price Badge */}
+                          <div className="absolute bottom-2.5 left-2.5 z-10">
                             <span
-                              className={`text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full shadow-xs ${
+                              className={`text-xs sm:text-[13px] font-black uppercase px-3 py-1 rounded-full shadow-md leading-normal inline-block ${
                                 modifier > 0
                                   ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
                                   : 'bg-white/95 text-zinc-900 border border-[#DFD0EC]'
@@ -470,12 +501,12 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                         </div>
 
                         {/* Label & Description */}
-                        <div className="p-3 space-y-1">
-                          <h4 className="font-sans text-xs font-bold text-zinc-900 leading-snug">
+                        <div className="p-3.5 space-y-1">
+                          <h4 className="font-sans text-xs sm:text-[13px] font-bold text-zinc-900 leading-snug line-clamp-1">
                             {opt.name}
                           </h4>
                           {opt.description && (
-                            <p className="text-[10px] text-zinc-500 font-light line-clamp-2 leading-tight">
+                            <p className="text-[10.5px] text-zinc-500 font-light line-clamp-2 leading-tight">
                               {opt.description}
                             </p>
                           )}
@@ -489,7 +520,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 6. PERMANENT DEDICATION CARD FOR GIFT */}
+        {/* 7. DEDICATORIA PERMANENTE PARA TARJETA DE REGALO */}
         <div className="pt-4 border-t border-[#DFD0EC] space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider text-[#3F235F]">
@@ -521,7 +552,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         </div>
 
-        {/* 7. Quantity & CTA Action Buttons */}
+        {/* 8. CANTIDAD & BOTONES DE COMPRA */}
         <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
@@ -584,7 +615,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         </div>
 
-        {/* 8. Trust Badges */}
+        {/* 9. GARANTÍAS DE CONFIANZA */}
         <div className="grid grid-cols-2 gap-3 pt-2">
           <div className="flex items-center gap-2 p-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]">
             <ShieldCheck size={18} className="text-[#7043A0] shrink-0" />

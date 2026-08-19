@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Open_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import ConditionalStorefrontLayout from '@/components/layout/ConditionalStorefrontLayout';
 import PageTransitionLoader from '@/components/ui/PageTransitionLoader';
@@ -9,6 +10,12 @@ import { Suspense } from 'react';
 const openSans = Open_Sans({
   variable: '--font-open-sans',
   subsets: ['latin'],
+  display: 'swap',
+});
+
+const novaQuinta = localFont({
+  src: '../fonts/NovaQuinta.otf',
+  variable: '--font-nova-quinta',
   display: 'swap',
 });
 
@@ -50,7 +57,7 @@ export default async function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <body
-        className={`${openSans.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-[#DFD0EC] selection:text-[#221235] flex flex-col min-h-screen`}
+        className={`${openSans.variable} ${novaQuinta.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-[#DFD0EC] selection:text-[#221235] flex flex-col min-h-screen`}
       >
         <Suspense fallback={null}>
           <PageTransitionLoader />

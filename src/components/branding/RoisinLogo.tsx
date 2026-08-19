@@ -41,8 +41,8 @@ export default function RoisinLogo({
       {/* Brand Wordmark & Tagline */}
       <div className="flex flex-col text-left">
         <span
-          className={`font-sans text-xl sm:text-2xl font-black tracking-[0.28em] uppercase leading-none transition-colors ${textColor}`}
-          style={{ letterSpacing: '0.28em' }}
+          className={`font-roisin text-2xl sm:text-3xl tracking-[0.14em] uppercase leading-none transition-colors ${textColor}`}
+          style={{ letterSpacing: '0.14em' }}
         >
           ROISIN
         </span>

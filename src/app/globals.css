@@ -11,6 +11,7 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-open-sans);
   --font-heading: var(--font-open-sans);
+  --font-roisin: var(--font-nova-quinta);
 
   /* ROISIN Radiant Purple Diamond Palette (#3f235f) */
   --color-roisin-50: #F8F5FA;
@@ -165,4 +166,8 @@
 
 .shimmer-button:hover::after {
   transform: rotate(30deg) translateY(100%);
+}
+
+.font-roisin {
+  font-family: var(--font-nova-quinta), serif;
 }

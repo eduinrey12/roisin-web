@@ -348,21 +348,36 @@ export async function adminUpdateFreeShippingThresholdAction(threshold: number) 
     await requireAdmin();
     const prisma = (await import('@/lib/db')).default;
     const cleanValue = isNaN(Number(threshold)) ? 50.0 : Number(threshold);
-    const updated = await prisma.storeSetting.upsert({
-      where: { key: 'free_shipping_threshold' },
-      update: { value: cleanValue.toFixed(2) },
-      create: {
-        key: 'free_shipping_threshold',
-        value: cleanValue.toFixed(2),
-        label: 'Monto mínimo para Envío Gratis ($)',
-        type: 'number',
-      },
-    });
+    let val = cleanValue.toFixed(2);
+
+    if ((prisma as any).storeSetting) {
+      const updated = await (prisma as any).storeSetting.upsert({
+        where: { key: 'free_shipping_threshold' },
+        update: { value: val },
+        create: {
+          key: 'free_shipping_threshold',
+          value: val,
+          label: 'Monto mínimo para Envío Gratis ($)',
+          type: 'number',
+        },
+      });
+      val = updated.value;
+    } else {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO StoreSetting (id, \`key\`, \`value\`, \`type\`, \`label\`, createdAt, updatedAt)
+         VALUES (UUID(), 'free_shipping_threshold', ?, 'number', 'Monto mínimo para Envío Gratis ($)', NOW(), NOW())
+         ON DUPLICATE KEY UPDATE \`value\` = ?, updatedAt = NOW()`,
+        val,
+        val
+      );
+    }
+
     revalidatePath('/admin/envios');
     revalidatePath('/checkout');
     revalidatePath('/');
-    return { success: true, threshold: Number(updated.value) };
+    return { success: true, threshold: Number(val) };
   } catch (err: any) {
+    console.error('Error in adminUpdateFreeShippingThresholdAction:', err);
     return { success: false, error: err.message || 'Error al actualizar umbral de envío' };
   }
 }
@@ -370,11 +385,20 @@ export async function adminUpdateFreeShippingThresholdAction(threshold: number) 
 export async function getFreeShippingThreshold(): Promise<number> {
   try {
     const prisma = (await import('@/lib/db')).default;
-    const setting = await prisma.storeSetting.findUnique({
-      where: { key: 'free_shipping_threshold' },
-    });
-    if (setting && !isNaN(Number(setting.value))) {
-      return Number(setting.value);
+    if ((prisma as any).storeSetting) {
+      const setting = await (prisma as any).storeSetting.findUnique({
+        where: { key: 'free_shipping_threshold' },
+      });
+      if (setting && !isNaN(Number(setting.value))) {
+        return Number(setting.value);
+      }
+    } else {
+      const rows: any = await prisma.$queryRawUnsafe(
+        `SELECT \`value\` FROM StoreSetting WHERE \`key\` = 'free_shipping_threshold' LIMIT 1`
+      );
+      if (rows && rows[0]?.value && !isNaN(Number(rows[0].value))) {
+        return Number(rows[0].value);
+      }
     }
     return 50.0;
   } catch {

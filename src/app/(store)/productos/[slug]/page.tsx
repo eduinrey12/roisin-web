@@ -128,22 +128,8 @@ export default async function ProductDetailPage({
         {/* Left Column: Gallery with thumbnails and variant image switching */}
         <ProductGallery images={product.images} title={product.title} />
 
-        {/* Right Column: Title -> Short Desc -> Long Desc -> Variants -> Dedication -> Add to Cart */}
-        <div className="flex flex-col space-y-6">
-          <div className="space-y-1.5">
-            {product.category && (
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F]">
-                <RoisinDiamond size={11} color="#7043A0" />
-                {product.category.name}
-              </span>
-            )}
-            {/* 1. Title / Name */}
-            <h1 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
-              {product.title}
-            </h1>
-          </div>
-
-          {/* Interactive Pricing, Short/Long Description, Size & Color Selector, Presentation Selector with Photos, Dedication, AddToCart/BuyNow */}
+        {/* Right Column: Title -> Short Desc -> Long Desc -> Price -> Variants -> Presentations Carousel -> Dedication -> Add to Cart */}
+        <div className="flex flex-col">
           <AddToCartSection product={enhancedProduct} />
         </div>
       </div>

@@ -46,9 +46,13 @@ export default function ProductGallery({
     setSelectedIdx((prev) => (prev < activeImages.length - 1 ? prev + 1 : 0));
   }, [activeImages.length]);
 
-  // Keyboard navigation for modal
+  // Lock body scroll and handle keyboard navigation when modal is open
   useEffect(() => {
     if (!isModalOpen) return;
+
+    // Prevent body scroll
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsModalOpen(false);
@@ -57,7 +61,10 @@ export default function ProductGallery({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isModalOpen, handlePrev, handleNext]);
 
   return (
@@ -66,7 +73,7 @@ export default function ProductGallery({
       <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-24 self-start items-start w-full">
         {/* 1. Left Vertical Thumbnails Column */}
         {activeImages.length > 1 && (
-          <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-22 shrink-0 max-h-[540px] p-1.5">
+          <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 lg:w-22 shrink-0 max-h-[580px] p-1">
             {activeImages.map((img, idx) => (
               <button
                 key={img.url + idx}
@@ -98,7 +105,7 @@ export default function ProductGallery({
         {/* 2. Main Showcase Image with Zoom Click Action */}
         <div
           onClick={() => setIsModalOpen(true)}
-          className="relative aspect-square sm:aspect-[4/3.8] w-full flex-1 bg-[#F8F5FA] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-md group cursor-zoom-in min-h-[340px] sm:min-h-[420px] lg:min-h-[460px]"
+          className="relative aspect-square lg:aspect-[4/3.8] w-full flex-1 bg-[#F8F5FA] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-md group cursor-zoom-in min-h-[360px] sm:min-h-[440px] lg:min-h-[520px]"
         >
           <Image
             src={currentImage.url}
@@ -124,78 +131,107 @@ export default function ProductGallery({
         </div>
       </div>
 
-      {/* 3. Fullscreen Image Modal / Lightbox */}
+      {/* 3. Fullscreen Clean Image Modal / Lightbox (No Scroll, Overlays All) */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/92 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 select-none"
+          className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden select-none"
           onClick={() => setIsModalOpen(false)}
         >
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsModalOpen(false);
-            }}
-            className="absolute top-5 right-5 z-20 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
-            aria-label="Cerrar vista completa"
-          >
-            <X size={24} />
-          </button>
+          {/* Top Header Bar */}
+          <div className="w-full max-w-6xl flex items-center justify-between z-30 shrink-0">
+            <div className="flex items-center gap-2 text-white">
+              <span className="text-sm font-bold truncate max-w-sm sm:max-w-md">{title}</span>
+              {activeImages.length > 1 && (
+                <span className="text-xs text-zinc-400 font-medium">
+                  ({selectedIdx + 1} / {activeImages.length})
+                </span>
+              )}
+            </div>
 
-          {/* Navigation Arrows */}
-          {activeImages.length > 1 && (
-            <>
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsModalOpen(false);
+              }}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
+              aria-label="Cerrar vista completa"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          {/* Center Image Container (Strictly Fits Viewport Height, No Overflow) */}
+          <div
+            className="relative flex-1 w-full max-w-5xl my-2 flex items-center justify-center min-h-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous Arrow */}
+            {activeImages.length > 1 && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePrev();
                 }}
-                className="absolute left-4 sm:left-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
+                className="absolute left-2 sm:left-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
                 aria-label="Imagen anterior"
               >
-                <ChevronLeft size={28} />
+                <ChevronLeft size={24} />
               </button>
+            )}
+
+            {/* Photo in Full View */}
+            <div className="relative w-full h-full">
+              <Image
+                src={currentImage.url}
+                alt={currentImage.altText || title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-contain"
+              />
+            </div>
+
+            {/* Next Arrow */}
+            {activeImages.length > 1 && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleNext();
                 }}
-                className="absolute right-4 sm:right-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
+                className="absolute right-2 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
                 aria-label="Imagen siguiente"
               >
-                <ChevronRight size={28} />
+                <ChevronRight size={24} />
               </button>
-            </>
-          )}
-
-          {/* Large Image Container */}
-          <div
-            className="relative w-full max-w-4xl h-[75vh] sm:h-[85vh] flex flex-col items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative w-full h-full">
-              <Image
-                src={currentImage.url}
-                alt={currentImage.altText || title}
-                fill
-                sizes="(max-width: 1200px) 100vw, 1200px"
-                className="object-contain"
-              />
-            </div>
-
-            {/* Bottom Title & Counter Bar */}
-            <div className="mt-4 flex items-center gap-3 bg-black/60 backdrop-blur-xs text-white px-4 py-1.5 rounded-full border border-white/15 text-xs">
-              <span className="font-semibold truncate max-w-xs">{title}</span>
-              {activeImages.length > 1 && (
-                <span className="text-zinc-400">
-                  ({selectedIdx + 1} de {activeImages.length})
-                </span>
-              )}
-            </div>
+            )}
           </div>
+
+          {/* Bottom Thumbnails Strip */}
+          {activeImages.length > 1 && (
+            <div
+              className="w-full max-w-md flex items-center justify-center gap-2 z-30 shrink-0 overflow-x-auto py-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {activeImages.map((img, idx) => (
+                <button
+                  key={img.url + idx}
+                  type="button"
+                  onClick={() => setSelectedIdx(idx)}
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition cursor-pointer shrink-0 ${
+                    selectedIdx === idx
+                      ? 'border-white ring-2 ring-white/60 shadow-lg scale-105'
+                      : 'border-white/30 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <Image src={img.url} alt="" fill sizes="48px" className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>

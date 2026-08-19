@@ -198,8 +198,8 @@ export default function Header({ user }: { user?: { email: string; role: string 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Left Column: Categorías */}
                   <div className="space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-[10.5px] uppercase font-bold tracking-wider text-zinc-400">
-                      <Layers size={13} className="text-[#7043A0]" />
+                    <div className="flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-zinc-500 py-1 leading-normal">
+                      <Layers size={14} className="text-[#7043A0]" />
                       <span>Categorías de Joyería</span>
                     </div>
                     <div className="space-y-1.5">
@@ -229,8 +229,8 @@ export default function Header({ user }: { user?: { email: string; role: string 
 
                   {/* Right Column: Colecciones */}
                   <div className="space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-[10.5px] uppercase font-bold tracking-wider text-zinc-400">
-                      <Sparkles size={13} className="text-[#7043A0]" />
+                    <div className="flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-zinc-500 py-1 leading-normal">
+                      <Sparkles size={14} className="text-[#7043A0]" />
                       <span>Colecciones Especiales</span>
                     </div>
                     <div className="space-y-1.5">

@@ -34,10 +34,10 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
           <div className="flex items-center gap-2.5">
             <RoisinDiamond size={22} color="#7043A0" />
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F] block">
+              <span className="text-[11px] uppercase font-bold tracking-wider text-[#3F235F] block py-0.5 leading-normal">
                 Guía de Medidas Oficial
               </span>
-              <h3 className="font-sans text-xl font-bold text-zinc-900">
+              <h3 className="font-sans text-xl font-bold text-zinc-900 leading-normal">
                 Encuentra tu Talla Perfecta
               </h3>
             </div>

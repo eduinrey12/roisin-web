@@ -18,7 +18,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-10 sm:space-y-14 pb-20">
       {/* 1. TOP CATEGORY BAR (Starts with Descuentos, followed by all categories) */}
-      <section className="border-b border-[#DFD0EC] bg-[#F8F5FA]/90 backdrop-blur-xs py-2.5 sticky top-[72px] sm:top-[80px] z-30 shadow-2xs">
+      <section className="border-b border-[#DFD0EC] bg-[#F8F5FA] py-2.5 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-0.5">
             {/* 1st Item: Descuentos */}

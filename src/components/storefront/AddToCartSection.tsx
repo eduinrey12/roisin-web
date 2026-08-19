@@ -287,45 +287,36 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 5. Dedicatoria Opcional para Tarjeta (Element #5 in Requirement 8) */}
-        <div className="pt-2 border-t border-[#DFD0EC] space-y-2.5">
+        {/* 5. Dedicatoria Permanente para Tarjeta de Regalo */}
+        <div className="pt-3 border-t border-[#DFD0EC] space-y-2.5">
           <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setShowDedicationField(!showDedicationField)}
-              className="flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider text-[#3F235F] hover:text-[#7043A0] transition cursor-pointer"
-            >
-              <PenTool size={13} />
-              <span>Dedicatoria para Regalo (Opcional)</span>
-              <span className="text-[10px] text-zinc-400 font-normal">
-                {showDedicationField ? '▲' : '▼'}
-              </span>
-            </button>
-            {dedication && (
-              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
+            <div className="flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider text-[#3F235F]">
+              <PenTool size={14} className="text-[#7043A0]" />
+              <span>Dedicatoria para Tarjeta de Regalo (Opcional)</span>
+            </div>
+            {dedication.length > 0 && (
+              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
                 Dedicatoria agregada
               </span>
             )}
           </div>
 
-          {(showDedicationField || dedication.length > 0) && (
-            <div className="bg-[#F8F5FA] p-3.5 rounded-2xl border border-[#DFD0EC] space-y-2 animate-fade-in">
-              <label className="text-[11px] text-zinc-600 font-medium block">
-                Escribe el mensaje que imprimiremos en la tarjeta de regalo de lujo:
-              </label>
-              <textarea
-                value={dedication}
-                onChange={(e) => setDedication(e.target.value.slice(0, 250))}
-                rows={3}
-                placeholder="Ejemplo: Para el amor de mi vida, gracias por iluminar cada uno de mis días. Te amo infinitamente."
-                className="w-full p-3 text-xs bg-white border border-[#DFD0EC] rounded-xl text-zinc-900 focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400"
-              />
-              <div className="flex justify-between items-center text-[10px] text-zinc-400 font-medium">
-                <span>Tarjeta personalizada incluida sin costo</span>
-                <span>{dedication.length} / 250 caracteres</span>
-              </div>
+          <div className="bg-[#F8F5FA] p-3.5 rounded-2xl border border-[#DFD0EC] space-y-2">
+            <label className="text-[11px] text-zinc-600 font-medium block">
+              Escribe el mensaje que imprimiremos en la tarjeta de regalo de lujo:
+            </label>
+            <textarea
+              value={dedication}
+              onChange={(e) => setDedication(e.target.value.slice(0, 250))}
+              rows={3}
+              placeholder="Ejemplo: Para el amor de mi vida, gracias por iluminar cada uno de mis días. Te amo infinitamente."
+              className="w-full p-3 text-xs bg-white border border-[#DFD0EC] rounded-xl text-zinc-900 focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400 leading-relaxed shadow-2xs"
+            />
+            <div className="flex justify-between items-center text-[10px] text-zinc-400 font-medium">
+              <span className="text-[#3F235F] font-semibold">Tarjeta personalizada incluida sin costo</span>
+              <span>{dedication.length} / 250 caracteres</span>
             </div>
-          )}
+          </div>
         </div>
 
         {/* 6. Quantity & Action Buttons (Element #6 in Requirement 8) */}

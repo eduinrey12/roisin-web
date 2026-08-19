@@ -66,14 +66,14 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
     <>
       <div
         onClick={handleCardClick}
-        className={`group relative flex flex-col justify-between bg-white rounded-3xl border overflow-hidden luxury-card-hover cursor-pointer select-none transition-all duration-300 ${
+        className={`group relative flex flex-col justify-between bg-white rounded-3xl overflow-hidden luxury-card-hover cursor-pointer select-none transition-all duration-300 shadow-sm hover:shadow-xl ${
           isMostDesired
-            ? 'border-[#7043A0] shadow-md ring-1 ring-[#7043A0]/30'
-            : 'border-[#DFD0EC] shadow-2xs hover:border-[#7043A0]'
+            ? 'ring-2 ring-[#7043A0]/60'
+            : ''
         }`}
       >
         {/* 1. Top Image Section */}
-        <div className="relative bg-[#F8F5FA] overflow-hidden aspect-[4/3.7]">
+        <div className="relative bg-[#F8F5FA] overflow-hidden aspect-[4/3.8]">
           <Image
             src={primaryImg}
             alt={product.title}
@@ -84,11 +84,11 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
 
           {/* Category Badge */}
           {product.category && (
-            <div className="absolute top-2.5 left-2.5 z-20">
+            <div className="absolute top-3 left-3 z-20">
               <Link
                 href={`/productos?category=${product.category.slug}`}
                 onClick={handleCategoryClick}
-                className="diamond-tag text-[9px] uppercase font-bold tracking-[0.16em] px-2.5 py-0.5 rounded-full text-zinc-900 shadow-xs hover:bg-[#F0E9F5] hover:border-[#7043A0] hover:text-[#3F235F] transition"
+                className="text-[11px] uppercase font-bold tracking-wider px-3 py-1 rounded-full text-zinc-900 bg-white/95 shadow-sm hover:bg-[#F0E9F5] hover:text-[#3F235F] transition"
               >
                 {product.category.name}
               </Link>
@@ -96,62 +96,62 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
           )}
 
           {/* Top-Right Badges: Discount or Tag */}
-          <div className="absolute top-2.5 right-2.5 z-20 flex flex-col items-end gap-1">
+          <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-1.5">
             {hasDiscount && discountBadgeText && (
-              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-[9.5px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-md tracking-wider">
+              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-xs uppercase font-black px-3 py-1 rounded-full shadow-md tracking-wider">
                 {discountBadgeText}
               </span>
             )}
             {product.tag && (
-              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[8.5px] uppercase font-bold px-2 py-0.5 rounded-full shadow-xs">
+              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[10.5px] uppercase font-bold px-3 py-1 rounded-full shadow-xs">
                 {product.tag}
               </span>
             )}
           </div>
 
           {/* Desktop Hover Action: Compra Rápida button */}
-          <div className="hidden lg:flex absolute inset-x-3 bottom-2.5 z-20 items-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          <div className="hidden lg:flex absolute inset-x-4 bottom-3 z-20 items-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
             <button
               onClick={handleQuickBuyClick}
-              className="w-full btn-purple-diamond text-[10.5px] uppercase tracking-wider font-bold py-2 px-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shimmer-button cursor-pointer"
+              className="w-full btn-purple-diamond text-xs uppercase tracking-wider font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shimmer-button cursor-pointer"
             >
-              <ShoppingBag size={13} />
+              <ShoppingBag size={14} />
               Compra Rápida
             </button>
           </div>
         </div>
 
-        {/* 2. Geometric Diamond Facet Divider with Enriched Diamond Badge */}
-        <div className="relative w-full flex items-center justify-center -my-3 z-10 pointer-events-none">
-          <div className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#DFD0EC] to-transparent" />
-          <div className="absolute bg-white px-2.5 py-1 rounded-full border border-[#DFD0EC] shadow-xs flex items-center justify-center">
+        {/* 2. Geometric Diamond Facet Divider */}
+        <div className="relative w-full flex items-center justify-center my-1 z-10 pointer-events-none">
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#DFD0EC] to-transparent" />
+          <div className="absolute bg-white px-3 py-1 rounded-full border border-[#DFD0EC] shadow-2xs flex items-center justify-center">
             <RoisinDiamond size={13} color="#7043A0" />
           </div>
         </div>
 
-        {/* 3. Product Content Area */}
-        <div className="p-3.5 sm:p-4 pt-4 flex flex-col justify-between flex-1 space-y-2.5">
-          <div className="space-y-0.5">
-            <h3 className="font-sans text-xs sm:text-sm font-bold text-zinc-900 leading-snug line-clamp-1 group-hover:text-[#3F235F] transition-colors">
+        {/* 3. Product Content Area with ample margin */}
+        <div className="p-4 sm:p-5 pt-2 flex flex-col justify-between flex-1 space-y-3">
+          <div className="space-y-1">
+            <h3 className="font-sans text-sm sm:text-base font-bold text-zinc-900 leading-snug line-clamp-1 group-hover:text-[#3F235F] transition-colors">
               {product.title}
             </h3>
-            <p className="text-[10px] text-zinc-400 font-medium truncate">
+            <p className="text-xs text-zinc-500 font-medium truncate">
               {product.shortDescription || 'Plata de Ley 925 & Baño de Oro 18k'}
             </p>
           </div>
 
           {/* Price & Mobile Action Row */}
-          <div className="flex items-center justify-between pt-1.5 border-t border-[#F8F5FA]">
+          <div className="flex items-center justify-between pt-2 border-t border-[#F8F5FA]">
             <div>
-              <span className="text-[9px] text-zinc-400 block uppercase tracking-wider font-bold">
+              <span className="text-[10px] text-zinc-400 block uppercase tracking-wider font-bold">
                 Precio
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-sans text-base sm:text-lg font-bold text-[#3F235F]">
+              <div className="flex items-baseline gap-2">
+                <span className="font-sans text-lg sm:text-xl font-bold text-[#3F235F]">
                   ${price.toFixed(2)}
                 </span>
                 {compareAt && compareAt > price && (
-                  <span className="text-[11px] text-zinc-400 line-through font-normal">
+                  <span className="text-xs text-zinc-400 line-through font-normal">
                     ${compareAt.toFixed(2)}
                   </span>
                 )}
@@ -162,11 +162,11 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
             <div className="lg:hidden">
               <button
                 onClick={handleQuickBuyClick}
-                className="btn-purple-diamond p-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+                className="btn-purple-diamond p-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                 aria-label="Compra rápida"
               >
-                <ShoppingBag size={13} />
-                <span className="text-[10px]">Añadir</span>
+                <ShoppingBag size={14} />
+                <span className="text-[11px]">Añadir</span>
               </button>
             </div>
           </div>

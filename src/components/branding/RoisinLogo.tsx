@@ -41,15 +41,15 @@ export default function RoisinLogo({
       {/* Brand Wordmark & Tagline */}
       <div className="flex flex-col text-left">
         <span
-          className={`font-roisin text-2xl sm:text-3xl tracking-[0.14em] uppercase leading-none transition-colors ${textColor}`}
-          style={{ letterSpacing: '0.14em' }}
+          className={`font-roisin text-2xl sm:text-3xl tracking-[0.06em] leading-none transition-colors ${textColor}`}
+          style={{ letterSpacing: '0.06em' }}
         >
-          ROISIN
+          Roisin
         </span>
         {showTagline && (
           <span
-            className={`text-[8.5px] uppercase tracking-[0.38em] font-bold mt-1 leading-none ${tagColor}`}
-            style={{ letterSpacing: '0.38em' }}
+            className={`text-[8.5px] uppercase tracking-[0.32em] font-bold mt-1 leading-none ${tagColor}`}
+            style={{ letterSpacing: '0.32em' }}
           >
             Joyas & Accesorios
           </span>

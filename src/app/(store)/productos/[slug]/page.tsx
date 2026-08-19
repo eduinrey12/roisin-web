@@ -123,13 +123,15 @@ export default async function ProductDetailPage({
         </span>
       </nav>
 
-      {/* Main Grid: Gallery (Left) + Purchasing Details in Exact Order (Right) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14 items-start">
-        {/* Left Column: Gallery with thumbnails and variant image switching */}
-        <ProductGallery images={product.images} title={product.title} />
+      {/* Main Grid: Gallery (Left - 7 cols) + Purchasing Details in Exact Order (Right - 5 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+        {/* Left Column: Gallery with thumbnails and large showcase image */}
+        <div className="lg:col-span-7">
+          <ProductGallery images={product.images} title={product.title} />
+        </div>
 
         {/* Right Column: Title -> Short Desc -> Long Desc -> Price -> Variants -> Presentations Carousel -> Dedication -> Add to Cart */}
-        <div className="flex flex-col">
+        <div className="lg:col-span-5 flex flex-col">
           <AddToCartSection product={enhancedProduct} />
         </div>
       </div>

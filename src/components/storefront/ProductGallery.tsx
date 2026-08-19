@@ -37,18 +37,18 @@ export default function ProductGallery({
   const currentImage = activeImages[selectedIdx] || activeImages[0];
 
   return (
-    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-28 items-start">
-      {/* 1. Left Vertical Thumbnails Column (capped to main image height, smooth hidden scroll) */}
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-28 items-start w-full">
+      {/* 1. Left Vertical Thumbnails Column (with proper padding to prevent clipping on first/last items) */}
       {activeImages.length > 1 && (
-        <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 shrink-0 max-h-[460px] pb-1 sm:pb-0">
+        <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-22 shrink-0 max-h-[540px] p-1.5">
           {activeImages.map((img, idx) => (
             <button
               key={img.url + idx}
               onClick={() => setSelectedIdx(idx)}
               className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-200 cursor-pointer ${
                 selectedIdx === idx
-                  ? 'border-[#3F235F] ring-2 ring-[#7043A0]/30 shadow-md scale-102'
-                  : 'border-[#DFD0EC] hover:border-[#7043A0] opacity-70 hover:opacity-100 bg-[#F8F5FA]'
+                  ? 'border-[#3F235F] ring-2 ring-[#7043A0]/40 shadow-md'
+                  : 'border-[#DFD0EC] hover:border-[#7043A0] opacity-75 hover:opacity-100 bg-[#F8F5FA]'
               }`}
               aria-label={`Ver imagen ${idx + 1}`}
             >
@@ -69,14 +69,14 @@ export default function ProductGallery({
         </div>
       )}
 
-      {/* 2. Main Image Showcase Container (Right Side) */}
-      <div className="relative aspect-square sm:aspect-[4/3.8] w-full max-w-[480px] bg-[#F8F5FA] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-md group">
+      {/* 2. Main Image Showcase Container (Fills the entire column width) */}
+      <div className="relative aspect-square sm:aspect-[4/3.8] lg:aspect-square w-full flex-1 bg-[#F8F5FA] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-md group min-h-[360px] sm:min-h-[460px] lg:min-h-[500px]">
         <Image
           src={currentImage.url}
           alt={currentImage.altText || title}
           fill
           priority
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes="(max-width: 1024px) 100vw, 60vw"
           className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-104"
         />
 

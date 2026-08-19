@@ -446,7 +446,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                 {/* Horizontal Scrollable Presentations Carousel */}
                 <div
                   ref={packScrollRef}
-                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1"
+                  className="flex gap-3.5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1 -mx-1"
                 >
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
@@ -464,8 +464,8 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                         }
                         className={`group relative flex-none w-[240px] sm:w-[260px] flex flex-col rounded-3xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer snap-start ${
                           isSelected
-                            ? 'border-[#3F235F] bg-[#F8F5FA] ring-2 ring-[#7043A0]/30 shadow-md scale-101'
-                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-sm'
+                            ? 'border-[#3F235F] ring-2 ring-[#7043A0]/40 shadow-md bg-[#F8F5FA]'
+                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
                         }`}
                       >
                         {/* Packaging Photo */}
@@ -489,7 +489,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                           {/* Large Prominent Price Badge */}
                           <div className="absolute bottom-2.5 left-2.5 z-10">
                             <span
-                              className={`text-xs sm:text-[13px] font-black uppercase px-3 py-1 rounded-full shadow-md leading-normal inline-block ${
+                              className={`text-xs sm:text-[13px] font-black uppercase px-3.5 py-1.5 rounded-full shadow-lg leading-normal inline-block tracking-wide ${
                                 modifier > 0
                                   ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
                                   : 'bg-white/95 text-zinc-900 border border-[#DFD0EC]'

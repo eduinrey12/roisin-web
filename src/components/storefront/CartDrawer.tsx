@@ -10,20 +10,6 @@ import RoisinDiamond from '@/components/branding/RoisinDiamond';
 export default function CartDrawer() {
   const { cart, isOpen, closeCart, updateQuantity, removeItem } = useCartStore();
 
-  if (!isOpen) return null;
-
-  const items = cart?.items || [];
-  const totalItems = items.reduce((acc: number, i: any) => acc + i.quantity, 0);
-
-  const subtotal = items.reduce((sum: number, item: any) => {
-    const itemPrice = Number(item.variant.price);
-    const optionsPrice = (item.options || []).reduce(
-      (optSum: number, o: any) => optSum + Number(o.option.priceModifier || 0),
-      0
-    );
-    return sum + (itemPrice + optionsPrice) * item.quantity;
-  }, 0);
-
   // Dynamic Free Shipping Threshold (configured from admin panel)
   const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(50.0);
 
@@ -37,6 +23,20 @@ export default function CartDrawer() {
       })
       .catch(() => {});
   }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const items = cart?.items || [];
+  const totalItems = items.reduce((acc: number, i: any) => acc + i.quantity, 0);
+
+  const subtotal = items.reduce((sum: number, item: any) => {
+    const itemPrice = Number(item.variant.price);
+    const optionsPrice = (item.options || []).reduce(
+      (optSum: number, o: any) => optSum + Number(o.option.priceModifier || 0),
+      0
+    );
+    return sum + (itemPrice + optionsPrice) * item.quantity;
+  }, 0);
 
   const progressPercent = freeShippingThreshold <= 0 ? 100 : Math.min(100, (subtotal / freeShippingThreshold) * 100);
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);

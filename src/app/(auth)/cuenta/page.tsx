@@ -46,32 +46,32 @@ export default async function AccountPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-10">
       {/* 1. VIP Profile Header Banner */}
-      <div className="relative bg-[#FAF8FC] p-7 sm:p-10 rounded-3xl border border-[#DFD0EC] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#3F235F] via-[#2F1847] to-[#1B1124] text-white p-7 sm:p-10 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
         {/* Subtle Ambient Diamond Glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-[#7043A0]/10 to-transparent pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-[#7043A0]/30 to-transparent pointer-events-none -mr-20 -mt-20" />
 
         <div className="flex items-center gap-5 relative z-10">
-          {/* Avatar with Purple Diamond Rim */}
-          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-[#7043A0] via-[#522D7B] to-[#3F235F] text-white rounded-3xl flex items-center justify-center font-sans font-black text-2xl sm:text-3xl shadow-lg border-2 border-white">
+          {/* Avatar with White Contrast Box */}
+          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-white text-[#3F235F] rounded-3xl flex items-center justify-center font-sans font-black text-2xl sm:text-3xl shadow-lg border-2 border-[#DFD0EC]">
             {profile?.firstName?.[0] || user.email[0].toUpperCase()}
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-[#3F235F] bg-white px-3.5 py-1 rounded-full border border-[#DFD0EC] shadow-xs leading-normal">
-                <RoisinDiamond size={12} color="#7043A0" /> Cliente VIP Roisin
+              <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-[#DFD0EC] bg-white/10 px-3.5 py-1 rounded-full border border-white/15 backdrop-blur-xs shadow-xs leading-normal">
+                <RoisinDiamond size={12} color="#DFD0EC" /> Cliente VIP Roisin
               </span>
               {user.role === 'ADMIN' && (
-                <span className="text-[11px] uppercase font-bold tracking-wider bg-[#1B1124] text-[#DFD0EC] px-3.5 py-1 rounded-full border border-[#4B2F66] leading-normal">
+                <span className="text-[11px] uppercase font-bold tracking-wider bg-white/20 text-white px-3.5 py-1 rounded-full border border-white/30 leading-normal">
                   Administrador
                 </span>
               )}
             </div>
 
-            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900 leading-normal">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white leading-normal">
               {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Mi Espacio Exclusivo'}
             </h1>
-            <p className="text-xs text-zinc-500 font-light">{user.email}</p>
+            <p className="text-xs text-[#DFD0EC] font-light">{user.email}</p>
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export default async function AccountPage() {
           {user.role === 'ADMIN' && (
             <Link
               href="/admin"
-              className="btn-purple-outline text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-xs cursor-pointer"
+              className="bg-white text-[#3F235F] hover:bg-[#F0E9F5] text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md transition cursor-pointer"
             >
               <ShieldCheck size={16} /> Panel de Control
             </Link>
@@ -89,7 +89,7 @@ export default async function AccountPage() {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-5 py-3 rounded-2xl transition shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/20 px-5 py-3 rounded-2xl transition shadow-xs cursor-pointer backdrop-blur-xs"
           >
             <MessageCircle size={15} /> Asistencia VIP
           </a>

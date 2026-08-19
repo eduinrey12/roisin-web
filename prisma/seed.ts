@@ -310,9 +310,30 @@ async function main() {
       isMultiSelect: false,
       options: {
         create: [
-          { name: 'Caja Joyera Roisin con Lazo Morado', priceModifier: 0.0, isDefault: true, sortOrder: 0 },
-          { name: 'Empaque de Lujo Especial + Tarjeta Dedicatoria', priceModifier: 4.0, isDefault: false, sortOrder: 1 },
-          { name: 'Funda de Terciopelo Púrpura Premium', priceModifier: 2.5, isDefault: false, sortOrder: 2 },
+          {
+            name: 'Caja Joyera Roisin con Lazo Morado',
+            description: 'Caja rígida protectora con lazo de raso morado y esponja interior aterciopelada.',
+            priceModifier: 0.0,
+            imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+            isDefault: true,
+            sortOrder: 0,
+          },
+          {
+            name: 'Empaque de Lujo Especial + Tarjeta Dedicatoria',
+            description: 'Caja joyera de lujo, lazo amatista, bolsa de regalo y tarjeta impresa con dedicatoria.',
+            priceModifier: 4.0,
+            imageUrl: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop',
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Funda de Terciopelo Púrpura Premium',
+            description: 'Bolsita de terciopelo morado con grabado y cordón satinado, ideal para viaje.',
+            priceModifier: 2.5,
+            imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop',
+            isDefault: false,
+            sortOrder: 2,
+          },
         ],
       },
     },

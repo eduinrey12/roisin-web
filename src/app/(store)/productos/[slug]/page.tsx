@@ -45,6 +45,26 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  let optionGroupLinks = product.optionGroupLinks;
+  if (!optionGroupLinks || optionGroupLinks.length === 0) {
+    const { getOrCreatePresentationOptionGroup } = await import('@/services/catalog.service');
+    const defaultGroup = await getOrCreatePresentationOptionGroup();
+    if (defaultGroup) {
+      optionGroupLinks = [
+        {
+          productId: product.id,
+          groupId: defaultGroup.id,
+          group: defaultGroup,
+        } as any,
+      ];
+    }
+  }
+
+  const enhancedProduct = {
+    ...product,
+    optionGroupLinks,
+  };
+
   // Fetch related products from the same category or general catalog
   const { products: relatedProducts } = await getProducts({
     categorySlug: product.category?.slug,
@@ -59,19 +79,23 @@ export default async function ProductDetailPage({
     '@type': 'Product',
     name: product.title,
     image: product.images.map((i) => i.url),
-    description: product.description,
-    sku: product.variants[0]?.sku || product.slug,
+    description: product.shortDescription || product.description,
+    sku: product.variants[0]?.sku || product.id,
+    brand: {
+      '@type': 'Brand',
+      name: 'ROISIN Joyas',
+    },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'USD',
       price: Number(product.basePrice).toFixed(2),
       availability: 'https://schema.org/InStock',
-      url: `https://roisinjoyas.com/productos/${product.slug}`,
     },
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-14">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-12 sm:space-y-16">
+      {/* Schema.org Injection */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -119,29 +143,8 @@ export default async function ProductDetailPage({
             </h1>
           </div>
 
-          {/* Interactive Pricing, Short/Long Description, Size Selector, Dedication, AddToCart/BuyNow */}
-          <AddToCartSection product={product} />
-
-          {/* Luxury Gift Presentation Box Info */}
-          <div className="bg-[#F8F5FA] p-5 rounded-3xl border border-[#DFD0EC] space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 uppercase tracking-wider">
-              <Gift size={16} className="text-[#3F235F]" />
-              <span>Experiencia de Regalo ROISIN Diamante Morado</span>
-            </div>
-            <p className="text-[11px] text-zinc-600 leading-relaxed font-light">
-              Tu joya se entrega protegida en un estuche rígido de lujo con lazo de seda y tarjeta para dedicatoria personalizada lista para entregar.
-            </p>
-          </div>
-
-          {/* Care Tips */}
-          <div className="bg-white p-5 rounded-3xl border border-[#DFD0EC] space-y-2 text-xs">
-            <h3 className="font-semibold text-zinc-900 flex items-center gap-2">
-              <Sparkles size={15} className="text-[#7043A0]" /> Cuidados y Mantenimiento:
-            </h3>
-            <p className="text-[11px] text-zinc-500 leading-relaxed font-light">
-              Para conservar el brillo intacto de la plata 925 y el baño de oro 18k, evita el contacto con perfumes o químicos agresivos. Limpia suavemente con el paño de microfibra tras cada uso.
-            </p>
-          </div>
+          {/* Interactive Pricing, Short/Long Description, Size & Color Selector, Presentation Selector with Photos, Dedication, AddToCart/BuyNow */}
+          <AddToCartSection product={enhancedProduct} />
         </div>
       </div>
 

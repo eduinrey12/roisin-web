@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCartStore } from '@/lib/store/cartStore';
 import {
   ShoppingBag,
@@ -9,10 +10,11 @@ import {
   Truck,
   Sparkles,
   ArrowRight,
-  Heart,
-  HelpCircle,
   PenTool,
   Ruler,
+  Gift,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import SizeGuideModal from './SizeGuideModal';
@@ -45,7 +47,9 @@ interface AddToCartSectionProps {
         options: {
           id: string;
           name: string;
+          description?: string | null;
           priceModifier: any;
+          imageUrl?: string | null;
           isDefault: boolean;
         }[];
       };
@@ -57,26 +61,97 @@ interface AddToCartSectionProps {
 export default function AddToCartSection({ product, onVariantChange }: AddToCartSectionProps) {
   const router = useRouter();
   const { addItem, openCart, loading } = useCartStore();
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants[0]?.id || ''
-  );
+
+  // --- Attribute & Variant Extraction ---
+  // Detect distinct attribute types across variants (e.g. Color/Material vs Talla/Medida)
+  const { colorAttrValues, sizeAttrValues, hasMultiAttributes } = useMemo(() => {
+    const colors = new Set<string>();
+    const sizes = new Set<string>();
+
+    product.variants.forEach((v) => {
+      v.attributes?.forEach((a) => {
+        const attrName = a.attributeValue.attribute.name.toLowerCase();
+        if (attrName.includes('color') || attrName.includes('material') || attrName.includes('acabado')) {
+          colors.add(a.attributeValue.value);
+        } else if (
+          attrName.includes('talla') ||
+          attrName.includes('medida') ||
+          attrName.includes('longitud') ||
+          attrName.includes('tamaño')
+        ) {
+          sizes.add(a.attributeValue.value);
+        }
+      });
+    });
+
+    const colorList = Array.from(colors);
+    const sizeList = Array.from(sizes);
+
+    return {
+      colorAttrValues: colorList,
+      sizeAttrValues: sizeList,
+      hasMultiAttributes: colorList.length > 0 && sizeList.length > 0,
+    };
+  }, [product.variants]);
+
+  // Initial selections
+  const [selectedColor, setSelectedColor] = useState<string>(colorAttrValues[0] || '');
+  const [selectedSize, setSelectedSize] = useState<string>(sizeAttrValues[0] || '');
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(product.variants[0]?.id || '');
+
+  // Options (Presentation / Packaging)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     product.optionGroupLinks?.forEach((link) => {
-      const defaultOpt =
-        link.group.options.find((o) => o.isDefault) || link.group.options[0];
+      const defaultOpt = link.group.options.find((o) => o.isDefault) || link.group.options[0];
       if (defaultOpt) {
         initial[link.group.id] = defaultOpt.id;
       }
     });
     return initial;
   });
+
   const [dedication, setDedication] = useState('');
-  const [showDedicationField, setShowDedicationField] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
+  // Sync variant when color or size changes in multi-attribute mode
+  useEffect(() => {
+    if (!hasMultiAttributes) return;
+
+    // Find variant matching both selected color and selected size
+    let match = product.variants.find((v) => {
+      const attrs = v.attributes || [];
+      const hasColor = attrs.some((a) => a.attributeValue.value === selectedColor);
+      const hasSize = attrs.some((a) => a.attributeValue.value === selectedSize);
+      return hasColor && hasSize;
+    });
+
+    // If no exact match (size not available for this color), fallback to first variant with this color
+    if (!match) {
+      match = product.variants.find((v) => {
+        const attrs = v.attributes || [];
+        return attrs.some((a) => a.attributeValue.value === selectedColor);
+      });
+      if (match) {
+        // Update selected size to match this variant's size
+        const sizeAttr = match.attributes?.find((a) => {
+          const name = a.attributeValue.attribute.name.toLowerCase();
+          return name.includes('talla') || name.includes('medida');
+        });
+        if (sizeAttr) {
+          setSelectedSize(sizeAttr.attributeValue.value);
+        }
+      }
+    }
+
+    if (match && match.id !== selectedVariantId) {
+      setSelectedVariantId(match.id);
+      if (onVariantChange) onVariantChange(match.id);
+    }
+  }, [selectedColor, selectedSize, hasMultiAttributes, product.variants, selectedVariantId, onVariantChange]);
 
   const currentVariant =
     product.variants.find((v) => v.id === selectedVariantId) || product.variants[0];
@@ -88,6 +163,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
     ? Number(product.compareAtPrice)
     : null;
 
+  // Calculate Packaging price additions
   let optionsModifierTotal = 0;
   product.optionGroupLinks?.forEach((link) => {
     const selectedOptId = selectedOptions[link.group.id];
@@ -101,11 +177,10 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   const stock = currentVariant?.inventory?.quantity ?? 10;
   const isOutOfStock = stock <= 0;
 
-  const handleSelectVariant = (variantId: string) => {
+  // Single-dimension variant selection handler
+  const handleSelectSingleVariant = (variantId: string) => {
     setSelectedVariantId(variantId);
-    if (onVariantChange) {
-      onVariantChange(variantId);
-    }
+    if (onVariantChange) onVariantChange(variantId);
   };
 
   const handleAction = async (directCheckout = false) => {
@@ -140,7 +215,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   return (
     <>
       <div className="space-y-6">
-        {/* 1. Price Header & Availability Badge (Without parenthesis count as requested in Requirement 6) */}
+        {/* 1. Price Header & Stock Status */}
         <div className="flex items-baseline justify-between border-b border-[#DFD0EC] pb-4">
           <div className="flex items-baseline gap-3">
             <span className="font-sans text-3xl sm:text-4xl font-bold text-[#3F235F]">
@@ -152,7 +227,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               </span>
             )}
             {product.discountPercent && product.discountPercent > 0 && (
-              <span className="bg-[#3F235F] text-white text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-xs">
+              <span className="bg-[#3F235F] text-white text-[11px] uppercase font-black px-3 py-0.5 rounded-full shadow-xs leading-normal">
                 -{product.discountPercent}% OFF
               </span>
             )}
@@ -169,7 +244,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </span>
         </div>
 
-        {/* 2. Short Description (Element #2 in Requirement 8) */}
+        {/* 2. Short Description */}
         {product.shortDescription && (
           <div className="bg-[#F8F5FA] p-3.5 rounded-2xl border border-[#DFD0EC]">
             <p className="text-xs text-zinc-700 leading-relaxed font-medium">
@@ -178,7 +253,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 3. Long Description / Details (Element #3 in Requirement 8) */}
+        {/* 3. Long Description / Details */}
         <div className="space-y-2">
           <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-900 flex items-center gap-1.5">
             <RoisinDiamond size={11} color="#7043A0" /> Detalles de la Joya
@@ -188,13 +263,43 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </p>
         </div>
 
-        {/* 4. Tallas / Medidas / Atributos + Guía de Tallas */}
-        <div className="space-y-3 pt-2 border-t border-[#DFD0EC]">
-          {product.variants.length > 1 ? (
-            <div className="space-y-2.5">
+        {/* 4. Multi-Attribute Variant Selectors (Color & Size) */}
+        {hasMultiAttributes ? (
+          <div className="space-y-4 pt-3 border-t border-[#DFD0EC]">
+            {/* 4A. Color / Material Selector */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
+                <span>Color / Material:</span>
+                <span className="text-[#7043A0] font-bold lowercase first-letter:uppercase">
+                  {selectedColor}
+                </span>
+              </label>
+              <div className="flex flex-wrap gap-2.5">
+                {colorAttrValues.map((color) => {
+                  const isSelected = color === selectedColor;
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setSelectedColor(color)}
+                      className={`px-4 py-2 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                        isSelected
+                          ? 'btn-purple-diamond shadow-xs'
+                          : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4B. Size / Talla Selector filtered by selected color */}
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
-                  Seleccionar Medida / Talla
+                  Medida / Talla:
                 </label>
                 <button
                   type="button"
@@ -204,31 +309,82 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   <Ruler size={13} className="text-[#7043A0]" /> Guía de Tallas
                 </button>
               </div>
+
               <div className="flex flex-wrap gap-2.5">
-                {product.variants.map((v) => {
-                  const label =
-                    v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
-                    v.sku.split('-').pop() ||
-                    v.sku;
-                  const isSelected = v.id === selectedVariantId;
+                {sizeAttrValues.map((size) => {
+                  // Check if this size exists for the currently selected color
+                  const availableForColor = product.variants.some((v) => {
+                    const attrs = v.attributes || [];
+                    const matchesColor = attrs.some((a) => a.attributeValue.value === selectedColor);
+                    const matchesSize = attrs.some((a) => a.attributeValue.value === size);
+                    return matchesColor && matchesSize;
+                  });
+
+                  const isSelected = size === selectedSize;
 
                   return (
                     <button
-                      key={v.id}
-                      onClick={() => handleSelectVariant(v.id)}
-                      className={`px-4 py-2.5 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                      key={size}
+                      type="button"
+                      disabled={!availableForColor}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-2 text-xs font-bold rounded-2xl border transition cursor-pointer ${
                         isSelected
                           ? 'btn-purple-diamond shadow-xs'
-                          : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                          : availableForColor
+                          ? 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                          : 'border-zinc-200 bg-zinc-100 text-zinc-400 opacity-50 cursor-not-allowed line-through'
                       }`}
                     >
-                      {label}
+                      {size}
                     </button>
                   );
                 })}
               </div>
             </div>
-          ) : (
+          </div>
+        ) : product.variants.length > 1 ? (
+          /* Single-Attribute Variant List */
+          <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
+            <div className="flex justify-between items-center">
+              <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
+                Seleccionar Medida / Variante
+              </label>
+              <button
+                type="button"
+                onClick={() => setSizeGuideOpen(true)}
+                className="text-[11px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
+              >
+                <Ruler size={13} className="text-[#7043A0]" /> Guía de Tallas
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {product.variants.map((v) => {
+                const label =
+                  v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
+                  v.sku.split('-').pop() ||
+                  v.sku;
+                const isSelected = v.id === selectedVariantId;
+
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => handleSelectSingleVariant(v.id)}
+                    className={`px-4 py-2.5 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                      isSelected
+                        ? 'btn-purple-diamond shadow-xs'
+                        : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* Single variant default: Size Guide button */
+          <div className="pt-2 border-t border-[#DFD0EC]">
             <button
               type="button"
               onClick={() => setSizeGuideOpen(true)}
@@ -236,24 +392,33 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             >
               <div className="flex items-center gap-2.5 text-xs font-bold text-zinc-900 group-hover:text-[#3F235F]">
                 <Ruler size={16} className="text-[#7043A0]" />
-                <span>¿Dudas con tu talla? Consulta la Guía Oficial de Medidas</span>
+                <span>¿Dudas con tu medida? Consulta la Guía Oficial</span>
               </div>
               <span className="text-[11px] font-bold text-[#7043A0] group-hover:translate-x-1 transition-transform">
                 Ver Guía →
               </span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Presentation Options if any */}
+        {/* 5. VISUAL PRESENTATION & PACKAGING SELECTOR WITH PHOTOS */}
         {product.optionGroupLinks && product.optionGroupLinks.length > 0 && (
-          <div className="space-y-3 pt-2 border-t border-[#DFD0EC]">
+          <div className="space-y-3 pt-4 border-t border-[#DFD0EC]">
             {product.optionGroupLinks.map((link) => (
-              <div key={link.group.id} className="space-y-2">
-                <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
-                  {link.group.name}
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div key={link.group.id} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Gift size={16} className="text-[#7043A0]" />
+                    <label className="text-xs uppercase font-bold tracking-wider text-zinc-900">
+                      {link.group.name}
+                    </label>
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#7043A0] bg-[#F0E9F5] px-2.5 py-0.5 rounded-full border border-[#DFD0EC]">
+                    Foto Real
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {link.group.options.map((opt) => {
                     const isSelected = selectedOptions[link.group.id] === opt.id;
                     const modifier = Number(opt.priceModifier || 0);
@@ -268,16 +433,53 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                             [link.group.id]: opt.id,
                           })
                         }
-                        className={`flex justify-between items-center p-3 text-left rounded-2xl border text-xs transition cursor-pointer ${
+                        className={`group relative flex flex-col rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 cursor-pointer ${
                           isSelected
-                            ? 'border-[#3F235F] bg-[#F0E9F5] font-bold text-zinc-900 ring-1 ring-[#7043A0]'
-                            : 'border-[#DFD0EC] bg-white text-zinc-700 hover:border-[#7043A0]'
+                            ? 'border-[#3F235F] bg-[#F8F5FA] ring-2 ring-[#7043A0]/30 shadow-md scale-102'
+                            : 'border-[#DFD0EC] bg-white hover:border-[#7043A0] hover:shadow-xs'
                         }`}
                       >
-                        <span className="font-medium">{opt.name}</span>
-                        <span className="font-bold text-[#3F235F]">
-                          {modifier > 0 ? `+$${modifier.toFixed(2)}` : 'Incluido'}
-                        </span>
+                        {/* Packaging Photo Thumbnail */}
+                        <div className="relative aspect-[16/11] bg-[#F0E9F5] overflow-hidden">
+                          <Image
+                            src={
+                              opt.imageUrl ||
+                              'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop'
+                            }
+                            alt={opt.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 33vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-[#3F235F] text-white p-1 rounded-full shadow-md">
+                              <Check size={11} />
+                            </div>
+                          )}
+                          <div className="absolute bottom-2 left-2">
+                            <span
+                              className={`text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full shadow-xs ${
+                                modifier > 0
+                                  ? 'bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white'
+                                  : 'bg-white/95 text-zinc-900 border border-[#DFD0EC]'
+                              }`}
+                            >
+                              {modifier > 0 ? `+$${modifier.toFixed(2)}` : 'Incluida'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Label & Description */}
+                        <div className="p-3 space-y-1">
+                          <h4 className="font-sans text-xs font-bold text-zinc-900 leading-snug">
+                            {opt.name}
+                          </h4>
+                          {opt.description && (
+                            <p className="text-[10px] text-zinc-500 font-light line-clamp-2 leading-tight">
+                              {opt.description}
+                            </p>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -287,8 +489,8 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </div>
         )}
 
-        {/* 5. Dedicatoria Permanente para Tarjeta de Regalo */}
-        <div className="pt-3 border-t border-[#DFD0EC] space-y-2.5">
+        {/* 6. PERMANENT DEDICATION CARD FOR GIFT */}
+        <div className="pt-4 border-t border-[#DFD0EC] space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider text-[#3F235F]">
               <PenTool size={14} className="text-[#7043A0]" />
@@ -313,19 +515,19 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
               className="w-full p-3 text-xs bg-white border border-[#DFD0EC] rounded-xl text-zinc-900 focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400 leading-relaxed shadow-2xs"
             />
             <div className="flex justify-between items-center text-[10px] text-zinc-400 font-medium">
-              <span className="text-[#3F235F] font-semibold">Tarjeta personalizada incluida sin costo</span>
+              <span className="text-[#3F235F] font-semibold">Tarjeta personalizada incluida</span>
               <span>{dedication.length} / 250 caracteres</span>
             </div>
           </div>
         </div>
 
-        {/* 6. Quantity & Action Buttons (Element #6 in Requirement 8) */}
+        {/* 7. Quantity & CTA Action Buttons */}
         <div className="space-y-3 pt-3 border-t border-[#DFD0EC]">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
               Cantidad:
             </span>
-            <div className="flex items-center border border-[#DFD0EC] rounded-2xl overflow-hidden bg-white">
+            <div className="flex items-center border border-[#DFD0EC] rounded-2xl overflow-hidden bg-white shadow-2xs">
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -351,52 +553,56 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             <button
               type="button"
               onClick={() => handleAction(false)}
-              disabled={loading || isAdding || isOutOfStock}
-              className="w-full btn-purple-outline py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50 cursor-pointer"
+              disabled={isOutOfStock || isAdding}
+              className="btn-purple-outline w-full py-4 px-6 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {addedSuccess ? (
+              {isAdding ? (
+                <span className="animate-pulse">Añadiendo...</span>
+              ) : addedSuccess ? (
                 <>
-                  <Check size={17} className="text-emerald-600" /> ¡En el Carrito!
+                  <Check size={16} className="text-emerald-600" />
+                  <span>¡Añadido!</span>
                 </>
               ) : (
                 <>
-                  <ShoppingBag size={16} /> Añadir al Carrito
+                  <ShoppingBag size={16} />
+                  <span>Añadir al Carrito</span>
                 </>
               )}
             </button>
 
-            {/* Buy Now Button */}
+            {/* Buy Now (Direct Checkout) Button */}
             <button
               type="button"
               onClick={() => handleAction(true)}
-              disabled={loading || isAdding || isOutOfStock}
-              className="w-full btn-purple-diamond py-3.5 rounded-2xl text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50 shadow-md shimmer-button cursor-pointer"
+              disabled={isOutOfStock || isAdding}
+              className="btn-purple-diamond w-full py-4 px-6 rounded-2xl text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shimmer-button"
             >
-              Comprar Ahora • ${(finalUnitPrice * quantity).toFixed(2)}
-              <ArrowRight size={16} />
+              <Zap size={16} />
+              <span>Comprar Ahora</span>
             </button>
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <div className="pt-3 border-t border-[#DFD0EC] grid grid-cols-2 gap-3 text-[11px] text-zinc-600">
-          <div className="flex items-center gap-2">
-            <RoisinDiamond size={13} color="#7043A0" />
-            <span>Plata 925 & Oro 18k Certificado</span>
+        {/* 8. Trust Badges */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="flex items-center gap-2 p-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]">
+            <ShieldCheck size={18} className="text-[#7043A0] shrink-0" />
+            <span className="text-[11px] font-bold text-zinc-800">
+              Plata 925 & Oro 18k Genuinos
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Truck size={14} className="text-[#3F235F]" />
-            <span>Entrega Segura en Todo Ecuador</span>
+          <div className="flex items-center gap-2 p-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]">
+            <Truck size={18} className="text-[#7043A0] shrink-0" />
+            <span className="text-[11px] font-bold text-zinc-800">
+              Envíos Seguros a Todo Ecuador
+            </span>
           </div>
         </div>
       </div>
 
       {/* Size Guide Modal */}
-      <SizeGuideModal
-        isOpen={sizeGuideOpen}
-        onClose={() => setSizeGuideOpen(false)}
-      />
+      <SizeGuideModal isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
     </>
   );
 }
-

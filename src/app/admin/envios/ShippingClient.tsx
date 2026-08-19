@@ -48,14 +48,47 @@ export default function ShippingClient({
     if (!threshold || isNaN(Number(threshold))) return;
     setThresholdSaving(true);
     setThresholdSuccess(false);
+    setError('');
+
     try {
       const res = await adminUpdateFreeShippingThresholdAction(Number(threshold));
-      if (res.success) {
+      if (res.success && res.threshold !== undefined) {
+        setThreshold(Number(res.threshold).toFixed(2));
         setThresholdSuccess(true);
-        setTimeout(() => setThresholdSuccess(false), 3000);
+        setTimeout(() => setThresholdSuccess(false), 3500);
+      } else {
+        const apiRes = await fetch('/api/settings/free-shipping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threshold: Number(threshold) }),
+        });
+        const data = await apiRes.json();
+        if (data.success) {
+          setThreshold(Number(data.threshold).toFixed(2));
+          setThresholdSuccess(true);
+          setTimeout(() => setThresholdSuccess(false), 3500);
+        } else {
+          setError(data.error || res.error || 'Error al guardar el umbral');
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'Error al guardar');
+      try {
+        const apiRes = await fetch('/api/settings/free-shipping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threshold: Number(threshold) }),
+        });
+        const data = await apiRes.json();
+        if (data.success) {
+          setThreshold(Number(data.threshold).toFixed(2));
+          setThresholdSuccess(true);
+          setTimeout(() => setThresholdSuccess(false), 3500);
+        } else {
+          setError(data.error || 'Error al guardar');
+        }
+      } catch (apiErr: any) {
+        setError(apiErr.message || 'Error al guardar');
+      }
     } finally {
       setThresholdSaving(false);
     }

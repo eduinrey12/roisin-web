@@ -45,24 +45,24 @@ export default async function AccountPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-10">
-      {/* 1. VIP Profile Header Banner */}
-      <div className="relative bg-gradient-to-br from-[#3F235F] via-[#2F1847] to-[#1B1124] text-white p-7 sm:p-10 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
-        {/* Subtle Ambient Diamond Glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-[#7043A0]/30 to-transparent pointer-events-none -mr-20 -mt-20" />
+      {/* 1. VIP Profile Header Banner (Cohesive Purple Diamond Royal Aesthetic) */}
+      <div className="relative bg-gradient-to-r from-[#3F235F] via-[#351C52] to-[#25123B] text-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-[#552E80]/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+        {/* Subtle Diamond Facet Pattern Lines */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#DFD0EC_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
         <div className="flex items-center gap-5 relative z-10">
-          {/* Avatar with White Contrast Box */}
-          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-white text-[#3F235F] rounded-3xl flex items-center justify-center font-sans font-black text-2xl sm:text-3xl shadow-lg border-2 border-[#DFD0EC]">
+          {/* Avatar with Royal Amethyst Rim */}
+          <div className="w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-[#7043A0] to-[#25123B] text-white rounded-3xl flex items-center justify-center font-sans font-black text-2xl sm:text-3xl shadow-xl border-2 border-[#DFD0EC]/60 ring-4 ring-[#7043A0]/30 shrink-0">
             {profile?.firstName?.[0] || user.email[0].toUpperCase()}
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-[#DFD0EC] bg-white/10 px-3.5 py-1 rounded-full border border-white/15 backdrop-blur-xs shadow-xs leading-normal">
+              <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-bold tracking-wider text-white bg-white/15 px-3.5 py-1 rounded-full border border-white/25 backdrop-blur-md shadow-xs leading-normal">
                 <RoisinDiamond size={12} color="#DFD0EC" /> Cliente VIP Roisin
               </span>
               {user.role === 'ADMIN' && (
-                <span className="text-[11px] uppercase font-bold tracking-wider bg-white/20 text-white px-3.5 py-1 rounded-full border border-white/30 leading-normal">
+                <span className="text-[11px] uppercase font-bold tracking-wider bg-white/20 text-[#DFD0EC] px-3.5 py-1 rounded-full border border-white/30 backdrop-blur-md leading-normal">
                   Administrador
                 </span>
               )}
@@ -80,7 +80,7 @@ export default async function AccountPage() {
           {user.role === 'ADMIN' && (
             <Link
               href="/admin"
-              className="bg-white text-[#3F235F] hover:bg-[#F0E9F5] text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md transition cursor-pointer"
+              className="bg-white text-[#3F235F] hover:bg-[#F0E9F5] text-xs uppercase tracking-wider font-bold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-lg transition cursor-pointer"
             >
               <ShieldCheck size={16} /> Panel de Control
             </Link>
@@ -89,7 +89,7 @@ export default async function AccountPage() {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/20 px-5 py-3 rounded-2xl transition shadow-xs cursor-pointer backdrop-blur-xs"
+            className="inline-flex items-center gap-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-5 py-3 rounded-2xl transition shadow-lg cursor-pointer"
           >
             <MessageCircle size={15} /> Asistencia VIP
           </a>

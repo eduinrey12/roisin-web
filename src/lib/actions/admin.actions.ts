@@ -347,12 +347,13 @@ export async function adminUpdateFreeShippingThresholdAction(threshold: number) 
   try {
     await requireAdmin();
     const prisma = (await import('@/lib/db')).default;
+    const cleanValue = isNaN(Number(threshold)) ? 50.0 : Number(threshold);
     const updated = await prisma.storeSetting.upsert({
       where: { key: 'free_shipping_threshold' },
-      update: { value: String(threshold) },
+      update: { value: cleanValue.toFixed(2) },
       create: {
         key: 'free_shipping_threshold',
-        value: String(threshold),
+        value: cleanValue.toFixed(2),
         label: 'Monto mínimo para Envío Gratis ($)',
         type: 'number',
       },
@@ -378,6 +379,67 @@ export async function getFreeShippingThreshold(): Promise<number> {
     return 50.0;
   } catch {
     return 50.0;
+  }
+}
+
+// ==================== PRESENTATION / PACKAGING ACTIONS ====================
+export async function adminCreatePresentationOptionAction(formData: {
+  name: string;
+  description?: string;
+  priceModifier: number;
+  imageUrl?: string;
+  isDefault?: boolean;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const { adminCreatePresentationOption } = await import('@/services/catalog.service');
+    const option = await adminCreatePresentationOption(formData);
+    revalidatePath('/admin/presentaciones');
+    revalidatePath('/productos');
+    revalidatePath('/');
+    return { success: true, option };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear opción de presentación' };
+  }
+}
+
+export async function adminUpdatePresentationOptionAction(
+  id: string,
+  data: {
+    name?: string;
+    description?: string;
+    priceModifier?: number;
+    imageUrl?: string;
+    isDefault?: boolean;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  try {
+    await requireAdmin();
+    const { adminUpdatePresentationOption } = await import('@/services/catalog.service');
+    const option = await adminUpdatePresentationOption(id, data);
+    revalidatePath('/admin/presentaciones');
+    revalidatePath('/productos');
+    revalidatePath('/');
+    return { success: true, option };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar opción' };
+  }
+}
+
+export async function adminDeletePresentationOptionAction(id: string) {
+  try {
+    await requireAdmin();
+    const { adminDeletePresentationOption } = await import('@/services/catalog.service');
+    await adminDeletePresentationOption(id);
+    revalidatePath('/admin/presentaciones');
+    revalidatePath('/productos');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar opción' };
   }
 }
 

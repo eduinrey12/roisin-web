@@ -465,3 +465,146 @@ export async function adminDeletePromotion(id: string) {
   });
 }
 
+// -----------------------------------------------------------------------------
+// Product Option Groups & Presentation Packaging Operations
+// -----------------------------------------------------------------------------
+
+export async function getOrCreatePresentationOptionGroup() {
+  let group = await prisma.productOptionGroup.findFirst({
+    where: { name: { contains: 'Presentación' } },
+    include: {
+      options: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+      },
+    },
+  });
+
+  if (!group) {
+    group = await prisma.productOptionGroup.create({
+      data: {
+        name: 'Presentación & Empaque',
+        description: 'Elige cómo deseas recibir o enviar tu joya.',
+        isMultiSelect: false,
+        options: {
+          create: [
+            {
+              name: 'Caja Joyera Roisin con Lazo Morado',
+              description: 'Caja rígida protectora con lazo de raso morado y esponja interior aterciopelada.',
+              priceModifier: new Prisma.Decimal(0.0),
+              imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+              isDefault: true,
+              sortOrder: 0,
+            },
+            {
+              name: 'Empaque de Lujo Especial + Tarjeta Dedicatoria',
+              description: 'Caja joyera de lujo, lazo amatista, bolsa de regalo y tarjeta impresa con dedicatoria.',
+              priceModifier: new Prisma.Decimal(4.0),
+              imageUrl: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop',
+              isDefault: false,
+              sortOrder: 1,
+            },
+            {
+              name: 'Funda de Terciopelo Púrpura Premium',
+              description: 'Bolsita de terciopelo morado con grabado y cordón satinado, ideal para viaje.',
+              priceModifier: new Prisma.Decimal(2.5),
+              imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop',
+              isDefault: false,
+              sortOrder: 2,
+            },
+          ],
+        },
+      },
+      include: {
+        options: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+  }
+
+  return group;
+}
+
+export async function adminGetAllPresentationOptions() {
+  const group = await getOrCreatePresentationOptionGroup();
+  return prisma.productOption.findMany({
+    where: { groupId: group.id, isActive: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+}
+
+export async function adminCreatePresentationOption(data: {
+  name: string;
+  description?: string;
+  priceModifier: number;
+  imageUrl?: string;
+  isDefault?: boolean;
+  sortOrder?: number;
+}) {
+  const group = await getOrCreatePresentationOptionGroup();
+
+  if (data.isDefault) {
+    await prisma.productOption.updateMany({
+      where: { groupId: group.id },
+      data: { isDefault: false },
+    });
+  }
+
+  return prisma.productOption.create({
+    data: {
+      groupId: group.id,
+      name: data.name,
+      description: data.description,
+      priceModifier: new Prisma.Decimal(data.priceModifier || 0),
+      imageUrl: data.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop',
+      isDefault: data.isDefault || false,
+      sortOrder: data.sortOrder || 0,
+      isActive: true,
+    },
+  });
+}
+
+export async function adminUpdatePresentationOption(
+  id: string,
+  data: {
+    name?: string;
+    description?: string;
+    priceModifier?: number;
+    imageUrl?: string;
+    isDefault?: boolean;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  const option = await prisma.productOption.findUnique({ where: { id } });
+  if (data.isDefault && option) {
+    await prisma.productOption.updateMany({
+      where: { groupId: option.groupId },
+      data: { isDefault: false },
+    });
+  }
+
+  return prisma.productOption.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.priceModifier !== undefined && { priceModifier: new Prisma.Decimal(data.priceModifier) }),
+      ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+      ...(data.isDefault !== undefined && { isDefault: data.isDefault }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+    },
+  });
+}
+
+export async function adminDeletePresentationOption(id: string) {
+  return prisma.productOption.update({
+    where: { id },
+    data: { isActive: false },
+  });
+}
+
+

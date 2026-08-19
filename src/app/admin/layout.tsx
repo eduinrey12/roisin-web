@@ -13,6 +13,7 @@ import {
   Truck,
   ShieldCheck,
   ExternalLink,
+  Gift,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import RoisinLogo from '@/components/branding/RoisinLogo';
@@ -94,6 +95,14 @@ export default async function AdminLayout({
           >
             <Megaphone size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
             <span>Banners & Promociones</span>
+          </Link>
+
+          <Link
+            href="/admin/presentaciones"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <Gift size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Presentaciones & Empaques</span>
           </Link>
 
           <Link

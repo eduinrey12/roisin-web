@@ -134,19 +134,19 @@ export default function Header({ user }: { user?: { email: string; role: string 
         </div>
 
         {/* CENTER: Integrated Product Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-xl mx-4 lg:mx-8">
-          <form onSubmit={handleSearchSubmit} className="relative w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+        <div className="hidden md:flex flex-1 max-w-lg lg:max-w-xl mx-3 lg:mx-6">
+          <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-[#F8F5FA] hover:bg-white focus-within:bg-white border border-[#DFD0EC] focus-within:border-[#7043A0] rounded-full p-1 pl-3.5 transition-all shadow-2xs">
+            <Search className="text-[#7043A0] shrink-0" size={16} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar anillos de promesa, solitarios, collares de oro, pulseras..."
-              className="w-full pl-11 pr-24 py-2.5 bg-[#F8F5FA] hover:bg-[#F0E9F5]/60 border border-[#DFD0EC] rounded-full text-xs text-zinc-900 focus:outline-none focus:border-[#7043A0] focus:bg-white transition placeholder:text-zinc-400 shadow-2xs"
+              placeholder="Buscar anillos de promesa, solitarios, collares, pulseras..."
+              className="w-full bg-transparent px-3 py-1 text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400"
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-purple-diamond text-[10px] uppercase font-extrabold tracking-wider px-4 py-1.5 rounded-full transition active:scale-95 shadow-xs"
+              className="shrink-0 btn-purple-diamond text-[10.5px] uppercase font-bold tracking-wider px-4 py-2 rounded-full transition active:scale-95 shadow-xs cursor-pointer"
             >
               Buscar
             </button>
@@ -338,18 +338,18 @@ export default function Header({ user }: { user?: { email: string; role: string 
 
       {/* Mobile Search Bar Row */}
       <div className="md:hidden px-4 pb-3">
-        <form onSubmit={handleSearchSubmit} className="relative w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={15} />
+        <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-[#F8F5FA] border border-[#DFD0EC] focus-within:border-[#7043A0] focus-within:bg-white rounded-full p-1 pl-3 transition shadow-2xs">
+          <Search className="text-[#7043A0] shrink-0" size={15} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar joyas, anillos, collares..."
-            className="w-full pl-10 pr-20 py-2 bg-[#F8F5FA] border border-[#DFD0EC] rounded-full text-xs text-zinc-900 focus:outline-none focus:border-[#7043A0]"
+            className="w-full bg-transparent px-2.5 py-1 text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400"
           />
           <button
             type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 btn-purple-diamond text-[9.5px] uppercase font-bold tracking-wider px-3 py-1 rounded-full"
+            className="shrink-0 btn-purple-diamond text-[10px] uppercase font-bold tracking-wider px-3.5 py-1.5 rounded-full shadow-xs cursor-pointer"
           >
             Buscar
           </button>

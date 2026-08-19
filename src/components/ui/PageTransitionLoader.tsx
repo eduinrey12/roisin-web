@@ -11,42 +11,15 @@ export default function PageTransitionLoader() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Navigation finished
+    // Navigation triggered / completed
     setProgress(100);
     const timeout = setTimeout(() => {
       setLoading(false);
       setProgress(0);
-    }, 250);
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [pathname, searchParams]);
-
-  useEffect(() => {
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('a');
-      if (
-        target &&
-        target.href &&
-        !target.target &&
-        !target.download &&
-        target.href.startsWith(window.location.origin) &&
-        !target.href.includes('#')
-      ) {
-        const url = new URL(target.href);
-        if (url.pathname !== window.location.pathname || url.search !== window.location.search) {
-          setLoading(true);
-          setProgress(30);
-          const pTimer = setInterval(() => {
-            setProgress((prev) => (prev < 85 ? prev + 15 : prev));
-          }, 120);
-          setTimeout(() => clearInterval(pTimer), 1000);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleAnchorClick);
-    return () => document.removeEventListener('click', handleAnchorClick);
-  }, []);
 
   if (!loading && progress === 0) return null;
 

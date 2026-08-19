@@ -11,14 +11,22 @@ interface Category {
   slug: string;
 }
 
+interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface CatalogFilterBarProps {
   categories: Category[];
+  collections?: Collection[];
   totalProducts: number;
   maxCatalogPrice?: number;
 }
 
 export default function CatalogFilterBar({
   categories,
+  collections = [],
   totalProducts,
   maxCatalogPrice = 120,
 }: CatalogFilterBarProps) {
@@ -27,6 +35,7 @@ export default function CatalogFilterBar({
   const [isPending, startTransition] = useTransition();
 
   const currentCategory = searchParams.get('category') || '';
+  const currentCollection = searchParams.get('collection') || '';
   const currentSort = searchParams.get('sort') || 'newest';
   const currentMaxPrice = Number(searchParams.get('maxPrice')) || maxCatalogPrice;
   const currentQuery = searchParams.get('q') || '';
@@ -34,19 +43,24 @@ export default function CatalogFilterBar({
 
   // Local states
   const [maxPrice, setMaxPrice] = useState<number>(currentMaxPrice);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
+  const [isColDropdownOpen, setIsColDropdownOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const catDropdownRef = useRef<HTMLDivElement>(null);
+  const colDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMaxPrice(currentMaxPrice);
   }, [currentMaxPrice]);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsDropdownOpen(false);
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+        setIsCatDropdownOpen(false);
+      }
+      if (colDropdownRef.current && !colDropdownRef.current.contains(e.target as Node)) {
+        setIsColDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -86,8 +100,10 @@ export default function CatalogFilterBar({
   };
 
   const activeCategoryObj = categories.find((c) => c.slug === currentCategory);
+  const activeCollectionObj = collections.find((col) => col.slug === currentCollection);
   const hasActiveFilters = Boolean(
     currentCategory ||
+    currentCollection ||
     currentQuery ||
     isOnlyDiscounts ||
     currentMaxPrice < maxCatalogPrice ||
@@ -99,103 +115,156 @@ export default function CatalogFilterBar({
       {/* Desktop & Tablet Filter Bar */}
       <div className="bg-white rounded-3xl border border-[#DFD0EC] p-4 sm:p-5 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* 1. Custom Premium Category Select Input */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              type="button"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full sm:w-72 bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-3 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5 truncate">
-                <RoisinDiamond size={14} color="#7043A0" />
-                <span className="truncate">
-                  {isOnlyDiscounts
-                    ? '🔥 Piezas con Descuento'
-                    : activeCategoryObj
-                    ? activeCategoryObj.name
-                    : 'Todas las Joyas (Catálogo)'}
-                </span>
-              </div>
-              <ChevronDown
-                size={16}
-                className={`text-[#7043A0] transition-transform duration-200 ${
-                  isDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
+          {/* Selectors Row: Categorías & Colecciones */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
+            {/* 1. Category Select Input */}
+            <div className="relative w-full sm:w-60" ref={catDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
+                className="w-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group cursor-pointer"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <RoisinDiamond size={13} color="#7043A0" />
+                  <span className="truncate">
+                    {isOnlyDiscounts
+                      ? '🔥 Descuentos'
+                      : activeCategoryObj
+                      ? activeCategoryObj.name
+                      : 'Categorías'}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={15}
+                  className={`text-[#7043A0] transition-transform duration-200 ${
+                    isCatDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
 
-            {/* Custom Luxury Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-3xl p-3 shadow-2xl border border-[#DFD0EC] z-50 animate-fade-in space-y-1">
+              {/* Custom Luxury Dropdown Menu */}
+              {isCatDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-full sm:w-72 bg-white rounded-3xl p-3 shadow-2xl border border-[#DFD0EC] z-50 animate-fade-in space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateFilters({ category: null, ofertas: null });
+                      setIsCatDropdownOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                      !currentCategory && !isOnlyDiscounts
+                        ? 'btn-purple-diamond shadow-xs'
+                        : 'hover:bg-[#F8F5FA] text-zinc-800'
+                    }`}
+                  >
+                    <span>Todas las Categorías</span>
+                    {!currentCategory && !isOnlyDiscounts && <Check size={14} />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateFilters({ ofertas: 'true', category: null });
+                      setIsCatDropdownOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                      isOnlyDiscounts
+                        ? 'btn-purple-diamond shadow-xs'
+                        : 'hover:bg-[#F8F5FA] text-zinc-800'
+                    }`}
+                  >
+                    <span>🔥 Piezas en Descuento</span>
+                    {isOnlyDiscounts && <Check size={14} />}
+                  </button>
+
+                  {categories.map((cat) => {
+                    const isSelected = currentCategory === cat.slug && !isOnlyDiscounts;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          updateFilters({ category: cat.slug, ofertas: null });
+                          setIsCatDropdownOpen(false);
+                        }}
+                        className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                          isSelected
+                            ? 'btn-purple-diamond shadow-xs'
+                            : 'hover:bg-[#F8F5FA] text-zinc-800'
+                        }`}
+                      >
+                        <span>{cat.name}</span>
+                        {isSelected && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 2. Collection Select Input */}
+            {collections.length > 0 && (
+              <div className="relative w-full sm:w-60" ref={colDropdownRef}>
                 <button
                   type="button"
-                  onClick={() => {
-                    updateFilters({ category: null, ofertas: null });
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
-                    !currentCategory && !isOnlyDiscounts
-                      ? 'btn-purple-diamond shadow-xs'
-                      : 'hover:bg-[#F8F5FA] text-zinc-800'
-                  }`}
+                  onClick={() => setIsColDropdownOpen(!isColDropdownOpen)}
+                  className="w-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group cursor-pointer"
                 >
-                  <div className="flex items-center gap-2">
-                    <RoisinDiamond
-                      size={12}
-                      color={!currentCategory && !isOnlyDiscounts ? '#FFFFFF' : '#7043A0'}
-                    />
-                    <span>Todas las Colecciones</span>
+                  <div className="flex items-center gap-2 truncate">
+                    <RoisinDiamond size={13} color="#7043A0" />
+                    <span className="truncate">
+                      {activeCollectionObj ? activeCollectionObj.name : 'Colecciones'}
+                    </span>
                   </div>
-                  {!currentCategory && !isOnlyDiscounts && <Check size={14} />}
+                  <ChevronDown
+                    size={15}
+                    className={`text-[#7043A0] transition-transform duration-200 ${
+                      isColDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
 
-                {/* Descuentos & Ofertas Option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateFilters({ ofertas: 'true', category: null });
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
-                    isOnlyDiscounts
-                      ? 'btn-purple-diamond shadow-xs'
-                      : 'hover:bg-[#F8F5FA] text-zinc-800'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>🔥</span>
-                    <span>Piezas en Descuento</span>
-                  </div>
-                  {isOnlyDiscounts && <Check size={14} />}
-                </button>
-
-                {categories.map((cat) => {
-                  const isSelected = currentCategory === cat.slug && !isOnlyDiscounts;
-                  return (
+                {isColDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-full sm:w-72 bg-white rounded-3xl p-3 shadow-2xl border border-[#DFD0EC] z-50 animate-fade-in space-y-1">
                     <button
-                      key={cat.id}
                       type="button"
                       onClick={() => {
-                        updateFilters({ category: cat.slug, ofertas: null });
-                        setIsDropdownOpen(false);
+                        updateFilters({ collection: null });
+                        setIsColDropdownOpen(false);
                       }}
-                      className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
-                        isSelected
+                      className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                        !currentCollection
                           ? 'btn-purple-diamond shadow-xs'
                           : 'hover:bg-[#F8F5FA] text-zinc-800'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <RoisinDiamond
-                          size={12}
-                          color={isSelected ? '#FFFFFF' : '#7043A0'}
-                        />
-                        <span>{cat.name}</span>
-                      </div>
-                      {isSelected && <Check size={14} />}
+                      <span>Todas las Colecciones</span>
+                      {!currentCollection && <Check size={14} />}
                     </button>
-                  );
-                })}
+
+                    {collections.map((col) => {
+                      const isSelected = currentCollection === col.slug;
+                      return (
+                        <button
+                          key={col.id}
+                          type="button"
+                          onClick={() => {
+                            updateFilters({ collection: col.slug });
+                            setIsColDropdownOpen(false);
+                          }}
+                          className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                            isSelected
+                              ? 'btn-purple-diamond shadow-xs'
+                              : 'hover:bg-[#F8F5FA] text-zinc-800'
+                          }`}
+                        >
+                          <span>{col.name}</span>
+                          {isSelected && <Check size={14} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

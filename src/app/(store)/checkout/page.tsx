@@ -134,14 +134,15 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="mb-8 space-y-1">
-        <div className="inline-flex items-center gap-2 text-[10px] uppercase font-bold tracking-[0.25em] text-[#3F235F]">
-          <Lock size={12} /> Checkout Seguro & Privado • Diamante Morado
+      <div className="mb-8 space-y-2">
+        <div className="inline-flex items-center gap-2 text-[10.5px] uppercase font-bold tracking-[0.18em] text-[#3F235F] py-1 px-3 rounded-full bg-[#F8F5FA] border border-[#DFD0EC] leading-normal shadow-2xs">
+          <Lock size={12} className="text-[#7043A0]" />
+          <span>Checkout Seguro & Privado • Diamante Morado</span>
         </div>
-        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-zinc-900">
+        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-zinc-900 leading-tight">
           Finaliza tu Pedido
         </h1>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-zinc-500 leading-normal">
           Completa tus datos de envío para preparar tu joya de forma exclusiva
         </p>
       </div>

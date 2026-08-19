@@ -1,434 +1,803 @@
 import 'dotenv/config';
 import prisma from '../src/lib/db';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 
-const IMG_ANILLOS = 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop';
-const IMG_COLLARES = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop';
-const IMG_PULSERAS = 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop';
-const IMG_ARETES = 'https://images.unsplash.com/photo-1630019852942-f89202989a59?q=80&w=800&auto=format&fit=crop';
+// High resolution curated jewelry photos
+const IMAGES = {
+  ring1: [
+    { url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop', label: 'Detalle de Gema', isPrimary: false },
+    { url: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?q=80&w=800&auto=format&fit=crop', label: 'Puesto en Mano', isPrimary: false },
+  ],
+  ring2: [
+    { url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop', label: 'Ángulo Lateral', isPrimary: false },
+  ],
+  necklace1: [
+    { url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop', label: 'En Modelo', isPrimary: false },
+  ],
+  necklace2: [
+    { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop', label: 'Detalle Cadena', isPrimary: false },
+  ],
+  bracelet1: [
+    { url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop', label: 'Detalle Circonias', isPrimary: false },
+  ],
+  bracelet2: [
+    { url: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop', label: 'Puesto en Muñeca', isPrimary: false },
+  ],
+  earrings1: [
+    { url: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop', label: 'En Modelo', isPrimary: false },
+  ],
+  earrings2: [
+    { url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?q=80&w=800&auto=format&fit=crop', label: 'Detalle Broche', isPrimary: false },
+  ],
+};
 
 async function main() {
-  console.log('--- ROISIN Database Seed with 19 Fine Jewelry Products ---');
+  console.log('🔄 Limpiando base de datos para inicialización limpia...');
 
-  // 1. Admin User
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@roisinjoyas.com';
-  const initialPassword =
-    process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(8).toString('hex') + '!A1';
+  // Limpieza en orden de restricciones
+  await prisma.orderItem.deleteMany({});
+  await prisma.payment.deleteMany({});
+  await prisma.order.deleteMany({});
+  await prisma.cartItemOption.deleteMany({});
+  await prisma.cartItem.deleteMany({});
+  await prisma.cart.deleteMany({});
+  await prisma.collectionProduct.deleteMany({});
+  await prisma.productOptionGroupAssignment.deleteMany({});
+  await prisma.productOption.deleteMany({});
+  await prisma.productOptionGroup.deleteMany({});
+  await prisma.variantAttributeValue.deleteMany({});
+  await prisma.productAttributeValue.deleteMany({});
+  await prisma.productAttribute.deleteMany({});
+  await prisma.inventoryMovement.deleteMany({});
+  await prisma.inventoryItem.deleteMany({});
+  await prisma.productVariant.deleteMany({});
+  await prisma.productImage.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.promotion.deleteMany({});
+  await prisma.collection.deleteMany({});
+  await prisma.category.deleteMany({});
+  await prisma.coupon.deleteMany({});
+  await prisma.shippingRegion.deleteMany({});
+  await prisma.address.deleteMany({});
+  await prisma.customerProfile.deleteMany({});
+  await prisma.user.deleteMany({});
 
-  const adminPasswordHash = await bcrypt.hash(initialPassword, 10);
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: { role: 'ADMIN' },
-    create: {
-      email: adminEmail,
+  console.log('✅ Base de datos limpia.');
+
+  // 1. Usuarios Oficiales
+  console.log('👤 Creando usuarios...');
+  const adminPasswordHash = await bcrypt.hash('Admin123*', 10);
+  const clientPasswordHash = await bcrypt.hash('Cliente123*', 10);
+
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@roisinjoyas.com',
       passwordHash: adminPasswordHash,
       role: 'ADMIN',
       customerProfile: {
         create: {
           firstName: 'Administrador',
-          lastName: 'Roisin',
-          phone: process.env.NEXT_PUBLIC_STORE_PHONE || '0999999999',
+          lastName: 'ROISIN',
+          phone: '0999999999',
         },
       },
     },
   });
 
-  // 2. Categories
-  const catAnillos = await prisma.category.upsert({
-    where: { slug: 'anillos' },
-    update: { imageUrl: IMG_ANILLOS },
-    create: {
+  await prisma.user.create({
+    data: {
+      email: 'cliente@roisinjoyas.com',
+      passwordHash: clientPasswordHash,
+      role: 'CUSTOMER',
+      customerProfile: {
+        create: {
+          firstName: 'Eduin',
+          lastName: 'Gómez',
+          phone: '0987654321',
+        },
+      },
+    },
+  });
+
+  // 2. Tarifas de Envío por Región
+  console.log('🚚 Creando tarifas de envío...');
+  const regGye = await prisma.shippingRegion.create({
+    data: {
+      name: 'Guayaquil, Samborondón & Durán',
+      baseRate: 3.00,
+      description: 'Entrega rápida en 24 horas laborables',
+      isActive: true,
+    },
+  });
+
+  const regNac = await prisma.shippingRegion.create({
+    data: {
+      name: 'Otros Destinos - Nacional (Quito, Cuenca, etc.)',
+      baseRate: 6.00,
+      description: 'Entrega segura en 24 a 48 horas con Servientrega',
+      isActive: true,
+    },
+  });
+
+  const regGps = await prisma.shippingRegion.create({
+    data: {
+      name: 'Galápagos (San Cristóbal, Santa Cruz)',
+      baseRate: 12.00,
+      description: 'Envío aéreo prioritario en 3 a 5 días laborables',
+      isActive: true,
+    },
+  });
+
+  // 3. Categorías Oficiales
+  console.log('🏷️ Creando categorías...');
+  const catAnillos = await prisma.category.create({
+    data: {
       name: 'Anillos',
       slug: 'anillos',
       description: 'Anillos de promesa, solitarios eternos y alianzas en Plata 925 y Oro 18k.',
-      imageUrl: IMG_ANILLOS,
+      imageUrl: IMAGES.ring1[0].url,
     },
   });
 
-  const catCollares = await prisma.category.upsert({
-    where: { slug: 'collares' },
-    update: { imageUrl: IMG_COLLARES },
-    create: {
-      name: 'Collares y Gargantillas',
+  const catCollares = await prisma.category.create({
+    data: {
+      name: 'Collares & Gargantillas',
       slug: 'collares',
-      description: 'Collares sofisticados con dijes de corazón, punto de luz y perlas naturales.',
-      imageUrl: IMG_COLLARES,
+      description: 'Cadenas delicadas, puntos de luz y dijes con amatistas suizas.',
+      imageUrl: IMAGES.necklace1[0].url,
     },
   });
 
-  const catPulseras = await prisma.category.upsert({
-    where: { slug: 'pulseras' },
-    update: { imageUrl: IMG_PULSERAS },
-    create: {
-      name: 'Pulseras y Brazaletes',
+  const catPulseras = await prisma.category.create({
+    data: {
+      name: 'Pulseras & Brazaletes',
       slug: 'pulseras',
-      description: 'Brazaletes finos y pulseras tennis con circonias suizas de corte brillante.',
-      imageUrl: IMG_PULSERAS,
+      description: 'Pulseras tennis con circonias de corte brillante y brazaletes rígidos.',
+      imageUrl: IMAGES.bracelet1[0].url,
     },
   });
 
-  const catAretes = await prisma.category.upsert({
-    where: { slug: 'aretes' },
-    update: { imageUrl: IMG_ARETES },
-    create: {
-      name: 'Aretes y Candongas',
+  const catAretes = await prisma.category.create({
+    data: {
+      name: 'Aretes & Candongas',
       slug: 'aretes',
-      description: 'Aretes tipo huggies y candongas de alto brillo en oro y plata.',
-      imageUrl: IMG_ARETES,
+      description: 'Huggies y aretes de lujo que iluminan cada mirada.',
+      imageUrl: IMAGES.earrings1[0].url,
     },
   });
 
-  // 3. Presentation / Packaging Option Groups
-  const optionGroup = await prisma.productOptionGroup.upsert({
-    where: { id: 'opt-group-presentation' },
-    update: {},
-    create: {
+  // 4. Colecciones Exclusivas
+  console.log('💎 Creando colecciones...');
+  const colDiamanteMorado = await prisma.collection.create({
+    data: {
+      name: 'Colección Diamante Morado 2026',
+      slug: 'diamante-morado-2026',
+      description: 'Nuestra más alta expresión de elegancia y distinción en tono amatista.',
+      imageUrl: IMAGES.ring1[0].url,
+      bannerUrl: IMAGES.ring1[1].url,
+    },
+  });
+
+  const colPromesa = await prisma.collection.create({
+    data: {
+      name: 'Colección Promesa Eterna',
+      slug: 'promesa-eterna',
+      description: 'Anillos y duetos para sellar momentos inolvidables de amor.',
+      imageUrl: IMAGES.ring2[0].url,
+    },
+  });
+
+  const colSanValentin = await prisma.collection.create({
+    data: {
+      name: 'Colección San Valentín & Amor',
+      slug: 'san-valentin',
+      description: 'Sets románticos y dijes de corazón con empaque especial.',
+      imageUrl: IMAGES.necklace1[0].url,
+    },
+  });
+
+  const colPlata = await prisma.collection.create({
+    data: {
+      name: 'Joyas en Plata Ley 925',
+      slug: 'plata-925',
+      description: 'Pureza certificada y acabado de rodio para un brillo eterno.',
+      imageUrl: IMAGES.bracelet1[0].url,
+    },
+  });
+
+  const colOro = await prisma.collection.create({
+    data: {
+      name: 'Alta Gama Baño de Oro 18k',
+      slug: 'oro-18k',
+      description: 'Piezas con triple baño de oro amarillo de 18 quilates.',
+      imageUrl: IMAGES.necklace2[0].url,
+    },
+  });
+
+  // 5. Banners & Promociones
+  console.log('📢 Creando promociones...');
+  await prisma.promotion.createMany({
+    data: [
+      {
+        title: 'Anillos de Promesa Morado Amatista',
+        subtitle: 'El símbolo eterno del amor en Plata Fina 925',
+        badge: 'NUEVA COLECCIÓN',
+        discountText: 'HASTA 25% OFF',
+        imageUrl: IMAGES.ring1[0].url,
+        targetUrl: '/productos?category=anillos',
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        title: 'Collares con Baño de Oro 18k',
+        subtitle: 'Diseños que realzan tu belleza natural todos los días',
+        badge: 'MÁS DESEADOS',
+        discountText: 'ENVÍO GRATIS',
+        imageUrl: IMAGES.necklace1[0].url,
+        targetUrl: '/productos?category=collares',
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        title: 'Sets Especiales de Amor & Regalo',
+        subtitle: 'Empaque de lujo y tarjeta con dedicatoria personalizada',
+        badge: 'REGALO PERFECTO',
+        discountText: '20% OFF',
+        imageUrl: IMAGES.necklace2[0].url,
+        targetUrl: '/productos?ofertas=true',
+        sortOrder: 3,
+        isActive: true,
+      },
+      {
+        title: 'Pulseras Tennis Diamante Morado',
+        subtitle: 'Circonias suizas de corte brillante en engaste artesanal',
+        badge: 'EDICIÓN LIMITADA',
+        discountText: '15% OFF',
+        imageUrl: IMAGES.bracelet1[0].url,
+        targetUrl: '/productos?category=pulseras',
+        sortOrder: 4,
+        isActive: true,
+      },
+    ],
+  });
+
+  // 6. Cupones de Descuento
+  console.log('🎟️ Creando cupones...');
+  await prisma.coupon.createMany({
+    data: [
+      {
+        code: 'AMATISTA15',
+        discountPercentage: 15,
+        maxUses: 100,
+        currentUses: 0,
+        isActive: true,
+        validUntil: new Date('2027-12-31'),
+      },
+      {
+        code: 'AMOR2026',
+        discountPercentage: 20,
+        maxUses: 50,
+        currentUses: 0,
+        isActive: true,
+        validUntil: new Date('2027-12-31'),
+      },
+      {
+        code: 'BIENVENIDA10',
+        discountPercentage: 10,
+        maxUses: 200,
+        currentUses: 0,
+        isActive: true,
+        validUntil: new Date('2027-12-31'),
+      },
+    ],
+  });
+
+  // 7. Grupo de Opciones de Presentación
+  console.log('🎁 Creando opciones de presentación...');
+  const optGroupPresentation = await prisma.productOptionGroup.create({
+    data: {
       id: 'opt-group-presentation',
-      name: 'Presentación y Empaque',
-      description: 'Elige cómo deseas recibir tu joya.',
+      name: 'Presentación & Empaque',
+      description: 'Elige cómo deseas recibir o enviar tu joya.',
       isMultiSelect: false,
       options: {
         create: [
-          { name: 'Empaque Estándar Roisin', priceModifier: 0.0, isDefault: true, sortOrder: 0 },
-          { name: 'Caja de Regalo de Lujo + Cinta Satinada', priceModifier: 4.5, isDefault: false, sortOrder: 1 },
-          { name: 'Bolsa de Terciopelo Rosa Roisin', priceModifier: 2.5, isDefault: false, sortOrder: 2 },
+          { name: 'Caja Joyera Roisin con Lazo Morado', priceModifier: 0.0, isDefault: true, sortOrder: 0 },
+          { name: 'Empaque de Lujo Especial + Tarjeta Dedicatoria', priceModifier: 4.0, isDefault: false, sortOrder: 1 },
+          { name: 'Funda de Terciopelo Púrpura Premium', priceModifier: 2.5, isDefault: false, sortOrder: 2 },
         ],
       },
     },
   });
 
-  // Helper function to create/upsert product
-  const createProduct = async (data: {
-    title: string;
-    slug: string;
-    description: string;
-    basePrice: number;
-    categoryId: string;
-    imageUrl: string;
-    variants: { sku: string; price: number; quantity: number }[];
-  }) => {
-    const product = await prisma.product.upsert({
-      where: { slug: data.slug },
-      update: {
-        title: data.title,
-        description: data.description,
-        basePrice: data.basePrice,
-        categoryId: data.categoryId,
-        isFeatured: true,
+  // Atributos de Tallas
+  const attrTalla = await prisma.productAttribute.create({
+    data: {
+      name: 'Talla',
+      values: {
+        create: [
+          { value: 'Talla 6 (16.5 mm)' },
+          { value: 'Talla 7 (17.3 mm)' },
+          { value: 'Talla 8 (18.1 mm)' },
+          { value: 'Talla 9 (18.9 mm)' },
+        ],
       },
-      create: {
-        title: data.title,
-        slug: data.slug,
-        description: data.description,
-        basePrice: data.basePrice,
-        categoryId: data.categoryId,
-        isFeatured: true,
-        images: {
-          create: [{ url: data.imageUrl, isPrimary: true, altText: data.title, sortOrder: 0 }],
-        },
-      },
-    });
-
-    // Ensure images
-    await prisma.productImage.deleteMany({ where: { productId: product.id } });
-    await prisma.productImage.create({
-      data: { productId: product.id, url: data.imageUrl, isPrimary: true, altText: data.title, sortOrder: 0 },
-    });
-
-    // Ensure variants
-    for (const v of data.variants) {
-      await prisma.productVariant.upsert({
-        where: { sku: v.sku },
-        update: { price: v.price },
-        create: {
-          productId: product.id,
-          sku: v.sku,
-          price: v.price,
-          inventory: { create: { quantity: v.quantity } },
-        },
-      });
-    }
-
-    // Ensure option group link
-    await prisma.productOptionGroupAssignment.upsert({
-      where: { productId_groupId: { productId: product.id, groupId: optionGroup.id } },
-      update: {},
-      create: { productId: product.id, groupId: optionGroup.id },
-    });
-
-    return product;
-  };
-
-  // --- 19 PRODUCT DEFINITIONS ---
-  const productsList = [
-    // Anillos (5)
-    {
-      title: 'Anillo Solitario Eterno en Plata 925',
-      slug: 'anillo-solitario-diamante-plata',
-      description: 'Clásico anillo solitario fabricado con auténtica Plata de Ley 925 y circonia suiza de corte brillante. El símbolo perfecto para promesas y aniversarios.',
-      basePrice: 48.0,
-      categoryId: catAnillos.id,
-      imageUrl: IMG_ANILLOS,
-      variants: [
-        { sku: 'AN-SOL-T6', price: 48.0, quantity: 15 },
-        { sku: 'AN-SOL-T7', price: 48.0, quantity: 20 },
-        { sku: 'AN-SOL-T8', price: 48.0, quantity: 10 },
-      ],
     },
-    {
-      title: 'Anillo Promesa Infinito en Plata de Ley',
-      slug: 'anillo-promesa-infinito-plata',
-      description: 'Diseño delicado con el símbolo del infinito entrelazado con micro-circones. Representa un amor sin límites y momentos eternos.',
-      basePrice: 42.0,
-      categoryId: catAnillos.id,
-      imageUrl: IMG_ANILLOS,
-      variants: [
-        { sku: 'AN-INF-T6', price: 42.0, quantity: 12 },
-        { sku: 'AN-INF-T7', price: 42.0, quantity: 18 },
-      ],
-    },
-    {
-      title: 'Anillo Corona Royal con Baño de Oro 18k',
-      slug: 'anillo-corona-royal-oro-18k',
-      description: 'Majestuoso anillo estilo tiara con baño de oro amarillo de 18 quilates y piedras incrustadas a mano.',
-      basePrice: 65.0,
-      categoryId: catAnillos.id,
-      imageUrl: IMG_ANILLOS,
-      variants: [
-        { sku: 'AN-COR-T7', price: 65.0, quantity: 14 },
-        { sku: 'AN-COR-T8', price: 65.0, quantity: 8 },
-      ],
-    },
-    {
-      title: 'Anillo Churumbela Circonias en Hilera',
-      slug: 'anillo-churumbela-circonias-plata',
-      description: 'Anillo tipo banda completa con finas circonias engastadas en cuatro puntas. Ideal para combinar con solitarios.',
-      basePrice: 36.0,
-      categoryId: catAnillos.id,
-      imageUrl: IMG_ANILLOS,
-      variants: [
-        { sku: 'AN-CHUR-T6', price: 36.0, quantity: 20 },
-        { sku: 'AN-CHUR-T7', price: 36.0, quantity: 22 },
-        { sku: 'AN-CHUR-T8', price: 36.0, quantity: 15 },
-      ],
-    },
-    {
-      title: 'Anillo Dúo Amor Eterno para Parejas',
-      slug: 'anillo-duo-amor-eterno-parejas',
-      description: 'Set de dos anillos ajustables en plata pura con grabado interior de promesa y acabado brillante.',
-      basePrice: 58.0,
-      categoryId: catAnillos.id,
-      imageUrl: IMG_ANILLOS,
-      variants: [
-        { sku: 'AN-DUO-SET', price: 58.0, quantity: 16 },
-      ],
-    },
-
-    // Collares (5)
-    {
-      title: 'Collar Corazón Radiante con Baño de Oro',
-      slug: 'collar-gargantilla-corazon-perla',
-      description: 'Cadena fina con dije de corazón pulido a mano y baño de oro de 18 quilates. Hipoalergénico y con longitud ajustable.',
-      basePrice: 38.0,
-      categoryId: catCollares.id,
-      imageUrl: IMG_COLLARES,
-      variants: [
-        { sku: 'COL-COR-45CM', price: 38.0, quantity: 18 },
-        { sku: 'COL-COR-50CM', price: 42.0, quantity: 12 },
-      ],
-    },
-    {
-      title: 'Collar Punto de Luz Diamante en Plata 925',
-      slug: 'collar-punto-de-luz-diamante-plata',
-      description: 'Elegancia minimalista con un circón suizo corte brillante suspendido sobre una cadena veneciana de plata.',
-      basePrice: 32.0,
-      categoryId: catCollares.id,
-      imageUrl: IMG_COLLARES,
-      variants: [
-        { sku: 'COL-PTL-40CM', price: 32.0, quantity: 25 },
-        { sku: 'COL-PTL-45CM', price: 35.0, quantity: 30 },
-      ],
-    },
-    {
-      title: 'Collar Árbol de la Vida en Oro 18k',
-      slug: 'collar-arbol-de-la-vida-oro-18k',
-      description: 'Símbolo de familia, crecimiento y bendición con delicado calado artesanal y baño de oro duradero.',
-      basePrice: 49.0,
-      categoryId: catCollares.id,
-      imageUrl: IMG_COLLARES,
-      variants: [
-        { sku: 'COL-ARB-45CM', price: 49.0, quantity: 15 },
-      ],
-    },
-    {
-      title: 'Collar Gargantilla Mariposa Cristal Rosa',
-      slug: 'collar-gargantilla-mariposa-cristal',
-      description: 'Dije de mariposa facetada en cristal rosa pastel que refleja destellos de luz con cada movimiento.',
-      basePrice: 44.0,
-      categoryId: catCollares.id,
-      imageUrl: IMG_COLLARES,
-      variants: [
-        { sku: 'COL-MAR-45CM', price: 44.0, quantity: 14 },
-      ],
-    },
-    {
-      title: 'Collar Medalla Milagrosa en Plata de Ley',
-      slug: 'collar-medalla-milagrosa-plata-925',
-      description: 'Medalla protectora con relieve tradicional de alta definición y cadena resistente en plata 925.',
-      basePrice: 39.0,
-      categoryId: catCollares.id,
-      imageUrl: IMG_COLLARES,
-      variants: [
-        { sku: 'COL-MED-50CM', price: 39.0, quantity: 16 },
-      ],
-    },
-
-    // Pulseras (5)
-    {
-      title: 'Pulsera Tennis Zirconia Brillante',
-      slug: 'pulsera-tenis-circonias-plata',
-      description: 'Elegancia atemporal con una hilera continua de circonias cúbicas montadas sobre engaste de cuatro puntas en plata.',
-      basePrice: 55.0,
-      categoryId: catPulseras.id,
-      imageUrl: IMG_PULSERAS,
-      variants: [
-        { sku: 'PUL-TEN-17CM', price: 55.0, quantity: 15 },
-        { sku: 'PUL-TEN-19CM', price: 58.0, quantity: 10 },
-      ],
-    },
-    {
-      title: 'Pulsera Hilo Rojo Protección con Ojo Turco en Oro',
-      slug: 'pulsera-hilo-rojo-ojo-turco-oro',
-      description: 'Amuleto de protección contra malas energías tejido a mano con dije en baño de oro de 18k.',
-      basePrice: 28.0,
-      categoryId: catPulseras.id,
-      imageUrl: IMG_PULSERAS,
-      variants: [
-        { sku: 'PUL-OJO-AJUST', price: 28.0, quantity: 30 },
-      ],
-    },
-    {
-      title: 'Brazalete Rígido Bangles en Baño de Oro 18k',
-      slug: 'brazalete-rigido-bangles-oro-18k',
-      description: 'Brazalete de lujo con apertura lateral oculta, pulido espejo y grabado de alta joyería.',
-      basePrice: 72.0,
-      categoryId: catPulseras.id,
-      imageUrl: IMG_PULSERAS,
-      variants: [
-        { sku: 'BRAZ-BAN-ORO', price: 72.0, quantity: 12 },
-      ],
-    },
-    {
-      title: 'Pulsera Trébol de Cuatro Hojas en Plata 925',
-      slug: 'pulsera-trebol-cuatro-hojas-plata',
-      description: 'Símbolo de buena fortuna con dijes de trébol en concha nácar y eslabones finos ajustables.',
-      basePrice: 45.0,
-      categoryId: catPulseras.id,
-      imageUrl: IMG_PULSERAS,
-      variants: [
-        { sku: 'PUL-TREB-18CM', price: 45.0, quantity: 18 },
-      ],
-    },
-    {
-      title: 'Pulsera Perlas Cultivadas con Broche en Oro',
-      slug: 'pulsera-perlas-cultivadas-broche-oro',
-      description: 'Perlas naturales de agua dulce de brillo satinado y broche marinero bañado en oro de 18 quilates.',
-      basePrice: 52.0,
-      categoryId: catPulseras.id,
-      imageUrl: IMG_PULSERAS,
-      variants: [
-        { sku: 'PUL-PERL-18CM', price: 52.0, quantity: 10 },
-      ],
-    },
-
-    // Aretes (4)
-    {
-      title: 'Aretes Candongas Huggies en Oro 18k',
-      slug: 'aretes-candongas-clasicas-oro',
-      description: 'Aretes tipo huggie esenciales para el día a día. Cierre seguro a presión, ultra ligeros y con acabado de alto brillo.',
-      basePrice: 32.0,
-      categoryId: catAretes.id,
-      imageUrl: IMG_ARETES,
-      variants: [
-        { sku: 'ARE-HUG-10MM', price: 32.0, quantity: 25 },
-        { sku: 'ARE-HUG-14MM', price: 36.0, quantity: 20 },
-      ],
-    },
-    {
-      title: 'Aretes Solitarios Circonia Suiza en Plata 925',
-      slug: 'aretes-solitarios-circonia-plata-925',
-      description: 'Topos clásicos con circonias redondas de 6mm y tuerca mariposa de ajuste firme y seguro.',
-      basePrice: 26.0,
-      categoryId: catAretes.id,
-      imageUrl: IMG_ARETES,
-      variants: [
-        { sku: 'ARE-SOL-6MM', price: 26.0, quantity: 35 },
-      ],
-    },
-    {
-      title: 'Aretes Colgantes Gota de Cristal en Oro 18k',
-      slug: 'aretes-colgantes-gota-cristal-oro',
-      description: 'Diseño refinado para eventos de gala con cristales facetados en forma de lágrima.',
-      basePrice: 48.0,
-      categoryId: catAretes.id,
-      imageUrl: IMG_ARETES,
-      variants: [
-        { sku: 'ARE-GOT-ORO', price: 48.0, quantity: 15 },
-      ],
-    },
-    {
-      title: 'Aretes Trepadores Estrellas en Plata de Ley',
-      slug: 'aretes-trepadores-estrellas-plata',
-      description: 'Aretes modernos que ascienden por el lóbulo de la oreja con una constelación de estrellas brillantes.',
-      basePrice: 34.0,
-      categoryId: catAretes.id,
-      imageUrl: IMG_ARETES,
-      variants: [
-        { sku: 'ARE-TREP-PL', price: 34.0, quantity: 22 },
-      ],
-    },
-  ];
-
-  for (const p of productsList) {
-    await createProduct(p);
-  }
-
-  // 4. Shipping Regions in Ecuador
-  const regions = [
-    { name: 'Quito Urbano (Entrega Express 24h)', baseRate: 3.5 },
-    { name: 'Valles de Quito (Cumbayá, Tumbaco, Los Chillos)', baseRate: 4.5 },
-    { name: 'Guayaquil y Samborondón', baseRate: 5.5 },
-    { name: 'Resto del País (Servientrega 48h)', baseRate: 6.5 },
-  ];
-
-  for (const r of regions) {
-    await prisma.shippingRegion.upsert({
-      where: { name: r.name },
-      update: { baseRate: r.baseRate },
-      create: { name: r.name, baseRate: r.baseRate, isActive: true },
-    });
-  }
-
-  // 5. Coupons
-  await prisma.coupon.upsert({
-    where: { code: 'BIENVENIDA10' },
-    update: {},
-    create: { code: 'BIENVENIDA10', discountPercentage: 10, maxUses: 500, isActive: true },
+    include: { values: true },
   });
 
-  await prisma.coupon.upsert({
-    where: { code: 'ROISIN20' },
-    update: {},
-    create: { code: 'ROISIN20', discountPercentage: 20, maxUses: 100, isActive: true },
+  const valTalla6 = attrTalla.values.find((v) => v.value.includes('Talla 6'))!;
+  const valTalla7 = attrTalla.values.find((v) => v.value.includes('Talla 7'))!;
+  const valTalla8 = attrTalla.values.find((v) => v.value.includes('Talla 8'))!;
+  const valTalla9 = attrTalla.values.find((v) => v.value.includes('Talla 9'))!;
+
+  // 8. CREACIÓN DE PRODUCTOS
+  console.log('💍 Creando catálogo de joyas (Con descuento, sin descuento, variantes y únicas)...');
+
+  // PRODUCTOS CON DESCUENTO (5)
+  // 1. Anillo Insignia Diamante Morado (Pieza Más Deseada #1 - Multi-variante con tallas)
+  const p1 = await prisma.product.create({
+    data: {
+      title: 'Anillo Solitario Diamante Morado Amatista',
+      slug: 'anillo-solitario-diamante-morado',
+      tag: 'Más Deseado',
+      shortDescription: 'Plata de Ley 925 con gema central amatista de corte esmeralda y circonias laterales.',
+      description: 'Una pieza insignia de ROISIN inspirada en el brillo majestuoso del Diamante Morado. Forjado en Plata de Ley 925 con baño protector de rodio y engaste a 4 uñas de una amatista suiza de máxima pureza.',
+      basePrice: 42.00,
+      compareAtPrice: 55.00,
+      discountPercent: 24,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catAnillos.id,
+      collections: {
+        create: [
+          { collectionId: colDiamanteMorado.id, sortOrder: 0 },
+          { collectionId: colPromesa.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.ring1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'AN-MOR-T6',
+            price: 42.00,
+            compareAtPrice: 55.00,
+            inventory: { create: { quantity: 15 } },
+            attributes: { create: [{ attributeValueId: valTalla6.id }] },
+          },
+          {
+            sku: 'AN-MOR-T7',
+            price: 42.00,
+            compareAtPrice: 55.00,
+            inventory: { create: { quantity: 20 } },
+            attributes: { create: [{ attributeValueId: valTalla7.id }] },
+          },
+          {
+            sku: 'AN-MOR-T8',
+            price: 42.00,
+            compareAtPrice: 55.00,
+            inventory: { create: { quantity: 12 } },
+            attributes: { create: [{ attributeValueId: valTalla8.id }] },
+          },
+          {
+            sku: 'AN-MOR-T9',
+            price: 42.00,
+            compareAtPrice: 55.00,
+            inventory: { create: { quantity: 8 } },
+            attributes: { create: [{ attributeValueId: valTalla9.id }] },
+          },
+        ],
+      },
+    },
   });
 
-  console.log(`✅ Seed finished! Total products in database: ${productsList.length}`);
+  // 2. Collar Corazón de Amor Infinito (Con descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Collar Corazón de Amor Infinito en Plata 925',
+      slug: 'collar-corazon-amor-infinito',
+      tag: 'Oferta Especial',
+      shortDescription: 'Cadena veneciana de 45cm con dije de corazón entrelazado y circonia suiza.',
+      description: 'El regalo definitivo para expresar amor sincero. Dije tallado en plata fina 925 con destellos brillantes y cadena resistente hipoalergénica.',
+      basePrice: 32.00,
+      compareAtPrice: 40.00,
+      discountPercent: 20,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catCollares.id,
+      collections: {
+        create: [
+          { collectionId: colSanValentin.id, sortOrder: 0 },
+          { collectionId: colPlata.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.necklace1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'COL-CORAZON-STD',
+            price: 32.00,
+            compareAtPrice: 40.00,
+            inventory: { create: { quantity: 25 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 3. Pulsera Tennis Clásica Amatista (Con descuento - Única)
+  await prisma.product.create({
+    data: {
+      title: 'Pulsera Tennis Royale Amatista',
+      slug: 'pulsera-tennis-royale-amatista',
+      tag: 'Más Vendido',
+      shortDescription: 'Circonias amatista continuas en engaste francés con cierre de seguridad doble.',
+      description: 'Elegancia atemporal que envuelve la muñeca con un resplandor púrpura hipnotizante. Ajuste perfecto de 18cm extensible a 20cm.',
+      basePrice: 48.00,
+      compareAtPrice: 60.00,
+      discountPercent: 20,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catPulseras.id,
+      collections: {
+        create: [
+          { collectionId: colDiamanteMorado.id, sortOrder: 0 },
+          { collectionId: colPlata.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.bracelet1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'PUL-TENNIS-MOR',
+            price: 48.00,
+            compareAtPrice: 60.00,
+            inventory: { create: { quantity: 18 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 4. Aretes Huggies Pavé Púrpura (Con descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Aretes Huggies Pavé Diamante Morado',
+      slug: 'aretes-huggies-pave-diamante-morado',
+      tag: 'Oferta',
+      shortDescription: 'Candongas pequeñas de ajuste click en Plata 925 con pavé frontal de circonias amatista.',
+      description: 'Comodidad total para el uso diario sin renunciar al brillo y sofisticación. Hipoalergénicos y seguros.',
+      basePrice: 24.00,
+      compareAtPrice: 32.00,
+      discountPercent: 25,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catAretes.id,
+      collections: {
+        create: [
+          { collectionId: colDiamanteMorado.id, sortOrder: 0 },
+          { collectionId: colPlata.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.earrings1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'ARE-HUG-PAVE',
+            price: 24.00,
+            compareAtPrice: 32.00,
+            inventory: { create: { quantity: 30 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 5. Anillo Dueto Promesa Eterna (Con descuento - Multi-variante)
+  await prisma.product.create({
+    data: {
+      title: 'Anillo Dueto de Promesa & Alianza',
+      slug: 'anillo-dueto-promesa-alianza',
+      tag: 'San Valentín',
+      shortDescription: 'Set de dos anillos acoplables en Plata 925 con baño de rodio blanco.',
+      description: 'La alianza y el solitario se unen en perfecta armonía. Diseñado para sellar compromisos inolvidables.',
+      basePrice: 52.00,
+      compareAtPrice: 65.00,
+      discountPercent: 20,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catAnillos.id,
+      collections: {
+        create: [
+          { collectionId: colPromesa.id, sortOrder: 0 },
+          { collectionId: colSanValentin.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.ring2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'AN-DUETO-T6',
+            price: 52.00,
+            compareAtPrice: 65.00,
+            inventory: { create: { quantity: 10 } },
+            attributes: { create: [{ attributeValueId: valTalla6.id }] },
+          },
+          {
+            sku: 'AN-DUETO-T7',
+            price: 52.00,
+            compareAtPrice: 65.00,
+            inventory: { create: { quantity: 14 } },
+            attributes: { create: [{ attributeValueId: valTalla7.id }] },
+          },
+          {
+            sku: 'AN-DUETO-T8',
+            price: 52.00,
+            compareAtPrice: 65.00,
+            inventory: { create: { quantity: 12 } },
+            attributes: { create: [{ attributeValueId: valTalla8.id }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // PRODUCTOS SIN DESCUENTO (5)
+  // 6. Gargantilla Solitaria Oro 18k (Sin descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Gargantilla Solitaria Punto de Luz Oro 18k',
+      slug: 'gargantilla-solitaria-oro-18k',
+      tag: 'Nuevo',
+      shortDescription: 'Cadena fina con triple baño de oro 18k y circonia solitario de 6mm.',
+      description: 'Una joya minimalista que aporta una calidez y elegancia incomparable a cualquier escote.',
+      basePrice: 38.00,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catCollares.id,
+      collections: {
+        create: [
+          { collectionId: colOro.id, sortOrder: 0 },
+        ],
+      },
+      images: {
+        create: IMAGES.necklace2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'COL-ORO-PUNTO',
+            price: 38.00,
+            inventory: { create: { quantity: 20 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 7. Anillo Corona de Princesa Plata 925 (Sin descuento - Multi-variante)
+  await prisma.product.create({
+    data: {
+      title: 'Anillo Corona Real de Princesa',
+      slug: 'anillo-corona-real-princesa',
+      tag: 'Edición Especial',
+      shortDescription: 'Diseño en forma de tiara imperial con circonias suizas de corte brillante.',
+      description: 'Para la reina de tu vida. Hecho a mano en Plata Esterlina 925 con meticulosos detalles de orfebrería.',
+      basePrice: 45.00,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catAnillos.id,
+      collections: {
+        create: [
+          { collectionId: colPlata.id, sortOrder: 0 },
+          { collectionId: colPromesa.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.ring1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'AN-CORONA-T6',
+            price: 45.00,
+            inventory: { create: { quantity: 10 } },
+            attributes: { create: [{ attributeValueId: valTalla6.id }] },
+          },
+          {
+            sku: 'AN-CORONA-T7',
+            price: 45.00,
+            inventory: { create: { quantity: 15 } },
+            attributes: { create: [{ attributeValueId: valTalla7.id }] },
+          },
+          {
+            sku: 'AN-CORONA-T8',
+            price: 45.00,
+            inventory: { create: { quantity: 10 } },
+            attributes: { create: [{ attributeValueId: valTalla8.id }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // 8. Brazalete Rígido Infinity Oro 18k (Sin descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Brazalete Rígido Infinity en Baño de Oro 18k',
+      slug: 'brazalete-rigido-infinity-oro-18k',
+      tag: 'Exclusivo',
+      shortDescription: 'Brazalete ovalado con símbolo de infinito y apertura lateral invisible.',
+      description: 'Lujo sutil y presencia imponente. Acabado espejo pulido de alta resistencia.',
+      basePrice: 55.00,
+      isActive: true,
+      isFeatured: true,
+      categoryId: catPulseras.id,
+      collections: {
+        create: [
+          { collectionId: colOro.id, sortOrder: 0 },
+        ],
+      },
+      images: {
+        create: IMAGES.bracelet2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'BRA-INF-ORO',
+            price: 55.00,
+            inventory: { create: { quantity: 12 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 9. Aretes Colgantes Lágrima Amatista (Sin descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Aretes Colgantes Lágrima Diamante Morado',
+      slug: 'aretes-colgantes-lagrima-diamante-morado',
+      tag: 'Alta Joyería',
+      shortDescription: 'Aretes de fiesta con gota facetada amatista y marco de microcirconias.',
+      description: 'Ideales para eventos de gala y ocasiones memorables. Movimiento fluido y destello espectacular.',
+      basePrice: 36.00,
+      isActive: true,
+      isFeatured: false,
+      categoryId: catAretes.id,
+      collections: {
+        create: [
+          { collectionId: colDiamanteMorado.id, sortOrder: 0 },
+          { collectionId: colPlata.id, sortOrder: 1 },
+        ],
+      },
+      images: {
+        create: IMAGES.earrings2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'ARE-LAG-MOR',
+            price: 36.00,
+            inventory: { create: { quantity: 16 } },
+          },
+        ],
+      },
+    },
+  });
+
+  // 10. Collar Árbol de la Vida en Plata 925 (Sin descuento - Único)
+  await prisma.product.create({
+    data: {
+      title: 'Collar Árbol de la Vida y Raíces de Amor',
+      slug: 'collar-arbol-de-la-vida-plata-925',
+      tag: 'Significado',
+      shortDescription: 'Medalla calada en Plata 925 con ramas entrelazadas y microcirconias.',
+      description: 'Símbolo de crecimiento, fuerza y familia. Un amuleto protector cargado de buenas energías.',
+      basePrice: 34.00,
+      isActive: true,
+      isFeatured: false,
+      categoryId: catCollares.id,
+      collections: {
+        create: [
+          { collectionId: colPlata.id, sortOrder: 0 },
+        ],
+      },
+      images: {
+        create: IMAGES.necklace1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      variants: {
+        create: [
+          {
+            sku: 'COL-ARBOL-STD',
+            price: 34.00,
+            inventory: { create: { quantity: 22 } },
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Seed completado con éxito con 10 joyas insignia, colecciones, cupones, promociones y tarifas de envío.');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Error en seed:', e);
     process.exit(1);
   })
   .finally(async () => {

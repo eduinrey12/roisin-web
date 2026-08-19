@@ -1,4 +1,4 @@
-import { getProducts, getCategories, getMaxProductPrice } from '@/services/catalog.service';
+import { getProducts, getCategories, getCollections, getMaxProductPrice } from '@/services/catalog.service';
 import ProductCard from '@/components/storefront/ProductCard';
 import CatalogFilterBar from '@/components/storefront/CatalogFilterBar';
 import Link from 'next/link';
@@ -29,7 +29,7 @@ export default async function CatalogPage({
 }) {
   const { category, collection, ofertas, q, sort, minPrice, maxPrice } = await searchParams;
 
-  const [productsResult, categories, maxPriceInDb] = await Promise.all([
+  const [productsResult, categories, collections, maxPriceInDb] = await Promise.all([
     getProducts({
       categorySlug: category,
       collectionSlug: collection,
@@ -40,11 +40,13 @@ export default async function CatalogPage({
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
     }),
     getCategories(),
+    getCollections(),
     getMaxProductPrice(),
   ]);
 
   const { products, total } = productsResult;
   const activeCategory = categories.find((c) => c.slug === category);
+  const activeCollection = collections.find((c) => c.slug === collection);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-8">
@@ -60,6 +62,12 @@ export default async function CatalogPage({
               <span className="text-[#3F235F] font-bold">{activeCategory.name}</span>
             </>
           )}
+          {activeCollection && (
+            <>
+              <span>/</span>
+              <span className="text-[#7043A0] font-bold">{activeCollection.name}</span>
+            </>
+          )}
           {ofertas === 'true' && (
             <>
               <span>/</span>
@@ -71,13 +79,15 @@ export default async function CatalogPage({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-1">
           <div>
             <div className="inline-flex items-center gap-2 text-xs uppercase font-bold tracking-[0.28em] text-[#3F235F] mb-1">
-              <RoisinDiamond size={13} color="#7043A0" /> Colección Diamante Morado 2026
+              <RoisinDiamond size={13} color="#7043A0" /> Alta Joyería • Diamante Morado
             </div>
             <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-zinc-900 leading-tight">
               {ofertas === 'true'
                 ? 'Piezas con Descuento Especial'
                 : activeCategory
                 ? activeCategory.name
+                : activeCollection
+                ? activeCollection.name
                 : 'Colección Completa de Joyería'}
             </h1>
             <p className="text-xs sm:text-sm text-zinc-500 mt-1 font-light">
@@ -102,9 +112,10 @@ export default async function CatalogPage({
         </div>
       </div>
 
-      {/* 2. Interactive Filter & Sorting Bar with Dynamic Max Price */}
+      {/* 2. Interactive Filter & Sorting Bar with Dynamic Max Price and Collections */}
       <CatalogFilterBar
         categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
+        collections={collections.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
         totalProducts={total}
         maxCatalogPrice={maxPriceInDb > 5 ? maxPriceInDb : 120}
       />

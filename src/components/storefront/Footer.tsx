@@ -10,17 +10,17 @@ export default function Footer() {
   )}`;
 
   return (
-    <footer className="bg-[#141013] text-white border-t border-[#381C24] mt-24">
+    <footer className="bg-[#1B1124] text-white border-t border-[#3F235F] mt-20">
       {/* 1. Compact Value Pillars */}
-      <div className="border-b border-[#2D161C] py-8">
+      <div className="border-b border-[#2D193E] py-8">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+              <div className="p-3 bg-[#2A1442] rounded-2xl text-[#DFD0EC] border border-[#4E2975] shrink-0">
                 <Sparkles size={20} />
               </div>
               <div>
-                <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
+                <h4 className="text-xs uppercase tracking-wider font-bold text-white">
                   Plata 925 & Oro 18k
                 </h4>
                 <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
@@ -30,11 +30,11 @@ export default function Footer() {
             </div>
 
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+              <div className="p-3 bg-[#2A1442] rounded-2xl text-[#DFD0EC] border border-[#4E2975] shrink-0">
                 <Truck size={20} />
               </div>
               <div>
-                <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
+                <h4 className="text-xs uppercase tracking-wider font-bold text-white">
                   Envíos a Todo Ecuador
                 </h4>
                 <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
@@ -44,11 +44,11 @@ export default function Footer() {
             </div>
 
             <div className="flex items-center gap-3.5 justify-center sm:justify-start">
-              <div className="p-3 bg-[#231216] rounded-2xl text-[#F08097] border border-[#3D1E26] shrink-0">
+              <div className="p-3 bg-[#2A1442] rounded-2xl text-[#DFD0EC] border border-[#4E2975] shrink-0">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h4 className="font-serif text-xs uppercase tracking-wider font-bold text-white">
+                <h4 className="text-xs uppercase tracking-wider font-bold text-white">
                   Garantía & Asesoría
                 </h4>
                 <p className="text-[11px] text-zinc-400 mt-0.5 font-light">
@@ -74,7 +74,7 @@ export default function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-bold text-[#F08097] hover:text-white transition"
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#DFD0EC] hover:text-white transition"
               >
                 <MessageCircle size={15} /> Asesoría por WhatsApp
               </a>
@@ -83,7 +83,7 @@ export default function Footer() {
 
           {/* Colecciones */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#DFD0EC] mb-3.5">
               Colecciones
             </h5>
             <ul className="space-y-2.5 text-xs text-zinc-400">
@@ -112,7 +112,7 @@ export default function Footer() {
 
           {/* Información */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#DFD0EC] mb-3.5">
               Atención al Cliente
             </h5>
             <ul className="space-y-2.5 text-xs text-zinc-400">
@@ -141,25 +141,25 @@ export default function Footer() {
 
           {/* Métodos de Pago */}
           <div>
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#F08097] mb-3.5">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-[#DFD0EC] mb-3.5">
               Pagos en Ecuador
             </h5>
             <p className="text-[11px] text-zinc-400 leading-relaxed mb-3 font-light">
-              Transferencia bancaria directa (Pichincha, Guayaquil, Pacífico, Produbanco) o Pago Contra Entrega.
+              Pagos 100% seguros mediante Transferencia, Depósito Bancario o Tarjeta de Crédito / Débito.
             </p>
             <div className="flex flex-wrap gap-2 text-[10px] text-zinc-300 font-medium">
-              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Transferencia</span>
-              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Contra Entrega</span>
-              <span className="bg-[#231216] px-3 py-1 rounded-lg border border-[#3D1E26]">Depósito</span>
+              <span className="bg-[#2A1442] px-3 py-1 rounded-lg border border-[#4E2975]">Transferencia</span>
+              <span className="bg-[#2A1442] px-3 py-1 rounded-lg border border-[#4E2975]">Depósito Bancario</span>
+              <span className="bg-[#2A1442] px-3 py-1 rounded-lg border border-[#4E2975]">Tarjeta Crédito / Débito</span>
             </div>
           </div>
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-[#2D161C] mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-zinc-500 gap-3">
+        <div className="border-t border-[#2D193E] mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-zinc-500 gap-3">
           <p>© {new Date().getFullYear()} {STORE_CONFIG.name}. Todos los derechos reservados.</p>
           <p className="flex items-center gap-1 text-zinc-400 font-light">
-            Hecho con <Heart size={12} className="fill-[#F08097] text-[#F08097]" /> para Ecuador 🇪🇨
+            Hecho con <Heart size={12} className="fill-[#7043A0] text-[#7043A0]" /> para Ecuador 🇪🇨
           </p>
         </div>
       </div>

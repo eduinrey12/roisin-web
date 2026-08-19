@@ -2,24 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getFeaturedProducts, getCategories, getPromotions } from '@/services/catalog.service';
 import ProductCard from '@/components/storefront/ProductCard';
-import { ArrowRight, Sparkles, Truck, Gift, Star, Tag, CheckCircle2, Flame } from 'lucide-react';
+import PromotionsCarousel from '@/components/storefront/PromotionsCarousel';
+import { ArrowRight, Sparkles, Truck, Gift, CheckCircle2, Flame, Star } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const [featuredProducts, categories, promotions] = await Promise.all([
-    getFeaturedProducts(9),
+    getFeaturedProducts(8),
     getCategories(),
     getPromotions(),
   ]);
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-20">
+    <div className="space-y-10 sm:space-y-14 pb-20">
       {/* 1. TOP CATEGORY BAR (Starts with Descuentos, followed by all categories) */}
-      <section className="border-b border-[#DFD0EC] bg-[#F8F5FA]/80 backdrop-blur-xs py-3 sticky top-[80px] z-30 shadow-2xs">
+      <section className="border-b border-[#DFD0EC] bg-[#F8F5FA]/90 backdrop-blur-xs py-2.5 sticky top-[72px] sm:top-[80px] z-30 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-0.5">
             {/* 1st Item: Descuentos */}
             <Link
               href="/productos?ofertas=true"
@@ -52,68 +53,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. DYNAMIC PROMOTIONAL BANNER (Horizontal/Square Promo Cards Grid from Promotion table) */}
+      {/* 2. DYNAMIC PROMOTIONAL BANNER CAROUSEL (2-3 cards with < and > arrows) */}
       {promotions.length > 0 && (
-        <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <RoisinDiamond size={15} color="#7043A0" />
-                <span className="text-xs uppercase font-extrabold tracking-[0.25em] text-[#3F235F]">
-                  Promociones & Destacados
-                </span>
-              </div>
-              <span className="text-[11px] text-zinc-400 font-medium">Desliza para ver más</span>
-            </div>
-
-            {/* Horizontal Promo Cards Carousel / Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {promotions.map((promo) => (
-                <Link
-                  key={promo.id}
-                  href={promo.targetUrl}
-                  className="group relative aspect-[4/3.2] sm:aspect-[4/3.5] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-sm hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 flex flex-col justify-end p-5 bg-[#221235]"
-                >
-                  <Image
-                    src={promo.imageUrl}
-                    alt={promo.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover object-center group-hover:scale-106 transition-transform duration-700 opacity-80 group-hover:opacity-90"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#221235]/95 via-[#221235]/40 to-transparent" />
-
-                  {/* Promo Badges */}
-                  <div className="relative z-10 space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      {promo.badge && (
-                        <span className="bg-white/95 text-[#3F235F] text-[9px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-xs">
-                          {promo.badge}
-                        </span>
-                      )}
-                      {promo.discountText && (
-                        <span className="bg-gradient-to-r from-[#7043A0] to-[#3F235F] text-white text-[9.5px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-sm">
-                          {promo.discountText}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-sans text-base sm:text-lg font-bold text-white leading-snug group-hover:text-[#DFD0EC] transition-colors">
-                      {promo.title}
-                    </h3>
-                    {promo.subtitle && (
-                      <p className="text-[11px] text-zinc-300 font-light line-clamp-1">
-                        {promo.subtitle}
-                      </p>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#DFD0EC] group-hover:text-white pt-1">
-                      Aprovechar Promoción <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        <div className="pt-1 sm:pt-2">
+          <PromotionsCarousel promotions={promotions} />
+        </div>
       )}
 
       {/* 3. BRAND VALUE PILLARS */}
@@ -163,7 +107,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. FEATURED BEST-SELLERS (First product spans 2 vertical rows, remaining compact) */}
+      {/* 4. FEATURED BEST-SELLERS (Elegantly aligned grid with distinct most desired item) */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4 border-b border-[#DFD0EC] pb-5">
           <div>
@@ -174,7 +118,6 @@ export default async function HomePage() {
               Piezas Más Deseadas
             </h2>
           </div>
-          {/* Removed parenthesized count as requested in Requirement 6 */}
           <Link
             href="/productos"
             className="text-xs uppercase font-bold tracking-widest text-[#3F235F] hover:text-[#7043A0] transition-all flex items-center gap-2 group px-4 py-2.5 bg-[#F8F5FA] hover:bg-[#F0E9F5] rounded-full border border-[#DFD0EC] shadow-2xs"
@@ -184,24 +127,17 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* Asymmetrical Grid: First product larger spanning 2 vertical rows on desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 auto-rows-fr">
+        {/* Clean, perfectly aligned luxury grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {featuredProducts.map((p, index) => (
-            <div
-              key={p.id}
-              className={
-                index === 0
-                  ? 'col-span-2 md:col-span-2 md:row-span-2 flex flex-col'
-                  : 'flex flex-col'
-              }
-            >
+            <div key={p.id} className="flex flex-col">
               <ProductCard
-                featuredLarge={index === 0}
+                isMostDesired={index === 0}
                 product={{
                   id: p.id,
                   title: p.title,
                   slug: p.slug,
-                  tag: p.tag,
+                  tag: p.tag || (index === 0 ? 'Más Deseada' : null),
                   shortDescription: p.shortDescription,
                   basePrice: p.basePrice,
                   compareAtPrice: p.compareAtPrice,

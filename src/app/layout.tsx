@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Open_Sans, Playfair_Display } from 'next/font/google';
+import { Open_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/storefront/Header';
 import Footer from '@/components/storefront/Footer';
@@ -10,12 +10,6 @@ import { Suspense } from 'react';
 
 const openSans = Open_Sans({
   variable: '--font-open-sans',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const playfair = Playfair_Display({
-  variable: '--font-serif',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -58,7 +52,7 @@ export default async function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <body
-        className={`${openSans.variable} ${playfair.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-[#DFD0EC] selection:text-[#221235] flex flex-col min-h-screen`}
+        className={`${openSans.variable} font-sans bg-white text-zinc-900 antialiased selection:bg-[#DFD0EC] selection:text-[#221235] flex flex-col min-h-screen`}
       >
         <Suspense fallback={null}>
           <PageTransitionLoader />

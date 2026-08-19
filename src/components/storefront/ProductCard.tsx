@@ -24,10 +24,10 @@ interface ProductCardProps {
     variants?: { id: string; sku: string; price: any; compareAtPrice?: any; inventory?: { quantity: number } | null }[];
     optionGroupLinks?: any[];
   };
-  featuredLarge?: boolean;
+  isMostDesired?: boolean;
 }
 
-export default function ProductCard({ product, featuredLarge = false }: ProductCardProps) {
+export default function ProductCard({ product, isMostDesired = false }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const router = useRouter();
 
@@ -66,94 +66,92 @@ export default function ProductCard({ product, featuredLarge = false }: ProductC
     <>
       <div
         onClick={handleCardClick}
-        className={`group relative flex flex-col justify-between bg-white rounded-3xl border border-[#DFD0EC] overflow-hidden luxury-card-hover diamond-card-glow cursor-pointer select-none transition-all duration-300 ${
-          featuredLarge ? 'md:row-span-2' : ''
+        className={`group relative flex flex-col justify-between bg-white rounded-3xl border overflow-hidden luxury-card-hover cursor-pointer select-none transition-all duration-300 ${
+          isMostDesired
+            ? 'border-[#7043A0] shadow-md ring-1 ring-[#7043A0]/30'
+            : 'border-[#DFD0EC] shadow-2xs hover:border-[#7043A0]'
         }`}
       >
         {/* 1. Top Image Section */}
-        <div
-          className={`relative bg-[#F8F5FA] overflow-hidden ${
-            featuredLarge ? 'aspect-[4/5] md:aspect-auto md:h-full md:min-h-[380px]' : 'aspect-[4/3.8]'
-          }`}
-        >
+        <div className="relative bg-[#F8F5FA] overflow-hidden aspect-[4/3.7]">
           <Image
             src={primaryImg}
             alt={product.title}
             fill
-            sizes={featuredLarge ? '(max-width: 768px) 100vw, 50vw' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out"
           />
 
-          {/* Category Badge (WITHOUT diamond logo as requested in point 5) */}
+          {/* Category Badge */}
           {product.category && (
-            <div className="absolute top-3 left-3 z-20">
+            <div className="absolute top-2.5 left-2.5 z-20">
               <Link
                 href={`/productos?category=${product.category.slug}`}
                 onClick={handleCategoryClick}
-                className="diamond-tag text-[9px] uppercase font-bold tracking-[0.18em] px-3 py-1 rounded-full text-zinc-900 shadow-xs hover:bg-[#F0E9F5] hover:border-[#7043A0] hover:text-[#3F235F] transition"
+                className="diamond-tag text-[9px] uppercase font-bold tracking-[0.16em] px-2.5 py-0.5 rounded-full text-zinc-900 shadow-xs hover:bg-[#F0E9F5] hover:border-[#7043A0] hover:text-[#3F235F] transition"
               >
                 {product.category.name}
               </Link>
             </div>
           )}
 
-          {/* Top-Right Badges: Discount or Tag (WITHOUT diamond logo as requested in point 5 & 7) */}
-          <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
+          {/* Top-Right Badges: Discount or Tag */}
+          <div className="absolute top-2.5 right-2.5 z-20 flex flex-col items-end gap-1">
             {hasDiscount && discountBadgeText && (
-              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-md tracking-wider">
+              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-[9.5px] uppercase font-black px-2.5 py-0.5 rounded-full shadow-md tracking-wider">
                 {discountBadgeText}
               </span>
             )}
             {product.tag && (
-              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[8.5px] uppercase font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+              <span className="bg-white/95 text-[#3F235F] border border-[#DFD0EC] text-[8.5px] uppercase font-bold px-2 py-0.5 rounded-full shadow-xs">
                 {product.tag}
               </span>
             )}
           </div>
 
           {/* Desktop Hover Action: Compra Rápida button */}
-          <div className="hidden lg:flex absolute inset-x-4 bottom-3 z-20 items-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          <div className="hidden lg:flex absolute inset-x-3 bottom-2.5 z-20 items-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
             <button
               onClick={handleQuickBuyClick}
-              className="w-full btn-purple-diamond text-[11px] uppercase tracking-wider font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shimmer-button cursor-pointer"
+              className="w-full btn-purple-diamond text-[10.5px] uppercase tracking-wider font-bold py-2 px-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shimmer-button cursor-pointer"
             >
-              <ShoppingBag size={14} />
+              <ShoppingBag size={13} />
               Compra Rápida
             </button>
           </div>
         </div>
 
-        {/* 2. Geometric Diamond Facet Notch Line (ONLY place where diamond logo appears) */}
-        <div className="relative w-full flex items-center justify-center -my-2.5 z-10 pointer-events-none">
+        {/* 2. Geometric Diamond Facet Divider with Enriched Diamond Badge */}
+        <div className="relative w-full flex items-center justify-center -my-3 z-10 pointer-events-none">
           <div className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#DFD0EC] to-transparent" />
-          <div className="absolute bg-white px-2 py-0.5 rounded-full border border-[#DFD0EC] shadow-xs">
-            <RoisinDiamond size={10} color="#7043A0" />
+          <div className="absolute bg-white px-2.5 py-1 rounded-full border border-[#DFD0EC] shadow-xs flex items-center justify-center">
+            <RoisinDiamond size={13} color="#7043A0" />
           </div>
         </div>
 
         {/* 3. Product Content Area */}
-        <div className="p-4 sm:p-5 pt-5 flex flex-col justify-between flex-1 space-y-3">
-          <div className="space-y-1">
-            <h3 className="font-sans text-sm sm:text-base font-bold text-zinc-900 leading-snug line-clamp-1 group-hover:text-[#3F235F] transition-colors">
+        <div className="p-3.5 sm:p-4 pt-4 flex flex-col justify-between flex-1 space-y-2.5">
+          <div className="space-y-0.5">
+            <h3 className="font-sans text-xs sm:text-sm font-bold text-zinc-900 leading-snug line-clamp-1 group-hover:text-[#3F235F] transition-colors">
               {product.title}
             </h3>
-            <p className="text-[10.5px] text-zinc-400 font-medium truncate">
+            <p className="text-[10px] text-zinc-400 font-medium truncate">
               {product.shortDescription || 'Plata de Ley 925 & Baño de Oro 18k'}
             </p>
           </div>
 
           {/* Price & Mobile Action Row */}
-          <div className="flex items-center justify-between pt-2 border-t border-[#F8F5FA]">
+          <div className="flex items-center justify-between pt-1.5 border-t border-[#F8F5FA]">
             <div>
-              <span className="text-[9.5px] text-zinc-400 block uppercase tracking-wider font-bold">
+              <span className="text-[9px] text-zinc-400 block uppercase tracking-wider font-bold">
                 Precio
               </span>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-sans text-lg sm:text-xl font-bold text-[#3F235F]">
+                <span className="font-sans text-base sm:text-lg font-bold text-[#3F235F]">
                   ${price.toFixed(2)}
                 </span>
                 {compareAt && compareAt > price && (
-                  <span className="text-xs text-zinc-400 line-through font-normal">
+                  <span className="text-[11px] text-zinc-400 line-through font-normal">
                     ${compareAt.toFixed(2)}
                   </span>
                 )}
@@ -171,11 +169,6 @@ export default function ProductCard({ product, featuredLarge = false }: ProductC
                 <span className="text-[10px]">Añadir</span>
               </button>
             </div>
-
-            {/* Desktop Link indicator */}
-            <span className="hidden lg:inline-flex items-center gap-1 text-[10.5px] uppercase font-bold tracking-widest text-[#3F235F] group-hover:text-[#7043A0] transition-colors">
-              Ver Joya <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </span>
           </div>
         </div>
       </div>

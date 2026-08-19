@@ -12,6 +12,7 @@ import {
   Heart,
   HelpCircle,
   PenTool,
+  Ruler,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import SizeGuideModal from './SizeGuideModal';
@@ -187,46 +188,62 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </p>
         </div>
 
-        {/* 4. Tallas / Medidas / Atributos + Guía de Tallas (Element #4 in Requirement 8 & 12) */}
-        {product.variants.length > 1 && (
-          <div className="space-y-2.5 pt-2 border-t border-[#DFD0EC]">
-            <div className="flex justify-between items-center">
-              <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
-                Seleccionar Medida / Talla
-              </label>
-              <button
-                type="button"
-                onClick={() => setSizeGuideOpen(true)}
-                className="text-[11px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
-              >
-                <HelpCircle size={13} className="text-[#7043A0]" /> Guía de Tallas
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {product.variants.map((v) => {
-                const label =
-                  v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
-                  v.sku.split('-').pop() ||
-                  v.sku;
-                const isSelected = v.id === selectedVariantId;
+        {/* 4. Tallas / Medidas / Atributos + Guía de Tallas */}
+        <div className="space-y-3 pt-2 border-t border-[#DFD0EC]">
+          {product.variants.length > 1 ? (
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center">
+                <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
+                  Seleccionar Medida / Talla
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSizeGuideOpen(true)}
+                  className="text-[11px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
+                >
+                  <Ruler size={13} className="text-[#7043A0]" /> Guía de Tallas
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {product.variants.map((v) => {
+                  const label =
+                    v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
+                    v.sku.split('-').pop() ||
+                    v.sku;
+                  const isSelected = v.id === selectedVariantId;
 
-                return (
-                  <button
-                    key={v.id}
-                    onClick={() => handleSelectVariant(v.id)}
-                    className={`px-4 py-2.5 text-xs font-bold rounded-2xl border transition cursor-pointer ${
-                      isSelected
-                        ? 'btn-purple-diamond shadow-xs'
-                        : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => handleSelectVariant(v.id)}
+                      className={`px-4 py-2.5 text-xs font-bold rounded-2xl border transition cursor-pointer ${
+                        isSelected
+                          ? 'btn-purple-diamond shadow-xs'
+                          : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSizeGuideOpen(true)}
+              className="w-full flex items-center justify-between p-3.5 bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] hover:border-[#7043A0] rounded-2xl transition group cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-2.5 text-xs font-bold text-zinc-900 group-hover:text-[#3F235F]">
+                <Ruler size={16} className="text-[#7043A0]" />
+                <span>¿Dudas con tu talla? Consulta la Guía Oficial de Medidas</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#7043A0] group-hover:translate-x-1 transition-transform">
+                Ver Guía →
+              </span>
+            </button>
+          )}
+        </div>
 
         {/* Presentation Options if any */}
         {product.optionGroupLinks && product.optionGroupLinks.length > 0 && (

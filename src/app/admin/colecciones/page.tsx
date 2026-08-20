@@ -1,5 +1,6 @@
 import prisma from '@/lib/db';
 import CollectionsClient from './CollectionsClient';
+import { serializePlain } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,5 +15,6 @@ export default async function AdminCollectionsPage() {
     orderBy: { createdAt: 'desc' },
   });
 
-  return <CollectionsClient initialCollections={collections} />;
+  return <CollectionsClient initialCollections={serializePlain(collections)} />;
 }
+

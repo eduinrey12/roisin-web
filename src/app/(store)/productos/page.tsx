@@ -4,6 +4,7 @@ import CatalogFilterBar from '@/components/storefront/CatalogFilterBar';
 import Link from 'next/link';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
+import { serializePlain } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +31,7 @@ export default async function CatalogPage({
 }) {
   const { category, collection, promo, ofertas, q, sort, minPrice, maxPrice } = await searchParams;
 
-  const [productsResult, categories, collections, maxPriceInDb] = await Promise.all([
+  const [productsResult, rawCategories, rawCollections, maxPriceInDb] = await Promise.all([
     getProducts({
       categorySlug: category,
       collectionSlug: collection,
@@ -46,9 +47,12 @@ export default async function CatalogPage({
     getMaxProductPrice(),
   ]);
 
-  const { products, total } = productsResult;
-  const activeCategory = categories.find((c) => c.slug === category);
-  const activeCollection = collections.find((c) => c.slug === collection);
+  const products = serializePlain(productsResult.products);
+  const total = productsResult.total;
+  const categories = serializePlain(rawCategories);
+  const collections = serializePlain(rawCollections);
+  const activeCategory = categories.find((c: any) => c.slug === category);
+  const activeCollection = collections.find((c: any) => c.slug === collection);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-8">
@@ -147,7 +151,7 @@ export default async function CatalogPage({
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {products.map((p) => (
+          {products.map((p: any) => (
             <ProductCard
               key={p.id}
               product={{

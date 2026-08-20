@@ -1,5 +1,6 @@
 import prisma from '@/lib/db';
 import CategoriesClient from './CategoriesClient';
+import { serializePlain } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,5 +15,6 @@ export default async function AdminCategoriesPage() {
     orderBy: { name: 'asc' },
   });
 
-  return <CategoriesClient initialCategories={categories} />;
+  return <CategoriesClient initialCategories={serializePlain(categories)} />;
 }
+

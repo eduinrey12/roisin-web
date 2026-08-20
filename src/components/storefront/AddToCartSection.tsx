@@ -675,7 +675,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
             </span>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-[#FAF8FC] rounded-xl border border-[#DFD0EC]">
-            <Truck size={16} className="text-[#7043A0]" shrink-0 />
+            <Truck size={16} className="text-[#7043A0] shrink-0" />
             <span className="text-[10.5px] font-bold text-zinc-800">
               Envíos a Todo Ecuador
             </span>

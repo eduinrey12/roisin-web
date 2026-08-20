@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
 import ShippingClient from './ShippingClient';
 import { getFreeShippingThreshold } from '@/lib/actions/admin.actions';
+import { serializePlain } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,9 @@ export default async function AdminShippingPage() {
 
   return (
     <ShippingClient
-      initialRegions={regions}
+      initialRegions={serializePlain(regions)}
       initialThreshold={initialThreshold}
     />
   );
 }
+

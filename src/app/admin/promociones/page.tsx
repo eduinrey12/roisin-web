@@ -1,5 +1,6 @@
 import prisma from '@/lib/db';
 import PromotionsClient from './PromotionsClient';
+import { serializePlain } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,9 +32,10 @@ export default async function AdminPromotionsPage() {
 
   return (
     <PromotionsClient
-      initialPromotions={promotions as any}
-      collections={collections}
-      products={products.map((p) => ({ ...p, basePrice: Number(p.basePrice) }))}
+      initialPromotions={serializePlain(promotions) as any}
+      collections={serializePlain(collections)}
+      products={serializePlain(products.map((p) => ({ ...p, basePrice: Number(p.basePrice) })))}
     />
   );
 }
+

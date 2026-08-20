@@ -58,3 +58,13 @@ export function getPaymentMethodLabel(method?: string | null): string {
   }
 }
 
+/**
+ * Strips non-plain objects (such as Prisma.Decimal, Dates without JSON prototypes, class instances)
+ * into safe, pure plain JSON objects for seamless transfer from Server Components to Client Components.
+ */
+export function serializePlain<T>(data: T): T {
+  if (data === null || data === undefined) return data;
+  return JSON.parse(JSON.stringify(data));
+}
+
+

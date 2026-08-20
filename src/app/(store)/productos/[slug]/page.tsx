@@ -5,6 +5,7 @@ import ProductGallery from '@/components/storefront/ProductGallery';
 import AddToCartSection from '@/components/storefront/AddToCartSection';
 import ProductCard from '@/components/storefront/ProductCard';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
+import { serializePlain } from '@/lib/utils';
 import { Sparkles, Truck, Gift } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -39,20 +40,20 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const rawProduct = await getProductBySlug(slug);
 
-  if (!product) {
+  if (!rawProduct) {
     notFound();
   }
 
-  let optionGroupLinks = product.optionGroupLinks;
+  let optionGroupLinks = rawProduct.optionGroupLinks;
   if (!optionGroupLinks || optionGroupLinks.length === 0) {
     const { getOrCreatePresentationOptionGroup } = await import('@/services/catalog.service');
     const defaultGroup = await getOrCreatePresentationOptionGroup();
     if (defaultGroup) {
       optionGroupLinks = [
         {
-          productId: product.id,
+          productId: rawProduct.id,
           groupId: defaultGroup.id,
           group: defaultGroup,
         } as any,
@@ -60,10 +61,11 @@ export default async function ProductDetailPage({
     }
   }
 
-  const enhancedProduct = {
-    ...product,
+  const enhancedProduct = serializePlain({
+    ...rawProduct,
     optionGroupLinks,
-  };
+  });
+  const product = enhancedProduct;
 
   // Fetch related products from the same category or general catalog
   const { products: relatedProducts } = await getProducts({
@@ -71,7 +73,7 @@ export default async function ProductDetailPage({
     limit: 4,
   });
 
-  const filteredRelated = relatedProducts.filter((p) => p.id !== product.id).slice(0, 4);
+  const filteredRelated = serializePlain(relatedProducts.filter((p: any) => p.id !== product.id).slice(0, 4));
 
   // Schema.org JSON-LD Structured Data
   const jsonLd = {
@@ -149,7 +151,7 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
-            {filteredRelated.map((p) => (
+            {filteredRelated.map((p: any) => (
               <ProductCard
                 key={p.id}
                 product={{

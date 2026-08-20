@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Play, Heart, MessageCircle, ExternalLink, X } from 'lucide-react';
+import { Play, Heart, MessageCircle, ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 function InstagramIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -39,60 +40,100 @@ function TikTokIcon({ size = 16, className = '' }: { size?: number; className?: 
   );
 }
 
-export default function SocialFeedSection() {
-  const [activeMedia, setActiveMedia] = useState<{ url: string; type: string; caption: string } | null>(null);
+const SOCIAL_POSTS = [
+  {
+    id: '1',
+    imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+    type: 'image',
+    caption: 'Brillo eterno en Plata de Ley 925 con circonias suizas de corte diamante ✨ #RoisinJoyas',
+    likes: '1.2k',
+    comments: '84',
+  },
+  {
+    id: '2',
+    imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+    type: 'image',
+    caption: 'El anillo solitario perfecto para una propuesta inolvidable 💍💎 #DiamanteMorado',
+    likes: '2.5k',
+    comments: '192',
+  },
+  {
+    id: '3',
+    imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop',
+    type: 'video',
+    videoUrl: 'https://cdn.pixabay.com/video/2021/04/23/71941-540702677_tiny.mp4',
+    caption: 'Unboxing de nuestro empaque de regalo de lujo con dedicatoria personalizada 🎁💜',
+    likes: '3.8k',
+    comments: '310',
+  },
+  {
+    id: '4',
+    imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+    type: 'image',
+    caption: 'Combinación perfecta: aretes huggies y cadena en baño de oro 18k hipoalergénico ✨',
+    likes: '980',
+    comments: '62',
+  },
+  {
+    id: '5',
+    imageUrl: 'https://images.unsplash.com/photo-1611591475103-4fa1b7765a7f?q=80&w=800&auto=format&fit=crop',
+    type: 'image',
+    caption: 'Detalles que enamoran a primera vista. Hecho a mano con dedicación artesanal.',
+    likes: '1.7k',
+    comments: '115',
+  },
+  {
+    id: '6',
+    imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+    type: 'image',
+    caption: 'Tu joya favorita siempre contigo en nuestro joyero aterciopelado de viaje 🌸',
+    likes: '1.4k',
+    comments: '93',
+  },
+];
 
-  const socialPosts = [
-    {
-      id: '1',
-      imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
-      type: 'image',
-      caption: 'Brillo eterno en Plata de Ley 925 con circonias suizas de corte diamante ✨ #RoisinJoyas',
-      likes: '1.2k',
-      comments: '84',
-    },
-    {
-      id: '2',
-      imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
-      type: 'image',
-      caption: 'El anillo solitario perfecto para una propuesta inolvidable 💍💎 #DiamanteMorado',
-      likes: '2.5k',
-      comments: '192',
-    },
-    {
-      id: '3',
-      imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop',
-      type: 'video',
-      videoUrl: 'https://cdn.pixabay.com/video/2021/04/23/71941-540702677_tiny.mp4',
-      caption: 'Unboxing de nuestro empaque de regalo de lujo con dedicatoria personalizada 🎁💜',
-      likes: '3.8k',
-      comments: '310',
-    },
-    {
-      id: '4',
-      imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
-      type: 'image',
-      caption: 'Combinación perfecta: aretes huggies y cadena en baño de oro 18k hipoalergénico ✨',
-      likes: '980',
-      comments: '62',
-    },
-    {
-      id: '5',
-      imageUrl: 'https://images.unsplash.com/photo-1611591475103-4fa1b7765a7f?q=80&w=800&auto=format&fit=crop',
-      type: 'image',
-      caption: 'Detalles que enamoran a primera vista. Hecho a mano con dedicación artesanal.',
-      likes: '1.7k',
-      comments: '115',
-    },
-    {
-      id: '6',
-      imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
-      type: 'image',
-      caption: 'Tu joya favorita siempre contigo en nuestro joyero aterciopelado de viaje 🌸',
-      likes: '1.4k',
-      comments: '93',
-    },
-  ];
+export default function SocialFeedSection() {
+  const [selectedPostIdx, setSelectedPostIdx] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handlePrevPost = useCallback(() => {
+    if (selectedPostIdx === null) return;
+    setSelectedPostIdx((prev) =>
+      prev !== null && prev > 0 ? prev - 1 : SOCIAL_POSTS.length - 1
+    );
+  }, [selectedPostIdx]);
+
+  const handleNextPost = useCallback(() => {
+    if (selectedPostIdx === null) return;
+    setSelectedPostIdx((prev) =>
+      prev !== null && prev < SOCIAL_POSTS.length - 1 ? prev + 1 : 0
+    );
+  }, [selectedPostIdx]);
+
+  // Lock body scroll and handle keyboard navigation
+  useEffect(() => {
+    if (selectedPostIdx === null) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPostIdx(null);
+      if (e.key === 'ArrowLeft') handlePrevPost();
+      if (e.key === 'ArrowRight') handleNextPost();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedPostIdx, handlePrevPost, handleNextPost]);
+
+  const activePost = selectedPostIdx !== null ? SOCIAL_POSTS[selectedPostIdx] : null;
 
   return (
     <>
@@ -111,17 +152,11 @@ export default function SocialFeedSection() {
 
         {/* Social Feed Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {socialPosts.map((post) => (
+          {SOCIAL_POSTS.map((post, idx) => (
             <div
               key={post.id}
-              onClick={() =>
-                setActiveMedia({
-                  url: post.videoUrl || post.imageUrl,
-                  type: post.type,
-                  caption: post.caption,
-                })
-              }
-              className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border border-[#DFD0EC] bg-[#1B1124] shadow-xs hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 select-none"
+              onClick={() => setSelectedPostIdx(idx)}
+              className="group relative aspect-square rounded-2xl overflow-hidden cursor-zoom-in border border-[#DFD0EC] bg-[#1B1124] shadow-xs hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 select-none"
             >
               <Image
                 src={post.imageUrl}
@@ -152,7 +187,7 @@ export default function SocialFeedSection() {
                   </span>
                 </div>
                 <span className="text-[9px] uppercase font-bold text-center tracking-wider text-[#DFD0EC]">
-                  Ver Publicación
+                  Ver Publicación ↗
                 </span>
               </div>
             </div>
@@ -185,43 +220,117 @@ export default function SocialFeedSection() {
         </div>
       </section>
 
-      {/* Social Post Modal */}
-      {activeMedia && (
-        <div
-          onClick={() => setActiveMedia(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
-        >
+      {/* Fullscreen Modal via React Portal (Exact behavior of Product Gallery) */}
+      {mounted &&
+        activePost &&
+        createPortal(
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative bg-[#1B1124] rounded-3xl overflow-hidden max-w-lg w-full max-h-[85vh] shadow-2xl border border-[#DFD0EC]/30 flex flex-col"
+            className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden select-none animate-fade-in"
+            onClick={() => setSelectedPostIdx(null)}
           >
-            <div className="p-4 flex items-center justify-between border-b border-white/10 text-white">
-              <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                <InstagramIcon size={15} className="text-[#DFD0EC]" /> @roisinjoyas
-              </span>
+            {/* Top Header Bar */}
+            <div className="w-full max-w-6xl flex items-center justify-between z-30 shrink-0">
+              <div className="flex items-center gap-2.5 text-white">
+                <div className="flex items-center gap-1.5 text-sm font-bold">
+                  <InstagramIcon size={17} className="text-[#DFD0EC]" />
+                  <span>@roisinjoyas</span>
+                </div>
+                {selectedPostIdx !== null && (
+                  <span className="text-xs text-zinc-400 font-medium hidden sm:inline">
+                    ({selectedPostIdx + 1} / {SOCIAL_POSTS.length})
+                  </span>
+                )}
+              </div>
+
+              {/* Close Button */}
               <button
-                onClick={() => setActiveMedia(null)}
-                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
-                aria-label="Cerrar modal"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPostIdx(null);
+                }}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shadow-lg"
+                aria-label="Cerrar vista completa"
               >
-                <X size={18} />
+                <X size={22} />
               </button>
             </div>
 
-            <div className="relative aspect-square w-full bg-black flex items-center justify-center overflow-hidden">
-              {activeMedia.type === 'video' ? (
-                <video src={activeMedia.url} controls autoPlay className="w-full h-full object-contain" />
-              ) : (
-                <Image src={activeMedia.url} alt="Instagram Post" fill className="object-cover" />
-              )}
+            {/* Center Media Container strictly fitting viewport */}
+            <div
+              className="relative flex-1 w-full max-w-5xl my-2 flex items-center justify-center min-h-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Previous Arrow */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevPost();
+                }}
+                className="absolute left-2 sm:left-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
+                aria-label="Publicación anterior"
+              >
+                <ChevronLeft size={24} />
+              </button>
+
+              {/* Media Content */}
+              <div className="relative w-full h-full flex items-center justify-center">
+                {activePost.type === 'video' ? (
+                  <video
+                    src={activePost.videoUrl!}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-full max-w-full object-contain rounded-2xl"
+                  />
+                ) : (
+                  <Image
+                    src={activePost.imageUrl}
+                    alt={activePost.caption}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                )}
+              </div>
+
+              {/* Next Arrow */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextPost();
+                }}
+                className="absolute right-2 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition cursor-pointer shadow-lg border border-white/10"
+                aria-label="Publicación siguiente"
+              >
+                <ChevronRight size={24} />
+              </button>
             </div>
 
-            <div className="p-4 text-xs text-zinc-300 font-light leading-relaxed">
-              {activeMedia.caption}
+            {/* Bottom Caption Bar */}
+            <div
+              className="w-full max-w-2xl bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center z-30 shrink-0 text-white space-y-2 border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center gap-4 text-xs font-bold text-[#DFD0EC]">
+                <span className="flex items-center gap-1.5">
+                  <Heart size={14} className="fill-white text-white" /> {activePost.likes}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MessageCircle size={14} className="fill-white text-white" /> {activePost.comments}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-200 font-light max-w-xl mx-auto line-clamp-2">
+                {activePost.caption}
+              </p>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
+

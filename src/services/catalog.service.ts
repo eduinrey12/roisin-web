@@ -873,16 +873,33 @@ export async function adminCreateFaq(data: {
   sortOrder?: number;
   showOnHome?: boolean;
 }) {
-  return prisma.faq.create({
-    data: {
-      question: data.question,
-      answer: data.answer,
-      category: data.category || 'General',
-      sortOrder: data.sortOrder ?? 0,
-      showOnHome: data.showOnHome ?? true,
-      isActive: true,
-    },
-  });
+  try {
+    return await prisma.faq.create({
+      data: {
+        question: data.question,
+        answer: data.answer,
+        category: data.category || 'General',
+        sortOrder: data.sortOrder ?? 0,
+        showOnHome: data.showOnHome ?? true,
+        isActive: true,
+      },
+    });
+  } catch (err: any) {
+    if (err?.message?.includes('showOnHome')) {
+      const created = await prisma.faq.create({
+        data: {
+          question: data.question,
+          answer: data.answer,
+          category: data.category || 'General',
+          sortOrder: data.sortOrder ?? 0,
+          isActive: true,
+        },
+      });
+      await prisma.$executeRaw`UPDATE Faq SET showOnHome = ${data.showOnHome ?? true} WHERE id = ${created.id}`;
+      return { ...created, showOnHome: data.showOnHome ?? true };
+    }
+    throw err;
+  }
 }
 
 export async function adminUpdateFaq(
@@ -896,17 +913,39 @@ export async function adminUpdateFaq(
     isActive?: boolean;
   }
 ) {
-  return prisma.faq.update({
-    where: { id },
-    data,
-  });
+  try {
+    return await prisma.faq.update({
+      where: { id },
+      data,
+    });
+  } catch (err: any) {
+    if (err?.message?.includes('showOnHome')) {
+      const { showOnHome, ...rest } = data;
+      const updated = await prisma.faq.update({
+        where: { id },
+        data: rest,
+      });
+      if (showOnHome !== undefined) {
+        await prisma.$executeRaw`UPDATE Faq SET showOnHome = ${showOnHome} WHERE id = ${id}`;
+      }
+      return { ...updated, showOnHome: showOnHome ?? true };
+    }
+    throw err;
+  }
 }
 
 export async function adminToggleFaqHomeStatus(id: string, showOnHome: boolean) {
-  return prisma.faq.update({
-    where: { id },
-    data: { showOnHome },
-  });
+  try {
+    return await prisma.faq.update({
+      where: { id },
+      data: { showOnHome },
+    });
+  } catch (err: any) {
+    // If dev server Prisma client instance in memory was loaded prior to schema push:
+    await prisma.$executeRaw`UPDATE Faq SET showOnHome = ${showOnHome} WHERE id = ${id}`;
+    const item = await prisma.faq.findUnique({ where: { id } });
+    return item ? { ...item, showOnHome } : { id, showOnHome };
+  }
 }
 
 export async function adminDeleteFaq(id: string) {
@@ -915,6 +954,7 @@ export async function adminDeleteFaq(id: string) {
     data: { isActive: false },
   });
 }
+
 
 
 // -----------------------------------------------------------------------------

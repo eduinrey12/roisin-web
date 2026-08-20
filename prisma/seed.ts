@@ -75,7 +75,7 @@ async function main() {
   await prisma.storeSetting.deleteMany({});
   await prisma.shippingRegion.deleteMany({});
   await prisma.address.deleteMany({});
-  await prisma.customerProfile.deleteMany({});
+  await prisma.homeSection.deleteMany({});
   await prisma.user.deleteMany({});
 
   console.log('✅ Base de datos completamente limpia.');
@@ -418,7 +418,77 @@ async function main() {
     ],
   });
 
-  // 8. Grupo de Opciones de Presentación & Empaque (4 Opciones con Foto Real)
+  // 8. Secciones Dinámicas de la Página Principal (Home)
+  console.log('📐 Creando configuración de orden de secciones de la tienda...');
+  await prisma.homeSection.createMany({
+    data: [
+      {
+        key: 'CATEGORIES',
+        title: 'Barra de Categorías & Descuentos',
+        description: 'Barra superior con accesos directos a Ofertas y Categorías principales.',
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        key: 'PROMOTIONS',
+        title: 'Banners Promocionales (Carrusel)',
+        description: 'Banners panorámicos de colecciones y promociones con botón interactivo.',
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        key: 'BRAND_PILLARS',
+        title: 'Tarjetas de Información & Valores',
+        description: 'Insignias de Plata 925, Envíos a todo el Ecuador y Empaque de Regalo.',
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        key: 'EXPERIENCE',
+        title: 'Experiencia Diamante Morado',
+        description: 'Presentación de empaque de lujo, dedicatorias personalizadas y garantía.',
+        sortOrder: 3,
+        isActive: true,
+      },
+      {
+        key: 'FEATURED',
+        title: 'Productos Destacados',
+        description: 'Selección de 7 piezas icónicas en formato Bento Grid.',
+        sortOrder: 4,
+        isActive: true,
+      },
+      {
+        key: 'REVIEWS',
+        title: 'Reseñas & Testimonios',
+        description: 'Fila horizontal de clientas reales con fotos, videos y calificaciones.',
+        sortOrder: 5,
+        isActive: true,
+      },
+      {
+        key: 'NEW_ARRIVALS',
+        title: 'Nuevos Ingresos',
+        description: 'Fila horizontal con las últimas 7 joyas añadidas y tarjeta "Ver Más".',
+        sortOrder: 6,
+        isActive: true,
+      },
+      {
+        key: 'FAQS',
+        title: 'Preguntas Frecuentes',
+        description: 'Acordeón con dudas sobre garantía, envíos, tallas y métodos de pago.',
+        sortOrder: 7,
+        isActive: true,
+      },
+      {
+        key: 'SOCIAL_FEED',
+        title: 'Síguenos en Redes Sociales',
+        description: 'Muro interactivo con videos y fotos de Instagram y TikTok.',
+        sortOrder: 8,
+        isActive: true,
+      },
+    ],
+  });
+
+  // 9. Grupo de Opciones de Presentación & Empaque (4 Opciones con Foto Real)
   console.log('🎁 Creando opciones de presentación...');
   const optGroupPresentation = await prisma.productOptionGroup.create({
     data: {

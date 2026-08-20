@@ -765,6 +765,163 @@ export async function adminDeleteFaq(id: string) {
 }
 
 // -----------------------------------------------------------------------------
+// Home Sections Operations (Dynamic Ordering & Visibility)
+// -----------------------------------------------------------------------------
+
+export const DEFAULT_HOME_SECTIONS = [
+  {
+    id: 'sec-categories',
+    key: 'CATEGORIES',
+    title: 'Barra de Categorías & Descuentos',
+    description: 'Barra superior con accesos directos a Ofertas y Categorías principales.',
+    sortOrder: 0,
+    isActive: true,
+  },
+  {
+    id: 'sec-promotions',
+    key: 'PROMOTIONS',
+    title: 'Banners Promocionales (Carrusel)',
+    description: 'Banners panorámicos de colecciones y promociones con botón interactivo.',
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 'sec-pillars',
+    key: 'BRAND_PILLARS',
+    title: 'Tarjetas de Información & Valores',
+    description: 'Insignias de Plata 925, Envíos a todo el Ecuador y Empaque de Regalo.',
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 'sec-experience',
+    key: 'EXPERIENCE',
+    title: 'Experiencia Diamante Morado',
+    description: 'Presentación de empaque de lujo, dedicatorias personalizadas y garantía.',
+    sortOrder: 3,
+    isActive: true,
+  },
+  {
+    id: 'sec-featured',
+    key: 'FEATURED',
+    title: 'Productos Destacados',
+    description: 'Selección de 7 piezas icónicas en formato Bento Grid.',
+    sortOrder: 4,
+    isActive: true,
+  },
+  {
+    id: 'sec-reviews',
+    key: 'REVIEWS',
+    title: 'Reseñas & Testimonios',
+    description: 'Fila horizontal de clientas reales con fotos, videos y calificaciones.',
+    sortOrder: 5,
+    isActive: true,
+  },
+  {
+    id: 'sec-arrivals',
+    key: 'NEW_ARRIVALS',
+    title: 'Nuevos Ingresos',
+    description: 'Fila horizontal con las últimas 7 joyas añadidas y tarjeta "Ver Más".',
+    sortOrder: 6,
+    isActive: true,
+  },
+  {
+    id: 'sec-faqs',
+    key: 'FAQS',
+    title: 'Preguntas Frecuentes',
+    description: 'Acordeón con dudas sobre garantía, envíos, tallas y métodos de pago.',
+    sortOrder: 7,
+    isActive: true,
+  },
+  {
+    id: 'sec-social',
+    key: 'SOCIAL_FEED',
+    title: 'Síguenos en Redes Sociales',
+    description: 'Muro interactivo con videos y fotos de Instagram y TikTok.',
+    sortOrder: 8,
+    isActive: true,
+  },
+];
+
+export async function getHomeSections() {
+  try {
+    if (!prisma.homeSection) return DEFAULT_HOME_SECTIONS;
+    const sections = await prisma.homeSection.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    if (sections && sections.length > 0) {
+      return sections;
+    }
+    return DEFAULT_HOME_SECTIONS;
+  } catch {
+    return DEFAULT_HOME_SECTIONS;
+  }
+}
+
+export async function adminGetAllHomeSections() {
+  try {
+    if (!prisma.homeSection) return DEFAULT_HOME_SECTIONS;
+    let sections = await prisma.homeSection.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (!sections || sections.length === 0) {
+      // Auto-populate with defaults if table is empty
+      await prisma.homeSection.createMany({
+        data: DEFAULT_HOME_SECTIONS.map((s, idx) => ({
+          key: s.key,
+          title: s.title,
+          description: s.description,
+          sortOrder: idx,
+          isActive: true,
+        })),
+      });
+      sections = await prisma.homeSection.findMany({
+        orderBy: { sortOrder: 'asc' },
+      });
+    }
+
+    return sections;
+  } catch {
+    return DEFAULT_HOME_SECTIONS;
+  }
+}
+
+export async function adminUpdateHomeSectionOrder(sectionUpdates: { id: string; sortOrder: number }[]) {
+  const updates = sectionUpdates.map(({ id, sortOrder }) =>
+    prisma.homeSection.update({
+      where: { id },
+      data: { sortOrder },
+    })
+  );
+  return prisma.$transaction(updates);
+}
+
+export async function adminToggleHomeSectionStatus(id: string, isActive: boolean) {
+  return prisma.homeSection.update({
+    where: { id },
+    data: { isActive },
+  });
+}
+
+export async function adminResetHomeSectionsOrder() {
+  const currentSections = await prisma.homeSection.findMany();
+  const defaultKeys = DEFAULT_HOME_SECTIONS.map((s) => s.key);
+
+  const updates = currentSections.map((sec) => {
+    const defaultIndex = defaultKeys.indexOf(sec.key);
+    const sortOrder = defaultIndex !== -1 ? defaultIndex : 99;
+    return prisma.homeSection.update({
+      where: { id: sec.id },
+      data: { sortOrder, isActive: true },
+    });
+  });
+
+  return prisma.$transaction(updates);
+}
+
+// -----------------------------------------------------------------------------
 // Product Option Groups & Presentation Packaging Operations
 // -----------------------------------------------------------------------------
 

@@ -5,9 +5,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminFaqsPage() {
   const faqs = await prisma.faq.findMany({
-    where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
   });
 
-  return <FaqsClient initialFaqs={faqs as any} />;
+  return <FaqsClient initialFaqs={JSON.parse(JSON.stringify(faqs))} />;
 }

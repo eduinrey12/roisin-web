@@ -589,3 +589,44 @@ export async function adminDeletePresentationOptionAction(id: string) {
   }
 }
 
+// ==================== HOME SECTIONS ORDER & VISIBILITY ACTIONS ====================
+export async function adminUpdateHomeSectionsOrderAction(sectionUpdates: { id: string; sortOrder: number }[]) {
+  try {
+    await requireAdmin();
+    const { adminUpdateHomeSectionOrder } = await import('@/services/catalog.service');
+    await adminUpdateHomeSectionOrder(sectionUpdates);
+    revalidatePath('/admin/secciones');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar orden de secciones' };
+  }
+}
+
+export async function adminToggleHomeSectionStatusAction(id: string, isActive: boolean) {
+  try {
+    await requireAdmin();
+    const { adminToggleHomeSectionStatus } = await import('@/services/catalog.service');
+    await adminToggleHomeSectionStatus(id, isActive);
+    revalidatePath('/admin/secciones');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al cambiar visibilidad de sección' };
+  }
+}
+
+export async function adminResetHomeSectionsOrderAction() {
+  try {
+    await requireAdmin();
+    const { adminResetHomeSectionsOrder } = await import('@/services/catalog.service');
+    await adminResetHomeSectionsOrder();
+    revalidatePath('/admin/secciones');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al restablecer orden de secciones' };
+  }
+}
+
+

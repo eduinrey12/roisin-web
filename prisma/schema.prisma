@@ -553,3 +553,22 @@ model StoreSetting {
   @@index([key])
 }
 
+// -----------------------------------------------------------------------------
+// Home Sections Dynamic Ordering & Visibility
+// -----------------------------------------------------------------------------
+
+model HomeSection {
+  id          String   @id @default(uuid())
+  key         String   @unique // 'CATEGORIES', 'PROMOTIONS', 'BRAND_PILLARS', 'EXPERIENCE', 'FEATURED', 'REVIEWS', 'NEW_ARRIVALS', 'FAQS', 'SOCIAL_FEED'
+  title       String
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([isActive])
+}
+
+

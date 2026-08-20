@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ExternalLink,
   Gift,
+  LayoutTemplate,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import RoisinLogo from '@/components/branding/RoisinLogo';
@@ -38,9 +39,7 @@ export default async function AdminLayout({
       <aside className="w-68 h-screen sticky top-0 bg-[#1B1124] text-zinc-300 flex flex-col justify-between shrink-0 border-r border-[#341F48] shadow-2xl overflow-y-auto no-scrollbar z-40">
         <div>
           <div className="p-6 border-b border-[#341F48] space-y-1">
-            <Link href="/admin" className="inline-block">
-              <RoisinLogo theme="light" showTagline={false} />
-            </Link>
+            <RoisinLogo theme="light" showTagline={false} href="/admin" />
             <div className="flex items-center gap-1.5 pt-1 text-[9px] uppercase font-bold tracking-[0.25em] text-[#C2A3DF]">
               <RoisinDiamond size={11} color="#C2A3DF" />
               <span>Panel Administrativo</span>
@@ -143,6 +142,14 @@ export default async function AdminLayout({
           >
             <FolderTree size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
             <span>Preguntas Frecuentes</span>
+          </Link>
+
+          <Link
+            href="/admin/secciones"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <LayoutTemplate size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Orden de Secciones (Home)</span>
           </Link>
 
           <div className="pt-4 border-t border-[#341F48] mt-4 space-y-2">

@@ -35,8 +35,8 @@ function createPrismaClient(): PrismaClient {
 export function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
     const p = globalForPrisma.prisma as any;
-    // If delegates like faq or review are missing, recreate client
-    if (!p.faq || !p.review || !p.promotion || !p.category || !p.product) {
+    // If delegates like faq, review or homeSection are missing, recreate client
+    if (!p.faq || !p.review || !p.promotion || !p.category || !p.product || !p.homeSection) {
       try {
         globalForPrisma.prisma.$disconnect().catch(() => {});
       } catch {}

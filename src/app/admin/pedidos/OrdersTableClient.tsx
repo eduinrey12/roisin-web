@@ -7,6 +7,7 @@ import { Eye, CheckCircle2, X, PenTool } from 'lucide-react';
 import Image from 'next/image';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import { getOrderStatusLabel, getOrderStatusColor, getPaymentMethodLabel } from '@/lib/utils';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface OrderItem {
   id: string;
@@ -157,23 +158,23 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                     </div>
                   </td>
                   <td className="p-4">
-                    <select
+                    <CustomSelect
                       value={order.status}
                       disabled={updatingId === order.id}
-                      onChange={(e) =>
-                        handleStatusChange(order.id, e.target.value as OrderStatus)
-                      }
-                      className={`text-xs font-bold border rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#7043A0] cursor-pointer shadow-2xs ${getOrderStatusColor(
+                      onChange={(val) => handleStatusChange(order.id, val as OrderStatus)}
+                      options={[
+                        { value: 'PENDING', label: 'Pendiente' },
+                        { value: 'PAYMENT_PENDING', label: 'Pago Pendiente' },
+                        { value: 'PROCESSING', label: 'En Proceso' },
+                        { value: 'SHIPPED', label: 'Enviado' },
+                        { value: 'DELIVERED', label: 'Entregado' },
+                        { value: 'CANCELLED', label: 'Cancelado' },
+                      ]}
+                      triggerClassName={`text-xs font-bold border rounded-xl px-3 py-1.5 shadow-2xs ${getOrderStatusColor(
                         order.status
                       )}`}
-                    >
-                      <option value="PENDING">Pendiente</option>
-                      <option value="PAYMENT_PENDING">Pago Pendiente</option>
-                      <option value="PROCESSING">En Proceso</option>
-                      <option value="SHIPPED">Enviado</option>
-                      <option value="DELIVERED">Entregado</option>
-                      <option value="CANCELLED">Cancelado</option>
-                    </select>
+                      dropdownClassName="w-48 right-0 left-auto"
+                    />
                   </td>
                   <td className="p-4 text-right">
                     <button

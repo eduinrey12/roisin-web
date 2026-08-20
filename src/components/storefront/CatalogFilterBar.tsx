@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SlidersHorizontal, X, Check, ChevronDown, RotateCcw } from 'lucide-react';
+import { SlidersHorizontal, X, Check, ChevronDown, RotateCcw, ArrowUpDown } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface Category {
@@ -23,6 +23,12 @@ interface CatalogFilterBarProps {
   totalProducts: number;
   maxCatalogPrice?: number;
 }
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Más Recientes' },
+  { value: 'price_asc', label: 'Precio: Menor a Mayor' },
+  { value: 'price_desc', label: 'Precio: Mayor a Menor' },
+];
 
 export default function CatalogFilterBar({
   categories,
@@ -45,9 +51,12 @@ export default function CatalogFilterBar({
   const [maxPrice, setMaxPrice] = useState<number>(currentMaxPrice);
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const [isColDropdownOpen, setIsColDropdownOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const catDropdownRef = useRef<HTMLDivElement>(null);
   const colDropdownRef = useRef<HTMLDivElement>(null);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMaxPrice(currentMaxPrice);
@@ -61,6 +70,9 @@ export default function CatalogFilterBar({
       }
       if (colDropdownRef.current && !colDropdownRef.current.contains(e.target as Node)) {
         setIsColDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
+        setIsSortDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -101,6 +113,8 @@ export default function CatalogFilterBar({
 
   const activeCategoryObj = categories.find((c) => c.slug === currentCategory);
   const activeCollectionObj = collections.find((col) => col.slug === currentCollection);
+  const activeSortObj = SORT_OPTIONS.find((s) => s.value === currentSort) || SORT_OPTIONS[0];
+
   const hasActiveFilters = Boolean(
     currentCategory ||
     currentCollection ||
@@ -117,11 +131,15 @@ export default function CatalogFilterBar({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Selectors Row: Categorías & Colecciones */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
-            {/* 1. Category Select Input */}
+            {/* 1. Category Luxury Dropdown */}
             <div className="relative w-full sm:w-60" ref={catDropdownRef}>
               <button
                 type="button"
-                onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
+                onClick={() => {
+                  setIsCatDropdownOpen(!isCatDropdownOpen);
+                  setIsColDropdownOpen(false);
+                  setIsSortDropdownOpen(false);
+                }}
                 className="w-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group cursor-pointer"
               >
                 <div className="flex items-center gap-2 truncate">
@@ -186,12 +204,16 @@ export default function CatalogFilterBar({
               )}
             </div>
 
-            {/* 2. Collection Select Input */}
+            {/* 2. Collection Luxury Dropdown */}
             {collections.length > 0 && (
               <div className="relative w-full sm:w-60" ref={colDropdownRef}>
                 <button
                   type="button"
-                  onClick={() => setIsColDropdownOpen(!isColDropdownOpen)}
+                  onClick={() => {
+                    setIsColDropdownOpen(!isColDropdownOpen);
+                    setIsCatDropdownOpen(false);
+                    setIsSortDropdownOpen(false);
+                  }}
                   className="w-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between transition-all duration-200 shadow-2xs group cursor-pointer"
                 >
                   <div className="flex items-center gap-2 truncate">
@@ -253,10 +275,11 @@ export default function CatalogFilterBar({
             )}
           </div>
 
-          {/* 2. Dynamic Budget Slider ($5 to maxCatalogPrice) & Sort */}
-          <div className="flex items-center justify-between lg:justify-end gap-3.5 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#DFD0EC]">
+          {/* 3. Budget Slider & Luxury Sort Selector */}
+          <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3.5 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#DFD0EC]">
             {/* Mobile Filter Trigger Button */}
             <button
+              type="button"
               onClick={() => setIsDrawerOpen(true)}
               className="lg:hidden flex items-center gap-2 bg-[#F8F5FA] text-zinc-900 border border-[#DFD0EC] px-4 py-2.5 rounded-2xl text-xs font-bold cursor-pointer"
             >
@@ -265,7 +288,7 @@ export default function CatalogFilterBar({
               {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-[#3F235F]" />}
             </button>
 
-            {/* Desktop Dynamic Budget Slider starting from $5 up to highest catalog price */}
+            {/* Desktop Dynamic Budget Slider */}
             <div className="hidden lg:flex items-center gap-3 bg-[#F8F5FA] border border-[#DFD0EC] px-4 py-2.5 rounded-2xl">
               <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider whitespace-nowrap">
                 Rango: $5 - ${maxPrice}
@@ -284,26 +307,61 @@ export default function CatalogFilterBar({
               />
             </div>
 
-            {/* Sort Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider hidden sm:inline">
-                Ordenar:
-              </span>
-              <select
-                value={currentSort}
-                onChange={(e) => updateFilters({ sort: e.target.value })}
-                className="text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 font-bold text-zinc-900 focus:outline-none focus:border-[#7043A0] cursor-pointer"
-                aria-label="Ordenar productos"
+            {/* 3. Luxury Sort Dropdown (Identical design to Categories & Collections) */}
+            <div className="relative w-full sm:w-auto" ref={sortDropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSortDropdownOpen(!isSortDropdownOpen);
+                  setIsCatDropdownOpen(false);
+                  setIsColDropdownOpen(false);
+                }}
+                className="w-full sm:w-auto bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between gap-3 transition-all duration-200 shadow-2xs group cursor-pointer"
               >
-                <option value="newest">Más Recientes</option>
-                <option value="price_asc">Precio: Menor a Mayor</option>
-                <option value="price_desc">Precio: Mayor a Menor</option>
-              </select>
+                <div className="flex items-center gap-2 truncate">
+                  <RoisinDiamond size={13} color="#7043A0" />
+                  <span className="text-zinc-500 font-medium hidden xl:inline">Ordenar:</span>
+                  <span className="truncate">{activeSortObj.label}</span>
+                </div>
+                <ChevronDown
+                  size={15}
+                  className={`text-[#7043A0] transition-transform duration-200 ${
+                    isSortDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {isSortDropdownOpen && (
+                <div className="absolute top-full right-0 mt-2 w-full sm:w-64 bg-white rounded-3xl p-3 shadow-2xl border border-[#DFD0EC] z-50 animate-fade-in space-y-1">
+                  {SORT_OPTIONS.map((opt) => {
+                    const isSelected = currentSort === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          updateFilters({ sort: opt.value });
+                          setIsSortDropdownOpen(false);
+                        }}
+                        className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between transition cursor-pointer ${
+                          isSelected
+                            ? 'btn-purple-diamond shadow-xs'
+                            : 'hover:bg-[#F8F5FA] text-zinc-800'
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Reset Filters */}
+            {/* Reset Filters Button */}
             {hasActiveFilters && (
               <button
+                type="button"
                 onClick={clearAllFilters}
                 className="p-2.5 text-zinc-400 hover:text-[#3F235F] hover:bg-[#F0E9F5] rounded-2xl transition cursor-pointer"
                 title="Limpiar filtros"
@@ -332,6 +390,7 @@ export default function CatalogFilterBar({
                   <h3 className="font-sans text-lg font-bold text-zinc-900">Filtros de Joyas</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsDrawerOpen(false)}
                   className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full cursor-pointer"
                 >
@@ -339,13 +398,14 @@ export default function CatalogFilterBar({
                 </button>
               </div>
 
-              {/* Category Options */}
+              {/* 1. Category Options in Drawer */}
               <div className="space-y-2.5">
                 <span className="text-xs uppercase font-bold tracking-wider text-zinc-500 block">
                   Categoría de Joya
                 </span>
                 <div className="space-y-1.5">
                   <button
+                    type="button"
                     onClick={() => {
                       updateFilters({ category: null, ofertas: null });
                       setIsDrawerOpen(false);
@@ -363,6 +423,7 @@ export default function CatalogFilterBar({
                   {categories.map((c) => (
                     <button
                       key={c.id}
+                      type="button"
                       onClick={() => {
                         updateFilters({ category: c.slug, ofertas: null });
                         setIsDrawerOpen(false);
@@ -380,7 +441,82 @@ export default function CatalogFilterBar({
                 </div>
               </div>
 
-              {/* Dynamic Price Range Slider starting from $5 */}
+              {/* 2. Collection Options in Drawer */}
+              {collections.length > 0 && (
+                <div className="space-y-2.5">
+                  <span className="text-xs uppercase font-bold tracking-wider text-zinc-500 block">
+                    Colección
+                  </span>
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateFilters({ collection: null });
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between cursor-pointer ${
+                        !currentCollection
+                          ? 'btn-purple-diamond'
+                          : 'bg-[#F8F5FA] text-zinc-900'
+                      }`}
+                    >
+                      <span>Todas las Colecciones</span>
+                      {!currentCollection && <Check size={14} />}
+                    </button>
+
+                    {collections.map((col) => (
+                      <button
+                        key={col.id}
+                        type="button"
+                        onClick={() => {
+                          updateFilters({ collection: col.slug });
+                          setIsDrawerOpen(false);
+                        }}
+                        className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between cursor-pointer ${
+                          currentCollection === col.slug
+                            ? 'btn-purple-diamond'
+                            : 'bg-[#F8F5FA] text-zinc-900'
+                        }`}
+                      >
+                        <span>{col.name}</span>
+                        {currentCollection === col.slug && <Check size={14} />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Sort Options in Drawer */}
+              <div className="space-y-2.5">
+                <span className="text-xs uppercase font-bold tracking-wider text-zinc-500 block">
+                  Ordenar Por
+                </span>
+                <div className="space-y-1.5">
+                  {SORT_OPTIONS.map((opt) => {
+                    const isSelected = currentSort === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          updateFilters({ sort: opt.value });
+                          setIsDrawerOpen(false);
+                        }}
+                        className={`w-full p-3 rounded-2xl text-left text-xs font-bold flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'btn-purple-diamond'
+                            : 'bg-[#F8F5FA] text-zinc-900'
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4. Dynamic Price Range Slider */}
               <div className="space-y-3 bg-[#F8F5FA] p-4 rounded-3xl border border-[#DFD0EC]">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-zinc-800 uppercase tracking-wider">
@@ -407,6 +543,7 @@ export default function CatalogFilterBar({
             {/* Mobile Drawer Footer Actions */}
             <div className="space-y-2 pt-4 border-t border-[#DFD0EC]">
               <button
+                type="button"
                 onClick={() => {
                   handlePriceCommit();
                   setIsDrawerOpen(false);
@@ -417,6 +554,7 @@ export default function CatalogFilterBar({
               </button>
               {hasActiveFilters && (
                 <button
+                  type="button"
                   onClick={clearAllFilters}
                   className="w-full bg-transparent text-zinc-500 hover:text-red-600 py-2 text-xs font-bold text-center cursor-pointer"
                 >
@@ -430,4 +568,3 @@ export default function CatalogFilterBar({
     </>
   );
 }
-

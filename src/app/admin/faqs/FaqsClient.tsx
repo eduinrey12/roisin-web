@@ -6,6 +6,7 @@ import {
   adminDeleteFaqAction,
 } from '@/lib/actions/admin.actions';
 import { HelpCircle, Plus, Trash2, X, FolderTree } from 'lucide-react';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface FaqItem {
   id: string;
@@ -134,19 +135,19 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">Categoría</label>
-              <select
+              <CustomSelect
+                label="Categoría"
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              >
-                <option value="Garantía & Materiales">Garantía & Materiales</option>
-                <option value="Empaques & Regalos">Empaques & Regalos</option>
-                <option value="Envíos & Tiempos">Envíos & Tiempos</option>
-                <option value="Tallas & Medidas">Tallas & Medidas</option>
-                <option value="Pagos & Seguridad">Pagos & Seguridad</option>
-                <option value="General">General</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, category: val })}
+                options={[
+                  { value: 'Garantía & Materiales', label: 'Garantía & Materiales' },
+                  { value: 'Empaques & Regalos', label: 'Empaques & Regalos' },
+                  { value: 'Envíos & Tiempos', label: 'Envíos & Tiempos' },
+                  { value: 'Tallas & Medidas', label: 'Tallas & Medidas' },
+                  { value: 'Pagos & Seguridad', label: 'Pagos & Seguridad' },
+                  { value: 'General', label: 'General' },
+                ]}
+              />
             </div>
           </div>
 

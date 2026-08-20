@@ -7,6 +7,7 @@ import {
 } from '@/lib/actions/admin.actions';
 import { Star, Plus, Trash2, X, ShieldCheck, CheckCircle2, Image as ImageIcon, Video, Play } from 'lucide-react';
 import Image from 'next/image';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface ReviewItem {
   id: string;
@@ -167,16 +168,16 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">Calificación (Estrellas)</label>
-              <select
-                value={formData.rating}
-                onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              >
-                <option value={5}>⭐⭐⭐⭐⭐ (5 Estrellas)</option>
-                <option value={4}>⭐⭐⭐⭐ (4 Estrellas)</option>
-                <option value={3}>⭐⭐⭐ (3 Estrellas)</option>
-              </select>
+              <CustomSelect
+                label="Calificación (Estrellas)"
+                value={String(formData.rating)}
+                onChange={(val) => setFormData({ ...formData, rating: Number(val) })}
+                options={[
+                  { value: '5', label: '⭐⭐⭐⭐⭐ (5 Estrellas)' },
+                  { value: '4', label: '⭐⭐⭐⭐ (4 Estrellas)' },
+                  { value: '3', label: '⭐⭐⭐ (3 Estrellas)' },
+                ]}
+              />
             </div>
           </div>
 
@@ -207,16 +208,16 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">Tipo de Archivo</label>
-              <select
+              <CustomSelect
+                label="Tipo de Archivo"
                 value={formData.mediaType}
-                onChange={(e) => setFormData({ ...formData, mediaType: e.target.value as any })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              >
-                <option value="IMAGE">Foto / Imagen</option>
-                <option value="VIDEO">Video</option>
-                <option value="NONE">Solo Texto</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, mediaType: val as any })}
+                options={[
+                  { value: 'IMAGE', label: 'Foto / Imagen' },
+                  { value: 'VIDEO', label: 'Video' },
+                  { value: 'NONE', label: 'Solo Texto' },
+                ]}
+              />
             </div>
           </div>
 

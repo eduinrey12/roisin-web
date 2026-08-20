@@ -7,6 +7,7 @@ import {
 } from '@/lib/actions/admin.actions';
 import { Megaphone, Plus, Trash2, X, Gem, Package, Layers, ExternalLink, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface CollectionItem {
   id: string;
@@ -261,20 +262,17 @@ export default function PromotionsClient({
           {/* Conditional Target UI */}
           {formData.targetType === 'COLLECTION' ? (
             <div className="p-4 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] space-y-2">
-              <label className="text-xs font-semibold text-zinc-800 block">
-                Seleccionar Colección de Destino:
-              </label>
-              <select
+              <CustomSelect
+                label="Seleccionar Colección de Destino:"
                 value={formData.collectionId}
-                onChange={(e) => setFormData({ ...formData, collectionId: e.target.value })}
-                className="w-full px-4 py-2.5 text-xs bg-white border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              >
-                {collections.map((col) => (
-                  <option key={col.id} value={col.id}>
-                    {col.name} (/productos?collection={col.slug})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, collectionId: val })}
+                options={collections.map((col) => ({
+                  value: col.id,
+                  label: col.name,
+                  badge: `/productos?collection=${col.slug}`,
+                }))}
+                placeholder="Elige una colección..."
+              />
             </div>
           ) : (
             <div className="p-4 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] space-y-3">

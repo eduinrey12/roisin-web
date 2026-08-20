@@ -7,6 +7,7 @@ import { Upload, Plus, Trash2, AlertCircle, ArrowLeft, Sparkles, Image as ImageI
 import Link from 'next/link';
 import Image from 'next/image';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface CategoryItem {
   id: string;
@@ -227,18 +228,16 @@ export default function ProductCreateForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-bold text-zinc-800 block mb-1.5">Categoría *</label>
-            <select
+            <CustomSelect
+              label="Categoría *"
               value={formData.categoryId}
-              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl focus:outline-none focus:border-[#7043A0] focus:bg-white text-zinc-900 font-medium transition cursor-pointer"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setFormData({ ...formData, categoryId: val })}
+              options={categories.map((c) => ({
+                value: c.id,
+                label: c.name,
+              }))}
+              placeholder="Seleccionar Categoría..."
+            />
           </div>
 
           <div>

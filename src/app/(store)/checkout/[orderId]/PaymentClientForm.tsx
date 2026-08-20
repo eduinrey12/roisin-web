@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 interface PaymentClientFormProps {
   order: {
@@ -515,21 +516,17 @@ export default function PaymentClientForm({ order }: PaymentClientFormProps) {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                Diferido / Cuotas de Pago
-              </label>
-              <select
-                value={cardData.installments}
-                onChange={(e) =>
-                  setCardData({ ...cardData, installments: Number(e.target.value) })
-                }
-                className="w-full px-4 py-3 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] font-bold text-zinc-800 cursor-pointer"
-              >
-                <option value="1">1 pago corriente (${order.total.toFixed(2)})</option>
-                <option value="3">3 meses sin intereses (${(order.total / 3).toFixed(2)}/mes)</option>
-                <option value="6">6 meses sin intereses (${(order.total / 6).toFixed(2)}/mes)</option>
-                <option value="12">12 meses sin intereses (${(order.total / 12).toFixed(2)}/mes)</option>
-              </select>
+              <CustomSelect
+                label="Diferido / Cuotas de Pago"
+                value={String(cardData.installments)}
+                onChange={(val) => setCardData({ ...cardData, installments: Number(val) })}
+                options={[
+                  { value: '1', label: `1 pago corriente ($${order.total.toFixed(2)})` },
+                  { value: '3', label: `3 meses sin intereses ($${(order.total / 3).toFixed(2)}/mes)` },
+                  { value: '6', label: `6 meses sin intereses ($${(order.total / 6).toFixed(2)}/mes)` },
+                  { value: '12', label: `12 meses sin intereses ($${(order.total / 12).toFixed(2)}/mes)` },
+                ]}
+              />
             </div>
           </div>
         </div>

@@ -23,6 +23,7 @@ export const checkoutSchema = z.object({
   province: z.string().min(2, 'Provincia requerida'),
   regionId: z.string().uuid('Zona de envío no seleccionada'),
   dedication: z.string().optional(),
+  dedications: z.array(z.string()).optional(),
   couponCode: z.string().optional(),
 });
 

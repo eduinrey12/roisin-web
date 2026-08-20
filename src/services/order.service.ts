@@ -2,6 +2,7 @@ import prisma from '@/lib/db';
 import { getCart } from './cart.service';
 import { validateCoupon } from './coupon.service';
 import { adjustStock } from './inventory.service';
+import { getGiftCardConfig } from './shipping.service';
 import { OrderStatus, Prisma } from '@prisma/client';
 
 export interface CheckoutInput {
@@ -14,6 +15,7 @@ export interface CheckoutInput {
   province: string;
   regionId: string;
   dedication?: string;
+  dedications?: string[];
   couponCode?: string;
 }
 
@@ -59,11 +61,40 @@ export async function createOrderFromCart(
     }
   }
 
-  const total = subtotal - discount + shippingCost;
+  // Calculate dedications & gift card fee
+  const giftConfig = await getGiftCardConfig();
+  const collectedDedications: string[] = [];
+
+  if (input.dedications && Array.isArray(input.dedications)) {
+    input.dedications.forEach((d) => {
+      if (d && typeof d === 'string' && d.trim().length > 0) {
+        collectedDedications.push(d.trim());
+      }
+    });
+  } else if (input.dedication && input.dedication.trim().length > 0) {
+    collectedDedications.push(input.dedication.trim());
+  }
+
+  // Check item-level dedications from cart
+  cart.items.forEach((item) => {
+    if (item.dedication && item.dedication.trim().length > 0) {
+      if (!collectedDedications.includes(item.dedication.trim())) {
+        collectedDedications.push(item.dedication.trim());
+      }
+    }
+  });
+
+  const freeAllowance = giftConfig.firstFree ? 1 : 0;
+  const extraCardsCount = Math.max(0, collectedDedications.length - freeAllowance);
+  const giftCardFee = extraCardsCount * giftConfig.price;
+
+  const total = subtotal - discount + shippingCost + giftCardFee;
   const orderNumber = `ROI-${Math.floor(100000 + Math.random() * 900000)}`;
 
-  // Find general dedication from input or cart item
-  const finalDedication = input.dedication || cart.items.find((i) => i.dedication)?.dedication || null;
+  const finalDedication =
+    collectedDedications.length > 0
+      ? collectedDedications.map((d, i) => `Tarjeta ${i + 1}: ${d}`).join('\n\n')
+      : null;
 
   // Create order in an ACID transaction with stock deduction
   const order = await prisma.$transaction(async (tx) => {
@@ -81,10 +112,12 @@ export async function createOrderFromCart(
         dedication: finalDedication,
         subtotal: new Prisma.Decimal(subtotal.toFixed(2)),
         shippingCost: new Prisma.Decimal(shippingCost.toFixed(2)),
+        giftCardFee: new Prisma.Decimal(giftCardFee.toFixed(2)),
         discount: new Prisma.Decimal(discount.toFixed(2)),
         total: new Prisma.Decimal(total.toFixed(2)),
         status: 'PENDING',
         couponId: validCoupon?.id || null,
+
         items: {
           create: cart.items.map((item) => {
             const itemPrice = Number(item.variant.price);

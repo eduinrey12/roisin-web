@@ -1,24 +1,29 @@
 import prisma from '@/lib/db';
 import ShippingClient from './ShippingClient';
 import { getFreeShippingThreshold } from '@/lib/actions/admin.actions';
+import { getGiftCardConfig } from '@/services/shipping.service';
 import { serializePlain } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminShippingPage() {
-  const [regions, initialThreshold] = await Promise.all([
+  const [regions, initialThreshold, giftCardConfig] = await Promise.all([
     prisma.shippingRegion.findMany({
       where: { isActive: true },
       orderBy: { baseRate: 'asc' },
     }),
     getFreeShippingThreshold(),
+    getGiftCardConfig(),
   ]);
 
   return (
     <ShippingClient
       initialRegions={serializePlain(regions)}
       initialThreshold={initialThreshold}
+      initialGiftCardPrice={giftCardConfig.price}
+      initialFirstFree={giftCardConfig.firstFree}
     />
   );
 }
+
 

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { submitOrderAction, validateCouponAction } from '@/lib/actions/checkout.actions';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Lock, ArrowRight, Tag, AlertCircle, PenTool, Truck } from 'lucide-react';
+import { Lock, ArrowRight, Tag, AlertCircle, PenTool, Truck, Gift, Plus, Trash2 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export default function CheckoutPage() {
@@ -14,6 +14,12 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [regions, setRegions] = useState<any[]>([]);
+  const [giftConfig, setGiftConfig] = useState<{ price: number; firstFree: boolean }>({
+    price: 2.5,
+    firstFree: true,
+  });
+  const [dedications, setDedications] = useState<string[]>(['']);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -52,6 +58,18 @@ export default function CheckoutPage() {
         }
       })
       .catch(() => {});
+
+    fetch('/api/settings/gift-card')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.price === 'number') {
+          setGiftConfig({
+            price: data.price,
+            firstFree: data.firstFree !== false,
+          });
+        }
+      })
+      .catch(() => {});
   }, [initCart]);
 
   const items = cart?.items || [];
@@ -64,12 +82,36 @@ export default function CheckoutPage() {
     return sum + (itemPrice + optionsPrice) * item.quantity;
   }, 0);
 
+  const activeDedications = dedications.filter((d) => d.trim().length > 0);
+  const freeCardsCount = giftConfig.firstFree ? 1 : 0;
+  const extraCardsCount = Math.max(0, activeDedications.length - freeCardsCount);
+  const giftCardFee = extraCardsCount * giftConfig.price;
+
   const selectedRegion = regions.find((r) => r.id === formData.regionId);
   const shippingCost = selectedRegion ? Number(selectedRegion.baseRate) : 0;
   const discountAmount = appliedCoupon
     ? (subtotal * appliedCoupon.discountPercentage) / 100
     : 0;
-  const total = subtotal - discountAmount + shippingCost;
+  const total = subtotal - discountAmount + shippingCost + giftCardFee;
+
+  const handleDedicationChange = (index: number, val: string) => {
+    const updated = [...dedications];
+    updated[index] = val;
+    setDedications(updated);
+  };
+
+  const handleAddDedication = () => {
+    setDedications([...dedications, '']);
+  };
+
+  const handleRemoveDedication = (index: number) => {
+    if (dedications.length === 1) {
+      setDedications(['']);
+      return;
+    }
+    setDedications(dedications.filter((_, i) => i !== index));
+  };
+
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -94,8 +136,11 @@ export default function CheckoutPage() {
     setErrorMessage('');
 
     try {
+      const finalDedications = dedications.filter((d) => d.trim().length > 0);
       const res = await submitOrderAction({
         ...formData,
+        dedication: finalDedications[0] || undefined,
+        dedications: finalDedications.length > 0 ? finalDedications : undefined,
         couponCode: appliedCoupon?.code || undefined,
       });
 
@@ -251,19 +296,80 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Optional Gift Dedication Field */}
-            <div className="space-y-2 pt-2 border-t border-[#DFD0EC]">
-              <label className="text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
-                <PenTool size={13} className="text-[#7043A0]" />
-                <span>Dedicatoria para la Tarjeta de Regalo (Opcional)</span>
-              </label>
-              <textarea
-                value={formData.dedication}
-                onChange={(e) => setFormData({ ...formData, dedication: e.target.value })}
-                rows={2}
-                placeholder="Escribe el mensaje especial que deseas incluir en la tarjeta de regalo..."
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] focus:bg-white transition resize-none placeholder:text-zinc-400"
-              />
+            {/* Optional Gift Dedication Cards with Multi-Card Support */}
+            <div className="space-y-3 pt-4 border-t border-[#DFD0EC]">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
+                  <Gift size={15} className="text-[#7043A0]" />
+                  <span>Tarjetas de Regalo & Dedicatorias Especiales (Opcional)</span>
+                </label>
+                <span className="text-[10px] text-zinc-500">
+                  {giftConfig.firstFree ? '1ra Tarjeta: GRATIS' : `+$${giftConfig.price.toFixed(2)}`}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {dedications.map((ded, index) => {
+                  const isFirst = index === 0;
+                  const isFree = isFirst && giftConfig.firstFree;
+
+                  return (
+                    <div
+                      key={index}
+                      className="p-3.5 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] space-y-2 relative animate-fade-in"
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-[#3F235F] flex items-center gap-1.5">
+                          <PenTool size={12} />
+                          Tarjeta {index + 1}: {isFree ? (
+                            <span className="text-emerald-700 font-extrabold bg-emerald-100/80 px-2 py-0.5 rounded-full text-[10px]">
+                              GRATIS ($0.00)
+                            </span>
+                          ) : (
+                            <span className="text-[#7043A0] font-bold bg-[#DFD0EC] px-2 py-0.5 rounded-full text-[10px]">
+                              +${giftConfig.price.toFixed(2)}
+                            </span>
+                          )}
+                        </span>
+
+                        {dedications.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDedication(index)}
+                            className="text-zinc-400 hover:text-red-600 transition p-1 cursor-pointer"
+                            title="Eliminar tarjeta"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+
+                      <textarea
+                        value={ded}
+                        onChange={(e) => handleDedicationChange(index, e.target.value)}
+                        rows={2}
+                        placeholder={
+                          isFirst
+                            ? 'Escribe el mensaje especial para tu tarjeta de regalo...'
+                            : 'Mensaje para una segunda persona / joya...'
+                        }
+                        className="w-full px-3.5 py-2 text-xs bg-white border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0] transition resize-none placeholder:text-zinc-400"
+                      />
+                    </div>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={handleAddDedication}
+                  className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#7043A0]/60 hover:border-[#3F235F] text-[#3F235F] hover:bg-[#F0E9F5] text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>
+                    Agregar otra tarjeta de regalo (+${giftConfig.price.toFixed(2)})
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Shipping Region Selector */}
@@ -417,6 +523,15 @@ export default function CheckoutPage() {
                 <span>Envío ({selectedRegion?.name || 'Por definir'})</span>
                 <span>${shippingCost.toFixed(2)}</span>
               </div>
+              {extraCardsCount > 0 && (
+                <div className="flex justify-between text-[#7043A0] font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Gift size={12} />
+                    Tarjetas de regalo adicionales ({extraCardsCount})
+                  </span>
+                  <span>+${giftCardFee.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-[#DFD0EC]">
                 <span>Total a Pagar</span>
                 <span className="font-sans text-xl font-bold text-[#3F235F]">${total.toFixed(2)}</span>
@@ -439,4 +554,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
 

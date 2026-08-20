@@ -1,4 +1,4 @@
-import { getProductBySlug, getProducts } from '@/services/catalog.service';
+import { getProductBySlug, getRelatedProducts } from '@/services/catalog.service';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductGallery from '@/components/storefront/ProductGallery';
@@ -67,13 +67,17 @@ export default async function ProductDetailPage({
   });
   const product = enhancedProduct;
 
-  // Fetch related products from the same category or general catalog
-  const { products: relatedProducts } = await getProducts({
-    categorySlug: product.category?.slug,
-    limit: 4,
+  // Fetch related/cross-sell products by collection, category or catalog highlights
+  const collectionIds = rawProduct.collections?.map((c: any) => c.collectionId) || [];
+  const rawRelatedProducts = await getRelatedProducts({
+    currentProductId: rawProduct.id,
+    categoryId: rawProduct.categoryId,
+    categorySlug: rawProduct.category?.slug,
+    collectionIds,
+    limit: 8,
   });
 
-  const filteredRelated = serializePlain(relatedProducts.filter((p: any) => p.id !== product.id).slice(0, 4));
+  const filteredRelated = serializePlain(rawRelatedProducts);
 
   // Schema.org JSON-LD Structured Data
   const jsonLd = {
@@ -127,9 +131,15 @@ export default async function ProductDetailPage({
 
       {/* Main Grid: Gallery (Left - 6 cols, Sticky Scroll) + Purchasing Details (Right - 6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
-        {/* Left Column: Sticky Gallery */}
+        {/* Left Column: Sticky Gallery with Direct Navigation Arrows & Discount Badge */}
         <div className="lg:col-span-6 lg:sticky lg:top-24 self-start">
-          <ProductGallery images={product.images} title={product.title} />
+          <ProductGallery
+            images={product.images}
+            title={product.title}
+            discountPercent={product.discountPercent}
+            compareAtPrice={product.compareAtPrice}
+            basePrice={product.basePrice}
+          />
         </div>
 
         {/* Right Column: Title -> Short Desc -> Long Desc -> Price -> Variants -> Presentations Carousel -> Dedication -> Add to Cart */}
@@ -138,15 +148,15 @@ export default async function ProductDetailPage({
         </div>
       </div>
 
-      {/* Related Products Section */}
+      {/* Related Products Section ("Otras personas combinaron con") */}
       {filteredRelated.length > 0 && (
         <section className="pt-12 border-t border-[#DFD0EC] space-y-6">
           <div className="text-center max-w-xl mx-auto space-y-1">
-            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#3F235F]">
-              Sugerencias para Ti
+            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#3F235F] inline-flex items-center gap-1.5">
+              <RoisinDiamond size={11} color="#7043A0" /> Combinaciones Ideales
             </span>
             <h2 className="font-sans text-2xl sm:text-3xl font-bold text-zinc-900">
-              También te podría enamorar
+              Otras personas combinaron con
             </h2>
           </div>
 
@@ -176,4 +186,5 @@ export default async function ProductDetailPage({
     </div>
   );
 }
+
 

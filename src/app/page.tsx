@@ -37,7 +37,7 @@ export default async function HomePage() {
     getFeaturedProducts(6),
     getNewArrivals(8),
     getReviews(6),
-    getFaqs(),
+    getFaqs({ onlyHome: true }),
     getHomeSections(),
   ]);
 

@@ -4,8 +4,9 @@ import { useState } from 'react';
 import {
   adminCreateFaqAction,
   adminDeleteFaqAction,
+  adminToggleFaqHomeStatusAction,
 } from '@/lib/actions/admin.actions';
-import { HelpCircle, Plus, Trash2, X, FolderTree } from 'lucide-react';
+import { HelpCircle, Plus, Trash2, X, Home, Eye, EyeOff } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 
 interface FaqItem {
@@ -14,6 +15,7 @@ interface FaqItem {
   answer: string;
   category?: string | null;
   sortOrder: number;
+  showOnHome: boolean;
   isActive: boolean;
 }
 
@@ -26,6 +28,7 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
     answer: '',
     category: 'Garantía & Materiales',
     sortOrder: 0,
+    showOnHome: true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,6 +45,7 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
         answer: formData.answer,
         category: formData.category,
         sortOrder: Number(formData.sortOrder),
+        showOnHome: formData.showOnHome,
       });
 
       if (res.success && res.faq) {
@@ -52,6 +56,7 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
           answer: '',
           category: 'Garantía & Materiales',
           sortOrder: 0,
+          showOnHome: true,
         });
       } else {
         setError(res.error || 'Error al crear FAQ');
@@ -60,6 +65,21 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
       setError(err.message || 'Error inesperado');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleHome = async (id: string, currentShowOnHome: boolean) => {
+    const nextVal = !currentShowOnHome;
+    setFaqs(faqs.map((f) => (f.id === id ? { ...f, showOnHome: nextVal } : f)));
+    try {
+      const res = await adminToggleFaqHomeStatusAction(id, nextVal);
+      if (!res.success) {
+        // Rollback
+        setFaqs(faqs.map((f) => (f.id === id ? { ...f, showOnHome: currentShowOnHome } : f)));
+        alert(res.error || 'Error al actualizar visibilidad en portada');
+      }
+    } catch (err) {
+      setFaqs(faqs.map((f) => (f.id === id ? { ...f, showOnHome: currentShowOnHome } : f)));
     }
   };
 
@@ -85,7 +105,7 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
             Preguntas Frecuentes (FAQ)
           </h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Administra las dudas comunes de clientas que se muestran en el acordeón de la página principal.
+            Administra las dudas comunes. Puedes marcar cuáles aparecen en la <strong>Página Principal (Home)</strong> y cuáles en la página dedicada de FAQs.
           </p>
         </div>
 
@@ -163,14 +183,29 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
             />
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">Orden de Aparición</label>
-            <input
-              type="number"
-              value={formData.sortOrder}
-              onChange={(e) => setFormData({ ...formData, sortOrder: Number(e.target.value) })}
-              className="w-48 px-4 py-2 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            <div>
+              <label className="text-xs font-semibold text-zinc-700 block mb-1">Orden de Aparición</label>
+              <input
+                type="number"
+                value={formData.sortOrder}
+                onChange={(e) => setFormData({ ...formData, sortOrder: Number(e.target.value) })}
+                className="w-full sm:w-48 px-4 py-2 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
+              />
+            </div>
+
+            <label className="flex items-center gap-2.5 text-xs font-semibold text-zinc-800 bg-[#F8F5FA] p-3 rounded-2xl border border-[#DFD0EC] cursor-pointer select-none self-end">
+              <input
+                type="checkbox"
+                checked={formData.showOnHome}
+                onChange={(e) => setFormData({ ...formData, showOnHome: e.target.checked })}
+                className="accent-[#3F235F] w-4 h-4"
+              />
+              <span className="flex items-center gap-1.5">
+                <Home size={14} className="text-[#7043A0]" />
+                Mostrar en la Portada / Página Principal (Home)
+              </span>
+            </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#DFD0EC]">
@@ -197,29 +232,68 @@ export default function FaqsClient({ initialFaqs }: { initialFaqs: FaqItem[] }) 
         {faqs.map((faq) => (
           <div
             key={faq.id}
-            className="bg-white rounded-2xl border border-[#DFD0EC] p-5 shadow-xs flex items-start justify-between gap-4"
+            className="bg-white rounded-2xl border border-[#DFD0EC] p-5 shadow-xs flex flex-col sm:flex-row sm:items-start justify-between gap-4"
           >
             <div className="space-y-1.5 flex-1">
-              {faq.category && (
-                <span className="text-[9.5px] uppercase font-bold text-[#7043A0] tracking-wider block">
-                  {faq.category}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {faq.category && (
+                  <span className="text-[9.5px] uppercase font-bold text-[#7043A0] tracking-wider">
+                    {faq.category}
+                  </span>
+                )}
+
+                {faq.showOnHome ? (
+                  <span className="text-[9px] uppercase font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Home size={10} /> Visible en Portada (Home)
+                  </span>
+                ) : (
+                  <span className="text-[9px] uppercase font-bold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    Solo en /preguntas-frecuentes
+                  </span>
+                )}
+              </div>
+
               <h3 className="font-sans text-sm font-bold text-zinc-900">{faq.question}</h3>
               <p className="text-xs text-zinc-600 font-light leading-relaxed">{faq.answer}</p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleDelete(faq.id)}
-              className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
-              title="Eliminar pregunta"
-            >
-              <Trash2 size={15} />
-            </button>
+            <div className="flex items-center gap-2 self-end sm:self-start shrink-0">
+              <button
+                type="button"
+                onClick={() => handleToggleHome(faq.id, faq.showOnHome)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+                  faq.showOnHome
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                    : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                }`}
+                title={faq.showOnHome ? 'Ocultar del Home' : 'Mostrar en el Home'}
+              >
+                {faq.showOnHome ? (
+                  <>
+                    <Eye size={13} className="text-emerald-600" />
+                    <span>En Home</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff size={13} className="text-zinc-400" />
+                    <span>Oculto en Home</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDelete(faq.id)}
+                className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                title="Eliminar pregunta"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 }
+

@@ -9,12 +9,18 @@ interface ProductGalleryProps {
   images: { url: string; altText?: string | null; label?: string | null; isPrimary: boolean }[];
   title: string;
   selectedImageIndex?: number;
+  discountPercent?: number | null;
+  compareAtPrice?: any;
+  basePrice?: any;
 }
 
 export default function ProductGallery({
   images,
   title,
   selectedImageIndex,
+  discountPercent,
+  compareAtPrice,
+  basePrice,
 }: ProductGalleryProps) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,6 +50,19 @@ export default function ProductGallery({
 
   const currentImage = activeImages[selectedIdx] || activeImages[0];
 
+  const priceNum = Number(basePrice) || 0;
+  const compareNum = compareAtPrice ? Number(compareAtPrice) : null;
+  const hasDiscount = Boolean(
+    (discountPercent && discountPercent > 0) ||
+    (compareNum && compareNum > priceNum)
+  );
+
+  const discountBadgeText = discountPercent
+    ? `-${discountPercent}% OFF`
+    : compareNum && compareNum > priceNum
+    ? `-${Math.round(((compareNum - priceNum) / compareNum) * 100)}% OFF`
+    : null;
+
   const handlePrev = useCallback(() => {
     setSelectedIdx((prev) => (prev > 0 ? prev - 1 : activeImages.length - 1));
   }, [activeImages.length]);
@@ -56,7 +75,6 @@ export default function ProductGallery({
   useEffect(() => {
     if (!isModalOpen) return;
 
-    // Prevent body scroll
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -108,7 +126,7 @@ export default function ProductGallery({
           </div>
         )}
 
-        {/* 2. Main Showcase Image with Zoom Click Action */}
+        {/* 2. Main Showcase Image with Zoom Click Action & Direct Arrow Navigation */}
         <div
           onClick={() => setIsModalOpen(true)}
           className="relative aspect-square lg:aspect-[4/3.8] w-full flex-1 bg-[#F8F5FA] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-md group cursor-zoom-in min-h-[360px] sm:min-h-[440px] lg:min-h-[520px]"
@@ -122,10 +140,57 @@ export default function ProductGallery({
             className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-104"
           />
 
+          {/* Discount Badge on Top-Left */}
+          {hasDiscount && discountBadgeText && (
+            <div className="absolute top-3.5 left-3.5 z-20">
+              <span className="bg-gradient-to-r from-[#3F235F] to-[#7043A0] text-white text-xs uppercase font-extrabold px-3 py-1 rounded-full shadow-md tracking-wider leading-normal inline-block">
+                {discountBadgeText}
+              </span>
+            </div>
+          )}
+
           {/* Hover Zoom Indicator */}
-          <div className="absolute top-3.5 right-3.5 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md">
+          <div className="absolute top-3.5 right-3.5 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md z-20">
             <Maximize2 size={16} />
           </div>
+
+          {/* Direct Prev / Next Navigation Arrows on Main Image (Cycles with 1 click) */}
+          {activeImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrev();
+                }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-white/90 hover:bg-white text-[#3F235F] border border-[#DFD0EC] hover:border-[#7043A0] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center opacity-85 group-hover:opacity-100"
+                aria-label="Foto anterior"
+                title="Foto anterior"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNext();
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-white/90 hover:bg-white text-[#3F235F] border border-[#DFD0EC] hover:border-[#7043A0] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center opacity-85 group-hover:opacity-100"
+                aria-label="Foto siguiente"
+                title="Foto siguiente"
+              >
+                <ChevronRight size={20} />
+              </button>
+
+              {/* Photo Counter Badge */}
+              <div className="absolute bottom-3 right-3 z-10">
+                <span className="bg-black/50 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                  {selectedIdx + 1} / {activeImages.length}
+                </span>
+              </div>
+            </>
+          )}
 
           {currentImage.label && (
             <div className="absolute bottom-3 left-3 z-10">
@@ -136,6 +201,7 @@ export default function ProductGallery({
           )}
         </div>
       </div>
+
 
       {/* 3. Fullscreen Clean Image Modal via React Portal (Renders at body root, above header/all elements) */}
       {mounted &&

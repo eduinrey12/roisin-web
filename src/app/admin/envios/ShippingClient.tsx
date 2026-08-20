@@ -7,7 +7,7 @@ import {
   adminDeleteShippingRegionAction,
   adminUpdateFreeShippingThresholdAction,
 } from '@/lib/actions/admin.actions';
-import { Truck, Plus, Trash2, Edit2, Check, X, Sparkles, Save } from 'lucide-react';
+import { Truck, Plus, Trash2, Edit2, Check, X, Sparkles, Save, Gift } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface ShippingRegionItem {
@@ -21,14 +21,24 @@ interface ShippingRegionItem {
 export default function ShippingClient({
   initialRegions,
   initialThreshold = 50.0,
+  initialGiftCardPrice = 2.5,
+  initialFirstFree = true,
 }: {
   initialRegions: ShippingRegionItem[];
   initialThreshold?: number;
+  initialGiftCardPrice?: number;
+  initialFirstFree?: boolean;
 }) {
   const [regions, setRegions] = useState(initialRegions);
   const [threshold, setThreshold] = useState<string>(String(initialThreshold));
   const [thresholdSaving, setThresholdSaving] = useState(false);
   const [thresholdSuccess, setThresholdSuccess] = useState(false);
+
+  // Gift Card Settings State
+  const [giftPrice, setGiftPrice] = useState<string>(String(initialGiftCardPrice));
+  const [firstGiftFree, setFirstGiftFree] = useState<boolean>(initialFirstFree);
+  const [giftSaving, setGiftSaving] = useState(false);
+  const [giftSuccess, setGiftSuccess] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,6 +52,37 @@ export default function ShippingClient({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleSaveGiftCardConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!giftPrice || isNaN(Number(giftPrice))) return;
+    setGiftSaving(true);
+    setGiftSuccess(false);
+
+    try {
+      const res = await fetch('/api/settings/gift-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price: Number(giftPrice),
+          firstFree: firstGiftFree,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGiftPrice(Number(data.price).toFixed(2));
+        setFirstGiftFree(data.firstFree);
+        setGiftSuccess(true);
+        setTimeout(() => setGiftSuccess(false), 3500);
+      } else {
+        setError(data.error || 'Error al guardar configuración de tarjetas de regalo');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al guardar');
+    } finally {
+      setGiftSaving(false);
+    }
+  };
 
   const handleSaveThreshold = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,8 +255,80 @@ export default function ShippingClient({
         </p>
       </div>
 
-      {/* 2. Header for Regional Rates */}
+      {/* 2. Gift Cards & Dedications Pricing Configuration Card */}
+      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#F8F5FA] pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-[#F0E9F5] text-[#3F235F] rounded-2xl border border-[#DFD0EC]">
+              <Gift size={20} />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#7043A0] block">
+                Tarjetas de Regalo & Dedicatorias
+              </span>
+              <h2 className="font-sans text-lg font-bold text-zinc-900">
+                Tarifas de Tarjetas de Dedicatoria
+              </h2>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveGiftCardConfig} className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 bg-[#F8F5FA] px-3.5 py-2 rounded-2xl border border-[#DFD0EC] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={firstGiftFree}
+                onChange={(e) => setFirstGiftFree(e.target.checked)}
+                className="accent-[#3F235F] w-4 h-4"
+              />
+              <span>1ra Tarjeta Gratis ($0.00)</span>
+            </label>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-zinc-600">Precio extra:</span>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">$</span>
+                <input
+                  type="number"
+                  step="0.50"
+                  min="0"
+                  value={giftPrice}
+                  onChange={(e) => setGiftPrice(e.target.value)}
+                  className="w-28 pl-7 pr-3 py-2 bg-[#F8F5FA] border border-[#DFD0EC] rounded-2xl text-xs font-bold text-zinc-900 focus:outline-none focus:border-[#7043A0]"
+                  placeholder="2.50"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={giftSaving}
+              className="btn-purple-diamond px-5 py-2 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {giftSaving ? (
+                <span>Guardando...</span>
+              ) : giftSuccess ? (
+                <>
+                  <Check size={14} className="text-emerald-300" />
+                  <span>¡Guardado!</span>
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  <span>Guardar</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-xs text-zinc-500 leading-relaxed font-light">
+          Permite que tus clientes agreguen dedicatorias para regalos en el Checkout. Si activas <em>1ra Tarjeta Gratis</em>, la primera dedicatoria no tendrá costo ($0.00) y las adicionales tendrán el valor configurado aquí.
+        </p>
+      </div>
+
+      {/* 3. Header for Regional Rates */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
         <div>
           <h1 className="text-2xl font-bold font-sans text-zinc-900 flex items-center gap-2">
             <Truck className="text-[#7043A0]" size={24} />

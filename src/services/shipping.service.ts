@@ -58,3 +58,38 @@ export async function adminDeleteShippingRegion(id: string) {
   });
 }
 
+export async function getGiftCardConfig() {
+  try {
+    const priceSetting = await prisma.storeSetting.findUnique({
+      where: { key: 'gift_card_price' },
+    });
+    const firstFreeSetting = await prisma.storeSetting.findUnique({
+      where: { key: 'gift_card_first_free' },
+    });
+
+    return {
+      price: priceSetting ? Number(priceSetting.value) || 2.5 : 2.5,
+      firstFree: firstFreeSetting ? firstFreeSetting.value === 'true' : true,
+    };
+  } catch {
+    return { price: 2.5, firstFree: true };
+  }
+}
+
+export async function adminUpdateGiftCardConfig(price: number, firstFree: boolean = true) {
+  await prisma.storeSetting.upsert({
+    where: { key: 'gift_card_price' },
+    update: { value: price.toFixed(2), type: 'number', label: 'Precio Tarjeta de Regalo Adicional' },
+    create: { key: 'gift_card_price', value: price.toFixed(2), type: 'number', label: 'Precio Tarjeta de Regalo Adicional' },
+  });
+
+  await prisma.storeSetting.upsert({
+    where: { key: 'gift_card_first_free' },
+    update: { value: String(firstFree), type: 'boolean', label: 'Primera Tarjeta de Regalo Gratis' },
+    create: { key: 'gift_card_first_free', value: String(firstFree), type: 'boolean', label: 'Primera Tarjeta de Regalo Gratis' },
+  });
+
+  return { price, firstFree };
+}
+
+

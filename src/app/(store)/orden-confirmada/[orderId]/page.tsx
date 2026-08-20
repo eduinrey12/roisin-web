@@ -32,9 +32,9 @@ export default async function OrderSuccessPage({
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       <div className="bg-white p-6 sm:p-12 rounded-3xl border border-[#DFD0EC] shadow-sm text-center space-y-8">
-        {/* Success Icon with Diamond Backdrop */}
-        <div className="inline-flex p-4 bg-[#F8F5FA] rounded-full border border-[#DFD0EC]">
-          <RoisinDiamond size={48} color="#7043A0" />
+        {/* Success Icon: Brand Diamond (No Circular Enclosure) */}
+        <div className="flex items-center justify-center pt-2">
+          <RoisinDiamond size={56} color="#7043A0" />
         </div>
 
         <div className="space-y-2">
@@ -65,20 +65,17 @@ export default async function OrderSuccessPage({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-zinc-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-zinc-600">
             <div>
-              <p className="text-[10px] text-zinc-400 uppercase font-bold">Destinatario</p>
-              <p className="font-semibold text-zinc-900 mt-0.5">{order.customerName}</p>
+              <p className="text-[10px] text-zinc-400 uppercase font-bold">Cliente</p>
+              <p className="font-medium text-zinc-900">{order.customerName}</p>
               <p>{order.customerEmail}</p>
               <p>{order.customerPhone}</p>
             </div>
             <div>
-              <p className="text-[10px] text-zinc-400 uppercase font-bold">Dirección de Entrega</p>
-              <p className="font-semibold text-zinc-900 mt-0.5">{order.shippingAddress}</p>
-              <p>{order.city}, {order.province}</p>
-              <p className="text-[#3F235F] font-bold mt-1">
-                Método de Pago: {getPaymentMethodLabel(order.payment?.method)}
-              </p>
+              <p className="text-[10px] text-zinc-400 uppercase font-bold">Destino de Entrega</p>
+              <p className="font-medium text-zinc-900">{order.city}, {order.province}</p>
+              <p>{order.shippingAddress}</p>
             </div>
           </div>
 
@@ -88,7 +85,7 @@ export default async function OrderSuccessPage({
               <div className="flex items-center gap-1.5 text-[#3F235F] font-bold text-[11px]">
                 <PenTool size={13} /> Dedicatoria para la Tarjeta de Regalo:
               </div>
-              <p className="italic text-zinc-700 text-xs">&ldquo;{order.dedication}&rdquo;</p>
+              <p className="italic text-zinc-700 text-xs whitespace-pre-line">&ldquo;{order.dedication}&rdquo;</p>
             </div>
           )}
 
@@ -142,6 +139,12 @@ export default async function OrderSuccessPage({
               <span>Envío</span>
               <span>${Number(order.shippingCost).toFixed(2)}</span>
             </div>
+            {Number((order as any).giftCardFee) > 0 && (
+              <div className="flex justify-between text-[#7043A0] font-semibold">
+                <span>Tarjetas de regalo adicionales</span>
+                <span>+${Number((order as any).giftCardFee).toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-[#DFD0EC]">
               <span>Total Pagado</span>
               <span className="font-sans text-xl text-[#3F235F] font-bold">${Number(order.total).toFixed(2)}</span>

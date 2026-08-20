@@ -15,6 +15,7 @@ import {
   Layers,
   Tag,
   Gem,
+  HelpCircle,
 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -289,17 +290,15 @@ export default function Header({ user }: { user?: { email: string; role: string 
             )}
           </div>
 
-          {/* 2. WhatsApp Advisor Icon Button */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="p-2.5 text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 border border-emerald-500 rounded-2xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center cursor-pointer"
-            title="Asesoría personalizada por WhatsApp"
-            aria-label="Asesoría WhatsApp"
+          {/* 2. Preguntas Frecuentes Icon Button (?) */}
+          <Link
+            href="/preguntas-frecuentes"
+            className="p-2.5 text-white bg-gradient-to-r from-[#3F235F] to-[#552E80] hover:from-[#4D2B75] hover:to-[#7043A0] border border-[#552E80] hover:border-[#DFD0EC] rounded-2xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center cursor-pointer"
+            title="Preguntas Frecuentes"
+            aria-label="Preguntas Frecuentes"
           >
-            <MessageCircle size={19} className="drop-shadow-2xs text-white" />
-          </a>
+            <HelpCircle size={19} className="drop-shadow-2xs text-[#DFD0EC]" />
+          </Link>
 
           {/* 3. User Login / Account Icon Button */}
           <Link
@@ -409,16 +408,15 @@ export default function Header({ user }: { user?: { email: string; role: string 
               </div>
             </div>
 
-            {/* Links & WhatsApp */}
+            {/* Links & Help */}
             <div className="space-y-3 border-t border-[#DFD0EC] pt-4">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-2xl w-full justify-center shadow-2xs"
+              <Link
+                href="/preguntas-frecuentes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#3F235F] bg-[#F8F5FA] border border-[#DFD0EC] px-4 py-3 rounded-2xl w-full justify-center shadow-2xs hover:bg-[#F0E9F5] transition"
               >
-                <MessageCircle size={16} /> Asesoría por WhatsApp
-              </a>
+                <HelpCircle size={16} className="text-[#7043A0]" /> Preguntas Frecuentes (FAQ)
+              </Link>
 
               <Link
                 href={user ? '/cuenta' : '/login'}
@@ -427,6 +425,7 @@ export default function Header({ user }: { user?: { email: string; role: string 
               >
                 {user ? 'Mi Cuenta & Historial' : 'Iniciar Sesión / Registrarse'}
               </Link>
+
 
               {user?.role === 'ADMIN' && (
                 <Link

@@ -157,7 +157,92 @@ export async function getNewArrivals(limit = 8) {
   });
 }
 
+export async function getRelatedProducts(params: {
+  currentProductId: string;
+  categoryId?: string;
+  categorySlug?: string;
+  collectionIds?: string[];
+  limit?: number;
+}) {
+  const limit = params.limit || 8;
+  const currentId = params.currentProductId;
+
+  const productInclude = {
+    images: { orderBy: { sortOrder: 'asc' as const } },
+    variants: {
+      where: { isActive: true },
+      include: { inventory: true },
+    },
+    category: true,
+    collections: {
+      include: { collection: true },
+    },
+  };
+
+  try {
+    const wherePrimary: Prisma.ProductWhereInput = {
+      isActive: true,
+      id: { not: currentId },
+      OR: [
+        ...(params.collectionIds && params.collectionIds.length > 0
+          ? [
+              {
+                collections: {
+                  some: {
+                    collectionId: { in: params.collectionIds },
+                    collection: { isActive: true },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(params.categoryId
+          ? [{ categoryId: params.categoryId, category: { isActive: true } }]
+          : params.categorySlug
+          ? [{ category: { slug: params.categorySlug, isActive: true } }]
+          : []),
+      ],
+    };
+
+    let related = await prisma.product.findMany({
+      where: wherePrimary,
+      include: productInclude,
+      take: limit,
+      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+    });
+
+    if (related.length < limit) {
+      const existingIds = [currentId, ...related.map((p) => p.id)];
+      const fallbackProducts = await prisma.product.findMany({
+        where: {
+          isActive: true,
+          id: { notIn: existingIds },
+        },
+        include: productInclude,
+        take: limit - related.length,
+        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      });
+
+      related = [...related, ...fallbackProducts];
+    }
+
+    return related;
+  } catch (err) {
+    console.error('Error in getRelatedProducts:', err);
+    return prisma.product.findMany({
+      where: {
+        isActive: true,
+        id: { not: currentId },
+      },
+      include: productInclude,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+}
+
 export async function getProducts(params?: {
+
   categorySlug?: string;
   collectionSlug?: string;
   promoId?: string;
@@ -760,11 +845,14 @@ export async function adminDeleteReview(id: string) {
 // Frequently Asked Questions (FAQ) Operations
 // -----------------------------------------------------------------------------
 
-export async function getFaqs() {
+export async function getFaqs(options?: { onlyHome?: boolean }) {
   try {
     if (!prisma.faq) return [];
     return await prisma.faq.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(options?.onlyHome ? { showOnHome: true } : {}),
+      },
       orderBy: { sortOrder: 'asc' },
     });
   } catch {
@@ -783,6 +871,7 @@ export async function adminCreateFaq(data: {
   answer: string;
   category?: string;
   sortOrder?: number;
+  showOnHome?: boolean;
 }) {
   return prisma.faq.create({
     data: {
@@ -790,6 +879,7 @@ export async function adminCreateFaq(data: {
       answer: data.answer,
       category: data.category || 'General',
       sortOrder: data.sortOrder ?? 0,
+      showOnHome: data.showOnHome ?? true,
       isActive: true,
     },
   });
@@ -802,6 +892,7 @@ export async function adminUpdateFaq(
     answer?: string;
     category?: string;
     sortOrder?: number;
+    showOnHome?: boolean;
     isActive?: boolean;
   }
 ) {
@@ -811,12 +902,20 @@ export async function adminUpdateFaq(
   });
 }
 
+export async function adminToggleFaqHomeStatus(id: string, showOnHome: boolean) {
+  return prisma.faq.update({
+    where: { id },
+    data: { showOnHome },
+  });
+}
+
 export async function adminDeleteFaq(id: string) {
   return prisma.faq.update({
     where: { id },
     data: { isActive: false },
   });
 }
+
 
 // -----------------------------------------------------------------------------
 // Home Sections Operations (Dynamic Ordering & Visibility)

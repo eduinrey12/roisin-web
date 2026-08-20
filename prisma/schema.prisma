@@ -347,6 +347,7 @@ model Order {
   dedication      String?     @db.Text // Dedicatoria para tarjeta de regalo
   subtotal        Decimal     @db.Decimal(10, 2)
   shippingCost    Decimal     @db.Decimal(10, 2)
+  giftCardFee     Decimal     @default(0.00) @db.Decimal(10, 2) // Costo por tarjetas de regalo adicionales
   discount        Decimal     @default(0.00) @db.Decimal(10, 2)
   total           Decimal     @db.Decimal(10, 2)
   status          OrderStatus @default(PENDING)
@@ -524,18 +525,21 @@ model Review {
 // -----------------------------------------------------------------------------
 
 model Faq {
-  id        String   @id @default(uuid())
-  question  String   @db.Text
-  answer    String   @db.Text
-  category  String?  @default("General") // e.g. "Envíos", "Garantía", "Joyas", "Dedicatorias"
-  sortOrder Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  question   String   @db.Text
+  answer     String   @db.Text
+  category   String?  @default("General") // e.g. "Envíos", "Garantía", "Joyas", "Dedicatorias"
+  sortOrder  Int      @default(0)
+  showOnHome Boolean  @default(true) // Indicador para mostrar en la página principal
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([isActive])
+  @@index([showOnHome])
   @@index([sortOrder])
 }
+
 
 // -----------------------------------------------------------------------------
 // Store Settings & Parameters

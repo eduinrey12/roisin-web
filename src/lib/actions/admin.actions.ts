@@ -19,6 +19,7 @@ import {
   adminDeleteReview,
   adminCreateFaq,
   adminUpdateFaq,
+  adminToggleFaqHomeStatus,
   adminDeleteFaq,
 } from '@/services/catalog.service';
 import { adminUpdateOrderStatus } from '@/services/order.service';
@@ -307,11 +308,13 @@ export async function adminCreateFaqAction(data: {
   answer: string;
   category?: string;
   sortOrder?: number;
+  showOnHome?: boolean;
 }) {
   try {
     await requireAdmin();
     const faq = await adminCreateFaq(data);
     revalidatePath('/admin/faqs');
+    revalidatePath('/preguntas-frecuentes');
     revalidatePath('/');
     return { success: true, faq: serializePlain(faq) };
   } catch (err: any) {
@@ -326,6 +329,7 @@ export async function adminUpdateFaqAction(
     answer?: string;
     category?: string;
     sortOrder?: number;
+    showOnHome?: boolean;
     isActive?: boolean;
   }
 ) {
@@ -333,6 +337,7 @@ export async function adminUpdateFaqAction(
     await requireAdmin();
     const faq = await adminUpdateFaq(id, data);
     revalidatePath('/admin/faqs');
+    revalidatePath('/preguntas-frecuentes');
     revalidatePath('/');
     return { success: true, faq: serializePlain(faq) };
   } catch (err: any) {
@@ -340,18 +345,32 @@ export async function adminUpdateFaqAction(
   }
 }
 
+export async function adminToggleFaqHomeStatusAction(id: string, showOnHome: boolean) {
+  try {
+    await requireAdmin();
+    const faq = await adminToggleFaqHomeStatus(id, showOnHome);
+    revalidatePath('/admin/faqs');
+    revalidatePath('/preguntas-frecuentes');
+    revalidatePath('/');
+    return { success: true, faq: serializePlain(faq) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al cambiar visibilidad en portada' };
+  }
+}
 
 export async function adminDeleteFaqAction(id: string) {
   try {
     await requireAdmin();
     await adminDeleteFaq(id);
     revalidatePath('/admin/faqs');
+    revalidatePath('/preguntas-frecuentes');
     revalidatePath('/');
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al eliminar FAQ' };
   }
 }
+
 
 // ==================== SHIPPING REGION ACTIONS ====================
 export async function adminCreateShippingRegionAction(data: {

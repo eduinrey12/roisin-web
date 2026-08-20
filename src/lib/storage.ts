@@ -45,9 +45,9 @@ function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
 export function getUploadsDirectory(): string {
   // If custom persistent directory is configured in Hostinger (e.g. UPLOADS_DIR=/home/user/uploads)
   if (process.env.UPLOADS_DIR) {
-    return path.resolve(process.env.UPLOADS_DIR);
+    return path.resolve(/*turbopackIgnore: true*/ process.env.UPLOADS_DIR);
   }
-  return path.join(process.cwd(), 'public', 'uploads');
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads');
 }
 
 export async function saveUploadedFile(file: File): Promise<{
@@ -117,7 +117,7 @@ export async function readUploadedFile(
     return { buffer, contentType };
   } catch {
     // If not found in custom uploadsDir, also check public/uploads as fallback
-    const fallbackPath = path.join(process.cwd(), 'public', 'uploads', safeFilename);
+    const fallbackPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads', safeFilename);
     try {
       const buffer = await readFile(fallbackPath);
       return { buffer, contentType };

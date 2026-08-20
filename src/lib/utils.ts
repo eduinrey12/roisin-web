@@ -5,12 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatCurrency(amount: number | string | null | undefined): string {
+  const num = Number(amount) || 0;
+  return `$${num.toFixed(2)}`;
+}
+
 export function getOrderStatusLabel(status: string): string {
   switch (status) {
     case 'PENDING':
       return 'Pendiente';
     case 'PAYMENT_PENDING':
       return 'Pago Pendiente';
+    case 'PAID':
+      return 'Pagado';
     case 'PROCESSING':
       return 'En Proceso';
     case 'SHIPPED':
@@ -30,6 +37,8 @@ export function getOrderStatusColor(status: string): string {
       return 'bg-amber-50 text-amber-800 border-amber-200';
     case 'PAYMENT_PENDING':
       return 'bg-purple-50 text-purple-800 border-purple-200';
+    case 'PAID':
+      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
     case 'PROCESSING':
       return 'bg-blue-50 text-blue-800 border-blue-200';
     case 'SHIPPED':
@@ -48,11 +57,11 @@ export function getPaymentMethodLabel(method?: string | null): string {
     case 'BANK_TRANSFER':
       return 'Transferencia Bancaria';
     case 'BANK_DEPOSIT':
-      return 'Depósito Bancario (Corresponsales)';
+      return 'Depósito Bancario';
     case 'CREDIT_CARD':
       return 'Tarjeta de Crédito / Débito';
     case 'CASH_ON_DELIVERY':
-      return 'Contra Entrega';
+      return 'Pago Contra Entrega';
     default:
       return 'Por definir';
   }
@@ -66,5 +75,3 @@ export function serializePlain<T>(data: T): T {
   if (data === null || data === undefined) return data;
   return JSON.parse(JSON.stringify(data));
 }
-
-

@@ -5,7 +5,7 @@ import {
   adminCreateReviewAction,
   adminDeleteReviewAction,
 } from '@/lib/actions/admin.actions';
-import { Star, Plus, Trash2, X, ShieldCheck, CheckCircle2, Image as ImageIcon, Video } from 'lucide-react';
+import { Star, Plus, Trash2, X, ShieldCheck, CheckCircle2, Image as ImageIcon, Video, Play } from 'lucide-react';
 import Image from 'next/image';
 
 interface ReviewItem {
@@ -25,6 +25,7 @@ interface ReviewItem {
 export default function ReviewsClient({ initialReviews }: { initialReviews: ReviewItem[] }) {
   const [reviews, setReviews] = useState<ReviewItem[]>(initialReviews);
   const [isCreating, setIsCreating] = useState(false);
+  const [activeMediaModal, setActiveMediaModal] = useState<{ url: string; type: string; title: string } | null>(null);
 
   const [formData, setFormData] = useState({
     authorName: '',
@@ -84,7 +85,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Deseas eliminar esta reseña?')) return;
+    if (!confirm('¿Deseas eliminar esta reseña de clienta?')) return;
     try {
       const res = await adminDeleteReviewAction(id);
       if (res.success) {
@@ -102,10 +103,10 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
         <div>
           <h1 className="text-2xl font-bold font-sans text-zinc-900 flex items-center gap-2">
             <ShieldCheck className="text-[#7043A0]" size={24} />
-            Reseñas & Testimonios
+            Reseñas & Testimonios con Fotos y Videos
           </h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Sube fotos, videos y testimonios reales de clientas para mostrarlos en la página de inicio.
+            Colección interactiva de testimonios de clientas. Sube fotos o videos reales para mostrarlos en la página de inicio.
           </p>
         </div>
 
@@ -131,7 +132,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
           className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-lg space-y-4 animate-fade-in"
         >
           <div className="flex items-center justify-between border-b border-[#DFD0EC] pb-3">
-            <h3 className="font-bold text-sm text-zinc-900">Agregar Nueva Reseña de Cliente</h3>
+            <h3 className="font-bold text-sm text-zinc-900">Agregar Nueva Reseña (Foto o Video)</h3>
             <button
               type="button"
               onClick={() => setIsCreating(false)}
@@ -194,7 +195,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
               <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                URL de Foto o Video (Opcional)
+                URL de Archivo Multimedia (Foto o Video)
               </label>
               <input
                 type="url"
@@ -214,6 +215,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
               >
                 <option value="IMAGE">Foto / Imagen</option>
                 <option value="VIDEO">Video</option>
+                <option value="NONE">Solo Texto</option>
               </select>
             </div>
           </div>
@@ -263,57 +265,124 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
         </form>
       )}
 
-      {/* Reviews Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {reviews.map((rev) => (
+      {/* Structured Table for Admin Reviews Collection Management */}
+      <div className="bg-white rounded-3xl border border-[#DFD0EC] shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-zinc-700">
+            <thead className="bg-[#F8F5FA] text-zinc-900 font-bold uppercase tracking-wider text-[10px] border-b border-[#DFD0EC]">
+              <tr>
+                <th className="p-4 pl-6">Foto / Video</th>
+                <th className="p-4">Clienta</th>
+                <th className="p-4">Ciudad</th>
+                <th className="p-4">Calificación</th>
+                <th className="p-4">Comentario / Joya</th>
+                <th className="p-4">Verificación</th>
+                <th className="p-4 text-right pr-6">Acción</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F8F5FA]">
+              {reviews.map((rev) => (
+                <tr key={rev.id} className="hover:bg-[#FAF7FC] transition">
+                  <td className="p-4 pl-6">
+                    {rev.mediaUrl ? (
+                      <div
+                        onClick={() =>
+                          setActiveMediaModal({
+                            url: rev.mediaUrl!,
+                            type: rev.mediaType,
+                            title: rev.authorName,
+                          })
+                        }
+                        className="relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer border border-[#DFD0EC] group shadow-2xs hover:scale-105 transition-transform"
+                      >
+                        {rev.mediaType === 'VIDEO' ? (
+                          <div className="w-full h-full bg-zinc-900 flex items-center justify-center relative">
+                            <video src={rev.mediaUrl} className="w-full h-full object-cover opacity-75" muted />
+                            <Play size={14} className="fill-white text-white absolute" />
+                          </div>
+                        ) : (
+                          <Image src={rev.mediaUrl} alt={rev.authorName} fill className="object-cover" />
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-zinc-400 italic">Sin multimedia</span>
+                    )}
+                  </td>
+                  <td className="p-4 font-bold text-zinc-900">{rev.authorName}</td>
+                  <td className="p-4 text-zinc-500">{rev.location || 'Ecuador'}</td>
+                  <td className="p-4">
+                    <div className="flex text-amber-400 gap-0.5">
+                      {[...Array(rev.rating)].map((_, i) => (
+                        <Star key={i} size={12} className="fill-amber-400" />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="p-4 max-w-xs">
+                    <p className="line-clamp-2 text-zinc-700 italic font-light">&ldquo;{rev.comment}&rdquo;</p>
+                    {rev.productTitle && (
+                      <span className="text-[10px] text-[#7043A0] font-bold block mt-0.5">
+                        Joya: {rev.productTitle}
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {rev.isVerified ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <CheckCircle2 size={11} /> Verificada
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-zinc-400">Regular</span>
+                    )}
+                  </td>
+                  <td className="p-4 pr-6 text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(rev.id)}
+                      className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                      title="Eliminar reseña"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal for viewing media */}
+      {activeMediaModal && (
+        <div
+          onClick={() => setActiveMediaModal(null)}
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
           <div
-            key={rev.id}
-            className="bg-white rounded-3xl border border-[#DFD0EC] p-5 shadow-xs flex flex-col justify-between space-y-3 relative"
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-[#1B1124] rounded-3xl overflow-hidden max-w-lg w-full max-h-[85vh] shadow-2xl border border-[#DFD0EC]/30 flex flex-col"
           >
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex text-amber-400 gap-0.5">
-                  {[...Array(rev.rating)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(rev.id)}
-                  className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
-                  title="Eliminar reseña"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-
-              <p className="text-xs text-zinc-700 italic">&ldquo;{rev.comment}&rdquo;</p>
-
-              {rev.mediaUrl && (
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-[#DFD0EC]">
-                  {rev.mediaType === 'VIDEO' ? (
-                    <video src={rev.mediaUrl} className="w-full h-full object-cover" muted />
-                  ) : (
-                    <Image src={rev.mediaUrl} alt={rev.authorName} fill className="object-cover" />
-                  )}
-                </div>
-              )}
+            <div className="p-4 flex items-center justify-between border-b border-white/10 text-white">
+              <span className="text-xs font-bold uppercase tracking-wider">
+                Multimedia de {activeMediaModal.title}
+              </span>
+              <button
+                onClick={() => setActiveMediaModal(null)}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <div className="pt-2 border-t border-[#F8F5FA] flex items-center justify-between text-xs">
-              <div>
-                <span className="font-bold text-zinc-900 block">{rev.authorName}</span>
-                {rev.location && <span className="text-[10px] text-zinc-400">{rev.location}</span>}
-              </div>
-              {rev.isVerified && (
-                <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  <CheckCircle2 size={11} /> Verificada
-                </span>
+            <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
+              {activeMediaModal.type === 'VIDEO' ? (
+                <video src={activeMediaModal.url} controls autoPlay className="w-full h-full object-contain" />
+              ) : (
+                <Image src={activeMediaModal.url} alt="Review Media" fill className="object-contain" />
               )}
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

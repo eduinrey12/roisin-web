@@ -1118,7 +1118,299 @@ async function main() {
     },
   });
 
-  // 11. Crear un Pedido de Demostración
+  // 11. Anillo Corona Real Amatista
+  await prisma.product.create({
+    data: {
+      title: 'Anillo Corona Real Amatista',
+      slug: 'anillo-corona-real-amatista',
+      shortDescription: 'Gema central amatista suiza corte princesa con corona de circonias en Baño de Oro 18k.',
+      description: 'Una joya digna de realeza. Acabados artesanales con engaste en bisel y pavé de microcirconias suizas de máxima refracción.',
+      basePrice: 46.00,
+      compareAtPrice: 58.00,
+      discountPercent: 20,
+      tag: 'Exclusivo',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catAnillos.id,
+      collections: {
+        create: [{ collectionId: colDiamanteMorado.id, sortOrder: 0 }],
+      },
+      images: {
+        create: IMAGES.ring2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'AN-CRA-T6',
+            price: 46.00,
+            compareAtPrice: 58.00,
+            inventory: { create: { quantity: 15 } },
+            attributes: {
+              create: [
+                { attributeValueId: valOro.id },
+                { attributeValueId: valTalla6.id },
+              ],
+            },
+          },
+          {
+            sku: 'AN-CRA-T7',
+            price: 46.00,
+            compareAtPrice: 58.00,
+            inventory: { create: { quantity: 20 } },
+            attributes: {
+              create: [
+                { attributeValueId: valOro.id },
+                { attributeValueId: valTalla7.id },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // 12. Collar Medalla Guardapelo Vintage
+  await prisma.product.create({
+    data: {
+      title: 'Collar Medalla Guardapelo Vintage',
+      slug: 'collar-medalla-guardapelo-vintage',
+      shortDescription: 'Medalla relicario ovalada grabada a mano con compartimento para foto y cadena en Plata 925.',
+      description: 'Guarda tus recuerdos más preciados siempre cerca del corazón. Relicario pulido con grabado floral clásico y cierre hermético.',
+      basePrice: 36.00,
+      compareAtPrice: 45.00,
+      tag: 'Nuevo',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catCollares.id,
+      images: {
+        create: IMAGES.necklace2.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'COL-MED-PLT-45',
+            price: 36.00,
+            compareAtPrice: 45.00,
+            inventory: { create: { quantity: 22 } },
+            attributes: {
+              create: [
+                { attributeValueId: valPlata.id },
+                { attributeValueId: valLong45.id },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // 13. Pulsera Rígida Esclava Oro 18k
+  await prisma.product.create({
+    data: {
+      title: 'Pulsera Rígida Esclava Oro 18k',
+      slug: 'pulsera-rigida-esclava-oro-18k',
+      shortDescription: 'Brazalete rígido con bisagra de seguridad y triple baño de oro amarillo de 18 kilates.',
+      description: 'Líneas limpias y presencia imponente. Su diseño ovalado se adapta anatómicamente a la muñeca con cierre de doble clic.',
+      basePrice: 58.00,
+      compareAtPrice: 70.00,
+      tag: 'Más Vendido',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catPulseras.id,
+      collections: {
+        create: [{ collectionId: colReal.id, sortOrder: 0 }],
+      },
+      images: {
+        create: IMAGES.bracelet1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'PUL-ESC-ORO',
+            price: 58.00,
+            compareAtPrice: 70.00,
+            inventory: { create: { quantity: 18 } },
+            attributes: {
+              create: [
+                { attributeValueId: valOro.id },
+                { attributeValueId: valAjustable.id },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // 14. Aretes Topos Estrella Brillante
+  await prisma.product.create({
+    data: {
+      title: 'Aretes Topos Estrella Brillante',
+      slug: 'aretes-topos-estrella-brillante',
+      shortDescription: 'Topos en Plata 925 con forma de estrella del norte y circonia facetada en el centro.',
+      description: 'Ilumina tu rostro con el brillo celestial de la estrella guía. Cómodos para el uso diario y totalmente hipoalergénicos.',
+      basePrice: 26.00,
+      compareAtPrice: 32.00,
+      tag: 'Nuevo',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catAretes.id,
+      images: {
+        create: IMAGES.earrings1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'ARE-EST-PLT',
+            price: 26.00,
+            compareAtPrice: 32.00,
+            inventory: { create: { quantity: 30 } },
+            attributes: { create: [{ attributeValueId: valPlata.id }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // 15. Gargantilla Diamante Morado Royale
+  await prisma.product.create({
+    data: {
+      title: 'Gargantilla Diamante Morado Royale',
+      slug: 'gargantilla-diamante-morado-royale',
+      shortDescription: 'Colgante de amatista corte corazón con halo de circonias y cadena veneciana de 45cm.',
+      description: 'La máxima insignia de distinción ROISIN. La gema central refleja destellos violetas y púrpuras profundos bajo cualquier luz.',
+      basePrice: 64.00,
+      compareAtPrice: 80.00,
+      discountPercent: 20,
+      tag: 'Edición Limitada',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catCollares.id,
+      collections: {
+        create: [{ collectionId: colDiamanteMorado.id, sortOrder: 0 }],
+      },
+      images: {
+        create: IMAGES.necklace1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'GAR-ROY-PLT-45',
+            price: 64.00,
+            compareAtPrice: 80.00,
+            inventory: { create: { quantity: 12 } },
+            attributes: {
+              create: [
+                { attributeValueId: valPlata.id },
+                { attributeValueId: valLong45.id },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // 16. Anillo Trilogía de Amor Eterno
+  await prisma.product.create({
+    data: {
+      title: 'Anillo Trilogía de Amor Eterno',
+      slug: 'anillo-trilogia-de-amor-eterno',
+      shortDescription: 'Tres gemas engastadas en Plata 925 representando el pasado, presente y futuro del amor.',
+      description: 'Un significado poético forjado en metales nobles. Cada gema está calibrada y pulida a mano con precisión milimétrica.',
+      basePrice: 42.00,
+      compareAtPrice: 50.00,
+      discountPercent: 16,
+      tag: 'Oferta',
+      isActive: true,
+      isFeatured: false,
+      categoryId: catAnillos.id,
+      collections: {
+        create: [{ collectionId: colPromesa.id, sortOrder: 0 }],
+      },
+      images: {
+        create: IMAGES.ring1.map((img, idx) => ({
+          url: img.url,
+          label: img.label,
+          isPrimary: img.isPrimary,
+          sortOrder: idx,
+        })),
+      },
+      optionGroupLinks: {
+        create: [{ groupId: optGroupPresentation.id }],
+      },
+      variants: {
+        create: [
+          {
+            sku: 'AN-TRI-T6',
+            price: 42.00,
+            compareAtPrice: 50.00,
+            inventory: { create: { quantity: 14 } },
+            attributes: {
+              create: [
+                { attributeValueId: valPlata.id },
+                { attributeValueId: valTalla6.id },
+              ],
+            },
+          },
+          {
+            sku: 'AN-TRI-T7',
+            price: 42.00,
+            compareAtPrice: 50.00,
+            inventory: { create: { quantity: 18 } },
+            attributes: {
+              create: [
+                { attributeValueId: valPlata.id },
+                { attributeValueId: valTalla7.id },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  // 17. Crear un Pedido de Demostración
   console.log('📦 Creando pedido de demostración...');
   const v1 = await prisma.productVariant.findFirst({ where: { productId: p1.id } });
   const v2 = await prisma.productVariant.findFirst({ where: { productId: p2.id } });

@@ -63,15 +63,12 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         {/* Centered Clean Section Title */}
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10 space-y-2">
-          <div className="inline-flex items-center justify-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#3F235F]">
-            <RoisinDiamond size={13} color="#7043A0" />
-            <span>Selección Exclusiva</span>
-            <RoisinDiamond size={13} color="#7043A0" />
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 tracking-tight">
-            Destacados
+          <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 tracking-tight flex items-center justify-center gap-2.5">
+            <RoisinDiamond size={18} color="#7043A0" />
+            <span>Destacados</span>
+            <RoisinDiamond size={18} color="#7043A0" />
           </h2>
-          <p className="text-xs text-zinc-500 font-light max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-zinc-500 font-light max-w-md mx-auto">
             Nuestras piezas más icónicas en Plata de Ley 925 y Baño de Oro 18k.
           </p>
         </div>

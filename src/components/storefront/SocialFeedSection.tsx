@@ -98,16 +98,13 @@ export default function SocialFeedSection() {
     <>
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         {/* Centered Clean Title */}
-        <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
-          <div className="inline-flex items-center justify-center gap-2 text-xs uppercase font-bold tracking-[0.3em] text-[#3F235F]">
-            <RoisinDiamond size={13} color="#7043A0" />
-            <span>Comunidad & Tendencias</span>
-            <RoisinDiamond size={13} color="#7043A0" />
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 tracking-tight">
-            Síguenos en Redes Sociales
+        <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10 space-y-2">
+          <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 tracking-tight flex items-center justify-center gap-2.5">
+            <RoisinDiamond size={18} color="#7043A0" />
+            <span>Síguenos en Redes Sociales</span>
+            <RoisinDiamond size={18} color="#7043A0" />
           </h2>
-          <p className="text-xs text-zinc-500 font-light max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-zinc-500 font-light max-w-md mx-auto">
             Únete a nuestra comunidad de Instagram y TikTok. Etiquétanos como <span className="font-bold text-[#3F235F]">@roisinjoyas</span> para compartir tu brillo.
           </p>
         </div>

@@ -14,11 +14,14 @@ interface RoisinLogoProps {
 export default function RoisinLogo({
   className = '',
   width = 160,
-  height = 56,
+  height = 54,
   theme = 'purple',
   href = '/',
 }: RoisinLogoProps) {
   const isLight = theme === 'light';
+  const logoSrc = isLight
+    ? '/branding/diapo-1/logo-white.svg'
+    : '/branding/diapo-1/logo-purple.svg';
 
   const content = (
     <div
@@ -26,17 +29,12 @@ export default function RoisinLogo({
     >
       <div className="relative flex items-center justify-center">
         <Image
-          src="/branding/diapo-1/logo-sin-sombra.svg"
+          src={logoSrc}
           alt="ROISIN Joyas"
           width={width}
           height={height}
           priority
-          className={`h-auto w-auto max-h-12 sm:max-h-14 object-contain transition-all duration-300 drop-shadow-xs ${
-            isLight
-              ? 'brightness-0 invert opacity-95 group-hover:opacity-100'
-              : 'contrast-105 group-hover:brightness-105'
-          }`}
-          style={{ width: `${width}px`, height: 'auto' }}
+          className="h-10 sm:h-12 w-auto object-contain transition-all duration-300 drop-shadow-xs"
         />
       </div>
     </div>
@@ -52,4 +50,3 @@ export default function RoisinLogo({
 
   return content;
 }
-

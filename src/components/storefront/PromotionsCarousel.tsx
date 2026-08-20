@@ -44,7 +44,7 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.7;
+      const scrollAmount = container.clientWidth * 0.8;
       container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
     }
   };
@@ -52,7 +52,7 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
   const scrollRight = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.7;
+      const scrollAmount = container.clientWidth * 0.8;
       container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
@@ -68,15 +68,15 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
   };
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 relative group/carousel">
+    <section className="max-w-[1560px] mx-auto px-2 sm:px-4 lg:px-6 relative group/carousel">
       {/* 1. Left Navigation Arrow */}
       {canScrollLeft && (
         <button
           onClick={scrollLeft}
-          className="absolute left-6 sm:left-8 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/90 hover:bg-[#552E80] text-white border border-[#DFD0EC]/60 hover:border-white shadow-xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
+          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/95 hover:bg-[#552E80] text-white shadow-2xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
           aria-label="Promoción anterior"
         >
-          <ChevronLeft size={20} className="stroke-[2.5]" />
+          <ChevronLeft size={22} className="stroke-[2.5]" />
         </button>
       )}
 
@@ -84,18 +84,18 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
       {canScrollRight && (
         <button
           onClick={scrollRight}
-          className="absolute right-6 sm:right-8 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/90 hover:bg-[#552E80] text-white border border-[#DFD0EC]/60 hover:border-white shadow-xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
+          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/95 hover:bg-[#552E80] text-white shadow-2xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
           aria-label="Promoción siguiente"
         >
-          <ChevronRight size={20} className="stroke-[2.5]" />
+          <ChevronRight size={22} className="stroke-[2.5]" />
         </button>
       )}
 
-      {/* 3. Horizontal Panoramas with Peek Layout (2 to 3 cards + partial view of next) */}
+      {/* 3. Grand Horizontal Panoramic Banners without border outlines and subtle corners */}
       <div
         ref={scrollContainerRef}
         onScroll={checkScroll}
-        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1"
+        className="flex gap-3 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1 px-1"
       >
         {promotions.map((promo) => {
           const href = getDestinationUrl(promo);
@@ -103,24 +103,24 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
             <Link
               key={promo.id}
               href={href}
-              className="group relative flex-none w-[84vw] sm:w-[calc(48%-12px)] lg:w-[calc(36%-14px)] aspect-[16/9] sm:aspect-[16/9.5] rounded-2xl overflow-hidden border border-[#DFD0EC] shadow-sm hover:shadow-2xl hover:border-[#7043A0] transition-all duration-400 bg-[#1B1124] snap-start select-none"
+              className="group relative flex-none w-[90vw] sm:w-[calc(60%-10px)] lg:w-[calc(48%-12px)] h-[220px] sm:h-[300px] lg:h-[360px] rounded-xl sm:rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-400 bg-[#1B1124] snap-start select-none"
             >
-              {/* Pure Graphic Banner Image */}
+              {/* Pure Graphic Banner Image with edge-to-edge coverage */}
               <Image
                 src={promo.imageUrl}
-                alt={promo.title || 'Promoción ROISIN'}
+                alt={promo.title || 'Banner Promocional ROISIN'}
                 fill
-                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 36vw"
-                className="object-cover object-center group-hover:scale-104 transition-transform duration-700 ease-out"
+                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 48vw"
+                className="object-cover object-center group-hover:scale-103 transition-transform duration-700 ease-out"
                 priority
               />
 
               {/* Subtle hover gradient shadow at bottom */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Luxurious Floating "Ver más" Button on Hover */}
-              <div className="absolute inset-x-0 bottom-4 sm:bottom-5 z-10 flex justify-center items-center opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out px-4 pointer-events-none">
-                <span className="inline-flex items-center gap-2 btn-purple-diamond text-xs uppercase tracking-widest font-extrabold px-6 py-2.5 rounded-full shadow-xl border border-white/30 backdrop-blur-xs">
+              {/* Floating "Ver más" Button on Hover */}
+              <div className="absolute inset-x-0 bottom-4 sm:bottom-6 z-10 flex justify-center items-center opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out px-4 pointer-events-none">
+                <span className="inline-flex items-center gap-2 btn-purple-diamond text-xs uppercase tracking-widest font-extrabold px-7 py-3 rounded-full shadow-2xl border border-white/30 backdrop-blur-xs">
                   <span>Ver más</span>
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </span>

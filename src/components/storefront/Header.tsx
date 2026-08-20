@@ -159,18 +159,18 @@ export default function Header({ user }: { user?: { email: string; role: string 
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setCollectionsMenuOpen(!collectionsMenuOpen)}
-              className={`flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl border text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl border text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer ${
                 collectionsMenuOpen
-                  ? 'bg-gradient-to-r from-[#F0E9F5] to-[#DFD0EC] border-[#7043A0] text-[#3F235F] shadow-sm ring-2 ring-[#7043A0]/20'
-                  : 'bg-gradient-to-r from-[#FAF7FC] to-[#F0E9F5] hover:from-[#F0E9F5] hover:to-[#DFD0EC] border-[#DFD0EC] text-[#3F235F] hover:border-[#7043A0] shadow-2xs hover:shadow-xs'
+                  ? 'bg-gradient-to-r from-[#2A1442] to-[#3F235F] border-amber-300/60 text-white shadow-md ring-2 ring-[#7043A0]/30'
+                  : 'bg-gradient-to-r from-[#3F235F] to-[#552E80] hover:from-[#4D2B75] hover:to-[#7043A0] border-[#552E80] hover:border-[#DFD0EC] text-white shadow-sm hover:shadow-md'
               }`}
               aria-label="Ver Colecciones y Categorías"
             >
-              <Gem size={16} className="text-[#7043A0] drop-shadow-2xs" />
+              <Gem size={16} className="text-amber-300 drop-shadow-2xs" />
               <span className="hidden xl:inline">Colecciones</span>
               <ChevronDown
                 size={14}
-                className={`text-[#7043A0] transition-transform duration-200 ${
+                className={`text-[#DFD0EC] transition-transform duration-200 ${
                   collectionsMenuOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -294,23 +294,23 @@ export default function Header({ user }: { user?: { email: string; role: string 
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="p-2.5 text-emerald-800 hover:text-emerald-900 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200 hover:border-emerald-400 rounded-2xl transition-all shadow-2xs hover:shadow-xs active:scale-95"
+            className="p-2.5 text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 border border-emerald-500 rounded-2xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center cursor-pointer"
             title="Asesoría personalizada por WhatsApp"
             aria-label="Asesoría WhatsApp"
           >
-            <MessageCircle size={19} className="drop-shadow-2xs" />
+            <MessageCircle size={19} className="drop-shadow-2xs text-white" />
           </a>
 
           {/* 3. User Login / Account Icon Button */}
           <Link
             href={user ? '/cuenta' : '/login'}
-            className="p-2.5 text-[#3F235F] hover:text-[#221235] bg-gradient-to-r from-[#FAF7FC] to-[#F0E9F5] hover:from-[#F0E9F5] hover:to-[#DFD0EC] border border-[#DFD0EC] hover:border-[#7043A0] rounded-2xl transition-all shadow-2xs hover:shadow-xs active:scale-95 flex items-center gap-1.5"
+            className="p-2.5 text-white bg-gradient-to-r from-[#3F235F] to-[#552E80] hover:from-[#4D2B75] hover:to-[#7043A0] border border-[#552E80] hover:border-[#DFD0EC] rounded-2xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer"
             title={user ? 'Mi Cuenta' : 'Iniciar Sesión'}
             aria-label="Mi Cuenta"
           >
-            <User size={19} className="text-[#7043A0]" />
+            <User size={19} className="text-[#DFD0EC]" />
             {user && (
-              <span className="hidden lg:inline text-xs font-bold text-[#3F235F]">
+              <span className="hidden lg:inline text-xs font-bold text-white">
                 {user.role === 'ADMIN' ? 'Admin' : 'Mi Cuenta'}
               </span>
             )}
@@ -319,7 +319,7 @@ export default function Header({ user }: { user?: { email: string; role: string 
           {/* 4. Carrito Trigger Button (Luminous Purple Diamond) */}
           <button
             onClick={toggleCart}
-            className="relative flex items-center gap-2 p-2.5 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#3F235F] via-[#552E80] to-[#7043A0] hover:from-[#4D2B75] hover:to-[#8150B5] text-white border border-[#552E80] hover:border-[#DFD0EC] rounded-2xl transition-all duration-200 group shadow-xs hover:shadow-md cursor-pointer active:scale-95"
+            className="relative flex items-center gap-2 p-2.5 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#3F235F] via-[#552E80] to-[#7043A0] hover:from-[#4D2B75] hover:to-[#8150B5] text-white border border-[#552E80] hover:border-[#DFD0EC] rounded-2xl transition-all duration-200 group shadow-sm hover:shadow-md cursor-pointer active:scale-95"
             aria-label="Carrito de compras"
           >
             <ShoppingBag

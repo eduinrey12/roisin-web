@@ -39,7 +39,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="space-y-12 sm:space-y-16 pb-20 overflow-x-hidden">
+    <div className="space-y-10 sm:space-y-14 pb-20 overflow-x-hidden">
       {/* 1. TOP CATEGORY BAR (Centered alignment on all viewports) */}
       <section className="border-b border-[#DFD0EC] bg-[#F8F5FA] py-2.5 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
@@ -76,14 +76,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. DYNAMIC PROMOTIONAL BANNER CAROUSEL (No title, clean graphic banner, ver más hover, side arrows) */}
+      {/* 2. DYNAMIC PROMOTIONAL BANNER CAROUSEL (Directly under category bar with grand horizontal scale) */}
       {promotions.length > 0 && (
-        <ScrollReveal direction="up">
-          <PromotionsCarousel promotions={promotions} />
-        </ScrollReveal>
+        <div className="-mt-4 sm:-mt-6">
+          <ScrollReveal direction="up">
+            <PromotionsCarousel promotions={promotions} />
+          </ScrollReveal>
+        </div>
       )}
 
-      {/* 3. BRAND VALUE INFORMATION CARDS (Titles only, deep luxury purple diamond background) */}
+      {/* 3. BRAND VALUE INFORMATION CARDS (Cohesive luxury style) */}
       <ScrollReveal direction="up" delay={100}>
         <BrandPillarsSection />
       </ScrollReveal>

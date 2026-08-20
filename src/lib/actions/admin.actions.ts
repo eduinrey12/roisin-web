@@ -33,6 +33,7 @@ import {
 import { productSchema, couponSchema } from '@/lib/validations';
 import { OrderStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { serializePlain } from '@/lib/utils';
 
 // ==================== PRODUCT ACTIONS ====================
 export async function adminCreateProductAction(formData: unknown) {
@@ -43,11 +44,12 @@ export async function adminCreateProductAction(formData: unknown) {
     revalidatePath('/admin/productos');
     revalidatePath('/productos');
     revalidatePath('/');
-    return { success: true, product };
+    return { success: true, product: serializePlain(product) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear producto' };
   }
 }
+
 
 export async function adminUpdateProductStatusAction(id: string, isActive: boolean) {
   try {
@@ -88,7 +90,7 @@ export async function adminCreateCategoryAction(data: {
     revalidatePath('/admin/categorias');
     revalidatePath('/productos');
     revalidatePath('/');
-    return { success: true, category };
+    return { success: true, category: serializePlain(category) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear categoría' };
   }
@@ -104,7 +106,7 @@ export async function adminUpdateCategoryAction(
     revalidatePath('/admin/categorias');
     revalidatePath('/productos');
     revalidatePath('/');
-    return { success: true, category };
+    return { success: true, category: serializePlain(category) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar categoría' };
   }
@@ -137,7 +139,7 @@ export async function adminCreateCollectionAction(data: {
     revalidatePath('/admin/colecciones');
     revalidatePath('/');
     revalidatePath('/productos');
-    return { success: true, collection };
+    return { success: true, collection: serializePlain(collection) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear colección' };
   }
@@ -160,7 +162,7 @@ export async function adminUpdateCollectionAction(
     revalidatePath('/admin/colecciones');
     revalidatePath('/');
     revalidatePath('/productos');
-    return { success: true, collection };
+    return { success: true, collection: serializePlain(collection) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar colección' };
   }
@@ -195,7 +197,7 @@ export async function adminCreatePromotionAction(data: {
     const promotion = await adminCreatePromotion(data);
     revalidatePath('/admin/promociones');
     revalidatePath('/');
-    return { success: true, promotion };
+    return { success: true, promotion: serializePlain(promotion) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear promoción' };
   }
@@ -220,7 +222,7 @@ export async function adminUpdatePromotionAction(
     const promotion = await adminUpdatePromotion(id, data);
     revalidatePath('/admin/promociones');
     revalidatePath('/');
-    return { success: true, promotion };
+    return { success: true, promotion: serializePlain(promotion) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar promoción' };
   }
@@ -255,7 +257,7 @@ export async function adminCreateReviewAction(data: {
     const review = await adminCreateReview(data);
     revalidatePath('/admin/resenas');
     revalidatePath('/');
-    return { success: true, review };
+    return { success: true, review: serializePlain(review) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear reseña' };
   }
@@ -281,7 +283,7 @@ export async function adminUpdateReviewAction(
     const review = await adminUpdateReview(id, data);
     revalidatePath('/admin/resenas');
     revalidatePath('/');
-    return { success: true, review };
+    return { success: true, review: serializePlain(review) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar reseña' };
   }
@@ -311,7 +313,7 @@ export async function adminCreateFaqAction(data: {
     const faq = await adminCreateFaq(data);
     revalidatePath('/admin/faqs');
     revalidatePath('/');
-    return { success: true, faq };
+    return { success: true, faq: serializePlain(faq) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear FAQ' };
   }
@@ -332,11 +334,12 @@ export async function adminUpdateFaqAction(
     const faq = await adminUpdateFaq(id, data);
     revalidatePath('/admin/faqs');
     revalidatePath('/');
-    return { success: true, faq };
+    return { success: true, faq: serializePlain(faq) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar FAQ' };
   }
 }
+
 
 export async function adminDeleteFaqAction(id: string) {
   try {
@@ -361,7 +364,7 @@ export async function adminCreateShippingRegionAction(data: {
     const region = await adminCreateShippingRegion(data);
     revalidatePath('/admin/envios');
     revalidatePath('/checkout');
-    return { success: true, region };
+    return { success: true, region: serializePlain(region) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear zona de envío' };
   }
@@ -376,7 +379,7 @@ export async function adminUpdateShippingRegionAction(
     const region = await adminUpdateShippingRegion(id, data);
     revalidatePath('/admin/envios');
     revalidatePath('/checkout');
-    return { success: true, region };
+    return { success: true, region: serializePlain(region) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar zona de envío' };
   }
@@ -401,7 +404,7 @@ export async function adminUpdateOrderStatusAction(orderId: string, status: Orde
     const order = await adminUpdateOrderStatus(orderId, status);
     revalidatePath('/admin/pedidos');
     revalidatePath('/admin');
-    return { success: true, order };
+    return { success: true, order: serializePlain(order) };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -417,7 +420,7 @@ export async function adminCreateCouponAction(formData: unknown) {
       validUntil: data.validUntil ? new Date(data.validUntil) : undefined,
     });
     revalidatePath('/admin/cupones');
-    return { success: true, coupon };
+    return { success: true, coupon: serializePlain(coupon) };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -444,7 +447,7 @@ export async function adminAdjustStockAction(variantId: string, quantityChange: 
       'MANUAL_ADJUSTMENT'
     );
     revalidatePath('/admin/inventario');
-    return { success: true, updated };
+    return { success: true, updated: serializePlain(updated) };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -543,7 +546,7 @@ export async function adminCreatePresentationOptionAction(formData: {
     revalidatePath('/admin/presentaciones');
     revalidatePath('/productos');
     revalidatePath('/');
-    return { success: true, option };
+    return { success: true, option: serializePlain(option) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear opción de presentación' };
   }
@@ -569,7 +572,7 @@ export async function adminUpdatePresentationOptionAction(
     revalidatePath('/admin/presentaciones');
     revalidatePath('/productos');
     revalidatePath('/');
-    return { success: true, option };
+    return { success: true, option: serializePlain(option) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar opción' };
   }
@@ -588,6 +591,7 @@ export async function adminDeletePresentationOptionAction(id: string) {
     return { success: false, error: err.message || 'Error al eliminar opción' };
   }
 }
+
 
 // ==================== HOME SECTIONS ORDER & VISIBILITY ACTIONS ====================
 export async function adminUpdateHomeSectionsOrderAction(sectionUpdates: { id: string; sortOrder: number }[]) {

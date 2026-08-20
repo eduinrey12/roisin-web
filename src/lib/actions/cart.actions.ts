@@ -10,6 +10,7 @@ import {
 import { getCurrentUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+import { serializePlain } from '@/lib/utils';
 
 async function getTokens() {
   const cookieStore = await cookies();
@@ -33,7 +34,7 @@ async function getTokens() {
 export async function fetchCartAction() {
   const { guestToken, userId } = await getTokens();
   const cart = await getOrCreateCart(guestToken, userId);
-  return { success: true, cart };
+  return { success: true, cart: serializePlain(cart) };
 }
 
 export async function addToCartAction(
@@ -45,7 +46,7 @@ export async function addToCartAction(
   try {
     const { guestToken, userId } = await getTokens();
     const cart = await addItemToCart(guestToken, userId, variantId, quantity, optionIds, dedication);
-    return { success: true, cart };
+    return { success: true, cart: serializePlain(cart) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al agregar al carrito' };
   }
@@ -56,7 +57,7 @@ export async function updateQuantityAction(itemId: string, quantity: number) {
     await updateItemQuantity(itemId, quantity);
     const { guestToken, userId } = await getTokens();
     const cart = await getCart(guestToken, userId);
-    return { success: true, cart };
+    return { success: true, cart: serializePlain(cart) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al actualizar cantidad' };
   }
@@ -67,8 +68,9 @@ export async function removeItemAction(itemId: string) {
     await removeItemFromCart(itemId);
     const { guestToken, userId } = await getTokens();
     const cart = await getCart(guestToken, userId);
-    return { success: true, cart };
+    return { success: true, cart: serializePlain(cart) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al eliminar producto' };
   }
 }
+

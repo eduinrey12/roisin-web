@@ -11,6 +11,7 @@ import { checkoutSchema } from '@/lib/validations';
 import { getCurrentUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { PaymentMethod } from '@prisma/client';
+import { serializePlain } from '@/lib/utils';
 
 export async function validateCouponAction(code: string) {
   try {
@@ -48,7 +49,7 @@ export async function selectPaymentMethodAction(
 ) {
   try {
     const payment = await createOrUpdatePayment(orderId, method);
-    return { success: true, payment };
+    return { success: true, payment: serializePlain(payment) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al registrar método de pago' };
   }
@@ -66,7 +67,7 @@ export async function processCardPaymentAction(
 ) {
   try {
     const payment = await processCardPayment(orderId, cardData);
-    return { success: true, payment };
+    return { success: true, payment: serializePlain(payment) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al procesar el pago con tarjeta' };
   }
@@ -79,8 +80,9 @@ export async function submitEvidenceAction(
 ) {
   try {
     const payment = await submitPaymentEvidence(orderId, evidenceUrl, referenceNumber);
-    return { success: true, payment };
+    return { success: true, payment: serializePlain(payment) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al enviar comprobante' };
   }
 }
+

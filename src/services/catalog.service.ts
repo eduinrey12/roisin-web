@@ -65,23 +65,77 @@ export async function getMaxProductPrice() {
   return maxProduct ? Math.ceil(Number(maxProduct.basePrice)) : 100;
 }
 
-export async function getFeaturedProducts(limit = 12) {
-  return prisma.product.findMany({
-    where: { isActive: true, isFeatured: true },
-    include: {
-      images: { orderBy: { sortOrder: 'asc' } },
-      variants: {
-        where: { isActive: true },
-        include: { inventory: true },
+export async function getFeaturedProducts(limit = 6) {
+  try {
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        variants: {
+          where: { isActive: true },
+          include: {
+            inventory: true,
+            orderItems: { select: { quantity: true } },
+            cartItems: { select: { quantity: true } },
+          },
+        },
+        category: true,
+        collections: {
+          include: { collection: true },
+        },
       },
-      category: true,
-      collections: {
-        include: { collection: true },
+    });
+
+    // Compute dynamic popularity ranking: Top Sales (weight 5x) + Cart Activity (weight 2x) + isFeatured flag (weight 3x)
+    const scoredProducts = products.map((p) => {
+      let salesCount = 0;
+      let cartCount = 0;
+
+      for (const variant of p.variants) {
+        for (const oi of (variant as any).orderItems || []) {
+          salesCount += oi.quantity || 1;
+        }
+        for (const ci of (variant as any).cartItems || []) {
+          cartCount += ci.quantity || 1;
+        }
+      }
+
+      const popularityScore = salesCount * 5 + cartCount * 2 + (p.isFeatured ? 3 : 0);
+
+      return {
+        product: p,
+        popularityScore,
+        salesCount,
+      };
+    });
+
+    // Sort descending by popularity score, fallback to createdAt desc
+    scoredProducts.sort((a, b) => {
+      if (b.popularityScore !== a.popularityScore) {
+        return b.popularityScore - a.popularityScore;
+      }
+      return new Date(b.product.createdAt).getTime() - new Date(a.product.createdAt).getTime();
+    });
+
+    return scoredProducts.slice(0, limit).map((sp) => sp.product);
+  } catch {
+    return prisma.product.findMany({
+      where: { isActive: true },
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        variants: {
+          where: { isActive: true },
+          include: { inventory: true },
+        },
+        category: true,
+        collections: {
+          include: { collection: true },
+        },
       },
-    },
-    take: limit,
-    orderBy: { createdAt: 'desc' },
-  });
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
 
 export async function getNewArrivals(limit = 8) {

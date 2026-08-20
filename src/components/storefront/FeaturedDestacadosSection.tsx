@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Sparkles, Gem } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import QuickViewModal from './QuickViewModal';
 
@@ -34,9 +34,9 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
 
   if (!products || products.length === 0) return null;
 
-  // Guarantee 7 products (1 top featured + 6 secondary)
+  // Bento Grid: 1 Top Featured (#1 best seller / most popular) + 5 Secondary products (#2 to #6) + 1 'Ver Más' Card (Total 7 slots)
   const mainProduct = products[0];
-  const secondaryProducts = products.slice(1, 7);
+  const secondaryProducts = products.slice(1, 6);
 
   const renderProductImage = (p: ProductItem) => {
     return (
@@ -69,11 +69,11 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
             <RoisinDiamond size={18} color="#7043A0" />
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 font-light max-w-md mx-auto">
-            Nuestras piezas más icónicas en Plata de Ley 925 y Baño de Oro 18k.
+            Nuestras piezas más icónicas en Plata de Ley 925 y Baño de Oro 18k con mayor preferencia.
           </p>
         </div>
 
-        {/* Bento Grid: 1 Large Card (Spanning 2 vertical spaces) + 6 Compact Cards */}
+        {/* Bento Grid: 1 Large Card (Left) + 5 Compact Product Cards + 1 'Ver Más' Card (Right 3x2 Grid) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
           {/* 1. Large Featured Card (Left Column, spans 5 cols out of 12 on large screens) */}
           {mainProduct && (
@@ -118,7 +118,7 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
               <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-4">
                 <div className="space-y-1.5">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-[#DFD0EC]/70">
-                    Joya Principal
+                    #1 Más Vendida
                   </span>
                   <h3 className="font-sans text-lg sm:text-xl font-extrabold text-white leading-snug group-hover:text-[#DFD0EC] transition-colors">
                     {mainProduct.title}
@@ -161,7 +161,7 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
             </div>
           )}
 
-          {/* 2. Secondary 6 Compact Cards (Right Column, spans 7 cols out of 12 on large screens: 3x2 grid) */}
+          {/* 2. Secondary 5 Products + 1 'Ver Más' Card (Right Column, spans 7 cols out of 12: 3x2 grid) */}
           <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4.5">
             {secondaryProducts.map((p) => {
               const price = Number(p.basePrice);
@@ -253,18 +253,35 @@ export default function FeaturedDestacadosSection({ products }: FeaturedDestacad
                 </div>
               );
             })}
-          </div>
-        </div>
 
-        {/* Bottom Catalog Link */}
-        <div className="text-center pt-8">
-          <Link
-            href="/productos"
-            className="inline-flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-[#3F235F] hover:text-[#7043A0] bg-[#F8F5FA] hover:bg-[#F0E9F5] px-6 py-3 rounded-full border border-[#DFD0EC] transition-all shadow-2xs hover:shadow-xs group"
-          >
-            <span>Ver Todas las Joyas Destacadas</span>
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+            {/* 6th Slot: Luxury "Ver Más Joyas" CTA Card */}
+            <Link
+              href="/productos"
+              className="group relative flex flex-col justify-between rounded-2xl overflow-hidden bg-gradient-to-br from-[#2A1442] via-[#3F235F] to-[#1B1124] text-white border border-[#552E80] shadow-2xs hover:shadow-xl hover:border-[#DFD0EC] transition-all duration-300 p-4 text-center select-none"
+            >
+              <div className="flex-1 flex flex-col items-center justify-center space-y-2 py-2">
+                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300 group-hover:scale-110 group-hover:bg-white/20 transition-all shadow-sm">
+                  <Gem size={20} className="drop-shadow-2xs" />
+                </div>
+                <span className="text-[9.5px] uppercase font-bold tracking-widest text-[#DFD0EC]/70 block">
+                  Catálogo
+                </span>
+                <h4 className="font-sans text-xs sm:text-sm font-bold text-white leading-snug">
+                  Ver Más Joyas Destacadas
+                </h4>
+                <p className="text-[10px] text-zinc-300 font-light line-clamp-2">
+                  Explora toda nuestra colección exclusiva en Plata 925.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <span className="w-full inline-flex items-center justify-center gap-1.5 btn-purple-diamond text-[10.5px] uppercase font-bold tracking-wider py-2 px-3 rounded-xl shadow-md group-hover:translate-y-[-1px] transition-transform">
+                  <span>Explorar</span>
+                  <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                </span>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 

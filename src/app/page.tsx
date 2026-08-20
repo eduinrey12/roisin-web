@@ -34,7 +34,7 @@ export default async function HomePage() {
   ] = await Promise.all([
     getCategories(),
     getPromotions(),
-    getFeaturedProducts(7),
+    getFeaturedProducts(6),
     getNewArrivals(8),
     getReviews(6),
     getFaqs(),

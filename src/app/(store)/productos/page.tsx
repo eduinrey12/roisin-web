@@ -20,6 +20,7 @@ export default async function CatalogPage({
   searchParams: Promise<{
     category?: string;
     collection?: string;
+    promo?: string;
     ofertas?: string;
     q?: string;
     sort?: string;
@@ -27,12 +28,13 @@ export default async function CatalogPage({
     maxPrice?: string;
   }>;
 }) {
-  const { category, collection, ofertas, q, sort, minPrice, maxPrice } = await searchParams;
+  const { category, collection, promo, ofertas, q, sort, minPrice, maxPrice } = await searchParams;
 
   const [productsResult, categories, collections, maxPriceInDb] = await Promise.all([
     getProducts({
       categorySlug: category,
       collectionSlug: collection,
+      promoId: promo,
       onlyDiscounts: ofertas === 'true',
       query: q,
       sort: sort as any,

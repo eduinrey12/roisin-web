@@ -14,6 +14,12 @@ import {
   adminCreatePromotion,
   adminUpdatePromotion,
   adminDeletePromotion,
+  adminCreateReview,
+  adminUpdateReview,
+  adminDeleteReview,
+  adminCreateFaq,
+  adminUpdateFaq,
+  adminDeleteFaq,
 } from '@/services/catalog.service';
 import { adminUpdateOrderStatus } from '@/services/order.service';
 import { adminCreateCoupon, adminToggleCoupon } from '@/services/coupon.service';
@@ -176,11 +182,12 @@ export async function adminDeleteCollectionAction(id: string) {
 // ==================== PROMOTION ACTIONS ====================
 export async function adminCreatePromotionAction(data: {
   title: string;
-  subtitle?: string;
-  badge?: string;
-  discountText?: string;
   imageUrl: string;
-  targetUrl: string;
+  targetType?: 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL';
+  collectionId?: string | null;
+  productIds?: string[];
+  discountPercent?: number | null;
+  targetUrl?: string;
   sortOrder?: number;
 }) {
   try {
@@ -198,10 +205,11 @@ export async function adminUpdatePromotionAction(
   id: string,
   data: {
     title?: string;
-    subtitle?: string;
-    badge?: string;
-    discountText?: string;
     imageUrl?: string;
+    targetType?: 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL';
+    collectionId?: string | null;
+    productIds?: string[];
+    discountPercent?: number | null;
     targetUrl?: string;
     sortOrder?: number;
     isActive?: boolean;
@@ -227,6 +235,118 @@ export async function adminDeletePromotionAction(id: string) {
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al eliminar promoción' };
+  }
+}
+
+// ==================== REVIEW ACTIONS ====================
+export async function adminCreateReviewAction(data: {
+  authorName: string;
+  location?: string;
+  rating?: number;
+  comment: string;
+  mediaUrl?: string;
+  mediaType?: 'IMAGE' | 'VIDEO' | 'NONE';
+  productTitle?: string;
+  isVerified?: boolean;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const review = await adminCreateReview(data);
+    revalidatePath('/admin/resenas');
+    revalidatePath('/');
+    return { success: true, review };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear reseña' };
+  }
+}
+
+export async function adminUpdateReviewAction(
+  id: string,
+  data: {
+    authorName?: string;
+    location?: string;
+    rating?: number;
+    comment?: string;
+    mediaUrl?: string;
+    mediaType?: 'IMAGE' | 'VIDEO' | 'NONE';
+    productTitle?: string;
+    isVerified?: boolean;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  try {
+    await requireAdmin();
+    const review = await adminUpdateReview(id, data);
+    revalidatePath('/admin/resenas');
+    revalidatePath('/');
+    return { success: true, review };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar reseña' };
+  }
+}
+
+export async function adminDeleteReviewAction(id: string) {
+  try {
+    await requireAdmin();
+    await adminDeleteReview(id);
+    revalidatePath('/admin/resenas');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar reseña' };
+  }
+}
+
+// ==================== FAQ ACTIONS ====================
+export async function adminCreateFaqAction(data: {
+  question: string;
+  answer: string;
+  category?: string;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const faq = await adminCreateFaq(data);
+    revalidatePath('/admin/faqs');
+    revalidatePath('/');
+    return { success: true, faq };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear FAQ' };
+  }
+}
+
+export async function adminUpdateFaqAction(
+  id: string,
+  data: {
+    question?: string;
+    answer?: string;
+    category?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  try {
+    await requireAdmin();
+    const faq = await adminUpdateFaq(id, data);
+    revalidatePath('/admin/faqs');
+    revalidatePath('/');
+    return { success: true, faq };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar FAQ' };
+  }
+}
+
+export async function adminDeleteFaqAction(id: string) {
+  try {
+    await requireAdmin();
+    await adminDeleteFaq(id);
+    revalidatePath('/admin/faqs');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar FAQ' };
   }
 }
 

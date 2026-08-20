@@ -65,6 +65,9 @@ async function main() {
   await prisma.productVariant.deleteMany({});
   await prisma.productImage.deleteMany({});
   await prisma.product.deleteMany({});
+  await prisma.promotionProduct.deleteMany({});
+  await prisma.review.deleteMany({});
+  await prisma.faq.deleteMany({});
   await prisma.promotion.deleteMany({});
   await prisma.collection.deleteMany({});
   await prisma.category.deleteMany({});
@@ -222,39 +225,170 @@ async function main() {
     },
   });
 
-  // 6. Promociones / Banners
+  // 6. Promociones / Banners (Pure Artwork with Collection & Product Destinations)
   console.log('📢 Creando promociones...');
   await prisma.promotion.createMany({
     data: [
       {
-        title: 'Semana del Amor & Diamante Morado',
-        subtitle: 'Hasta 30% OFF en piezas seleccionadas con estuche de lujo incluido.',
-        targetUrl: '/productos?descuentos=true',
-        badge: 'OFERTA ESPECIAL',
-        discountText: 'Hasta 30% OFF',
-        imageUrl: IMAGES.ring1[0].url,
+        title: 'Colección Diamante Morado 2026',
+        imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=1200&auto=format&fit=crop',
+        targetType: 'COLLECTION',
+        collectionId: colDiamanteMorado.id,
+        targetUrl: `/productos?collection=${colDiamanteMorado.slug}`,
+        discountPercent: 20,
         isActive: true,
         sortOrder: 0,
       },
       {
-        title: 'Colección Real en Oro 18k',
-        subtitle: 'Brillo perpetuo con garantía de por vida en kilataje certificado.',
-        targetUrl: '/productos?category=collares',
-        badge: 'NUEVA TEMPORADA',
-        discountText: 'Oro 18k Certificado',
-        imageUrl: IMAGES.necklace2[0].url,
+        title: 'Alta Joyería en Baño de Oro 18k Real',
+        imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=1200&auto=format&fit=crop',
+        targetType: 'COLLECTION',
+        collectionId: colReal.id,
+        targetUrl: `/productos?collection=${colReal.slug}`,
+        discountPercent: 15,
         isActive: true,
         sortOrder: 1,
       },
       {
-        title: 'Pulseras Tennis de Alta Joyería',
-        subtitle: 'Circonias suizas con engaste artesanal a mano.',
-        targetUrl: '/productos?category=pulseras',
-        badge: 'MÁS VENDIDOS',
-        discountText: 'Circonia Suiza',
-        imageUrl: IMAGES.bracelet1[0].url,
+        title: 'Especial Anillos de Promesa & Compromiso',
+        imageUrl: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=1200&auto=format&fit=crop',
+        targetType: 'COLLECTION',
+        collectionId: colPromesa.id,
+        targetUrl: `/productos?collection=${colPromesa.slug}`,
+        discountPercent: 25,
         isActive: true,
         sortOrder: 2,
+      },
+      {
+        title: 'Pulseras Tennis & Candongas de Lujo',
+        imageUrl: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=1200&auto=format&fit=crop',
+        targetType: 'COLLECTION',
+        collectionId: colDiamanteMorado.id,
+        targetUrl: `/productos?collection=${colDiamanteMorado.slug}`,
+        discountPercent: 10,
+        isActive: true,
+        sortOrder: 3,
+      },
+    ],
+  });
+
+  // 7. Reseñas y Testimonios con Fotos y Videos
+  console.log('⭐ Creando reseñas de clientas...');
+  await prisma.review.createMany({
+    data: [
+      {
+        authorName: 'Camila Mendoza',
+        location: 'Guayaquil, Ecuador',
+        rating: 5,
+        comment: 'Compré el anillo solitario en plata 925 y el brillo es sencillamente espectacular. La presentación para regalo superó mis expectativas y llegó en 24 horas a Guayaquil.',
+        mediaUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Anillo Solitario Diamante Morado',
+        isVerified: true,
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        authorName: 'Valeria Santamaría',
+        location: 'Quito, Ecuador',
+        rating: 5,
+        comment: 'La pulsera tennis tiene un acabado finísimo y un peso perfecto. Me ayudaron con la medida por WhatsApp y la atención fue sumamente cálida y atenta.',
+        mediaUrl: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Pulsera Tennis Circonia Suiza',
+        isVerified: true,
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        authorName: 'Sofía Noboa',
+        location: 'Cuenca, Ecuador',
+        rating: 5,
+        comment: 'Los aretes huggies no me los quito para nada; son súper cómodos, no pesan y no pierden el brillo. 100% recomendados para cualquier ocasión.',
+        mediaUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Aretes Candonga Huggies Oro 18k',
+        isVerified: true,
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        authorName: 'Doménica Alarcón',
+        location: 'Samborondón, Ecuador',
+        rating: 5,
+        comment: 'El empaque rígido con lazo morado y la tarjeta con el mensaje que escribí para mi novia quedó impecable. Un regalo 10/10.',
+        mediaUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Gargantilla Diamante Morado',
+        isVerified: true,
+        sortOrder: 3,
+        isActive: true,
+      },
+      {
+        authorName: 'Andrea Carrera',
+        location: 'Manta, Ecuador',
+        rating: 5,
+        comment: 'Pedí el collar girasol para el cumpleaños de mi mamá y le fascinó. La calidad de la plata y el certificado le dan mucha confianza a la compra.',
+        mediaUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Collar Girasol Esmaltado',
+        isVerified: true,
+        sortOrder: 4,
+        isActive: true,
+      },
+      {
+        authorName: 'Paulina Velasteguí',
+        location: 'Ambato, Ecuador',
+        rating: 5,
+        comment: 'Llegó rapidísimo por Servientrega y todo súper bien embalado. Las joyas en persona son aún más hermosas que en las fotos.',
+        mediaUrl: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop',
+        mediaType: 'IMAGE',
+        productTitle: 'Brazalete Infinito Plata 925',
+        isVerified: true,
+        sortOrder: 5,
+        isActive: true,
+      },
+    ],
+  });
+
+  // 8. Preguntas Frecuentes (FAQ)
+  console.log('❓ Creando preguntas frecuentes...');
+  await prisma.faq.createMany({
+    data: [
+      {
+        question: '¿Qué garantía y autenticidad tienen las joyas de ROISIN?',
+        answer: 'Todas nuestras piezas están forjadas en auténtica Plata de Ley 925 contrastada y baños de Oro de 18 kilates hipoalergénicos (libres de níquel y plomo). Cada joya incluye sello de garantía y guía de cuidado para preservar su brillo de por vida.',
+        category: 'Garantía & Materiales',
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        question: '¿Cómo funciona la dedicatoria y el empaque de regalo?',
+        answer: 'Al seleccionar tu joya, puedes elegir la presentación de regalo y escribir una dedicatoria personalizada. Nosotros imprimimos tu mensaje en una tarjeta especial de alta calidad y la colocamos dentro de la caja rígida con lazo morado de seda, lista para entregar o enviar directamente a esa persona especial.',
+        category: 'Empaques & Regalos',
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        question: '¿Cuáles son los tiempos y costos de envío en Ecuador?',
+        answer: 'Realizamos entregas a todo el país: Guayaquil y Samborondón ($3, entrega el mismo día o 24h), Resto del País por Servientrega ($6, entrega en 24h a 48h) y Galápagos por carga aérea ($12, 3 a 5 días). En compras superiores a $70 el envío nacional es gratis.',
+        category: 'Envíos & Tiempos',
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        question: '¿Cómo elijo mi talla correcta de anillo?',
+        answer: 'En la página de cada anillo dispones de una guía interactiva de tallas con instrucciones paso a paso para medir el diámetro interior de un anillo actual o el contorno de tu dedo. Si tienes dudas, puedes escribirnos por WhatsApp y te asesoramos al instante.',
+        category: 'Tallas & Medidas',
+        sortOrder: 3,
+        isActive: true,
+      },
+      {
+        question: '¿Cuáles son las formas de pago disponibles?',
+        answer: 'Aceptamos transferencias bancarias directas (Banco Pichincha, Banco Guayaquil, Produbanco), depósitos, tarjetas de crédito/débito y pagos contra entrega para la ciudad de Guayaquil.',
+        category: 'Pagos & Seguridad',
+        sortOrder: 4,
+        isActive: true,
       },
     ],
   });

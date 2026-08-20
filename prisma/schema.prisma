@@ -37,6 +37,7 @@ model Collection {
   bannerUrl   String?
   isActive    Boolean             @default(true)
   products    CollectionProduct[]
+  promotions  Promotion[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -72,6 +73,7 @@ model Product {
   categoryId       String
   category         Category                       @relation(fields: [categoryId], references: [id])
   collections      CollectionProduct[]
+  promotionLinks   PromotionProduct[]
   images           ProductImage[]
   variants         ProductVariant[]
   optionGroupLinks ProductOptionGroupAssignment[]
@@ -430,21 +432,46 @@ model Payment {
 // Promotions & Coupons
 // -----------------------------------------------------------------------------
 
+enum PromotionTargetType {
+  COLLECTION
+  PRODUCTS
+  CUSTOM_URL
+}
+
 model Promotion {
-  id           String   @id @default(uuid())
-  title        String
-  subtitle     String?
-  badge        String?  // e.g. "Oferta Especial", "Nueva Colección"
-  discountText String?  // e.g. "Hasta 25% OFF", "Envío Gratis"
-  imageUrl     String
-  targetUrl    String   // URL a redireccionar al hacer clic
-  sortOrder    Int      @default(0)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String               @id @default(uuid())
+  title           String               // Nombre interno administrativo (no se muestra sobre la imagen)
+  subtitle        String?              // Deprecado (opcional)
+  badge           String?              // Deprecado (opcional)
+  discountText    String?              // Deprecado (opcional)
+  imageUrl        String               @db.Text // Banner con todo el diseño gráfico
+  targetType      PromotionTargetType  @default(COLLECTION)
+  collectionId    String?
+  collection      Collection?          @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  products        PromotionProduct[]
+  discountPercent Int?                 // Descuento aplicable (opcional)
+  targetUrl       String?              @db.Text
+  sortOrder       Int                  @default(0)
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([isActive])
   @@index([sortOrder])
+  @@index([collectionId])
+}
+
+model PromotionProduct {
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@id([promotionId, productId])
+  @@index([promotionId])
+  @@index([productId])
 }
 
 model Coupon {
@@ -461,6 +488,53 @@ model Coupon {
 
   @@index([code])
   @@index([isActive])
+}
+
+// -----------------------------------------------------------------------------
+// Customer Reviews & Testimonials
+// -----------------------------------------------------------------------------
+
+enum ReviewMediaType {
+  IMAGE
+  VIDEO
+  NONE
+}
+
+model Review {
+  id           String          @id @default(uuid())
+  authorName   String
+  location     String?         // e.g. "Guayaquil, Ecuador"
+  rating       Int             @default(5)
+  comment      String          @db.Text
+  mediaUrl     String?         @db.Text // Foto o video subido por admin
+  mediaType    ReviewMediaType @default(IMAGE)
+  productTitle String?         // Joya referenciada
+  isVerified   Boolean         @default(true)
+  sortOrder    Int             @default(0)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+// -----------------------------------------------------------------------------
+// Frequently Asked Questions (FAQ)
+// -----------------------------------------------------------------------------
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String   @db.Text
+  answer    String   @db.Text
+  category  String?  @default("General") // e.g. "Envíos", "Garantía", "Joyas", "Dedicatorias"
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
 }
 
 // -----------------------------------------------------------------------------

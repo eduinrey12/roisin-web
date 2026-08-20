@@ -5,37 +5,73 @@ import {
   adminCreatePromotionAction,
   adminDeletePromotionAction,
 } from '@/lib/actions/admin.actions';
-import { Megaphone, Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Megaphone, Plus, Trash2, X, Gem, Package, Layers, ExternalLink, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
+
+interface CollectionItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface ProductItem {
+  id: string;
+  title: string;
+  slug: string;
+  basePrice: number;
+}
 
 interface PromotionItem {
   id: string;
   title: string;
-  subtitle: string | null;
-  badge: string | null;
-  discountText: string | null;
-  targetUrl: string;
   imageUrl: string;
+  targetType: 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL';
+  collectionId?: string | null;
+  collection?: CollectionItem | null;
+  products?: { product: ProductItem }[];
+  discountPercent?: number | null;
+  targetUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
 }
 
-export default function PromotionsClient({ initialPromotions }: { initialPromotions: PromotionItem[] }) {
+interface PromotionsClientProps {
+  initialPromotions: PromotionItem[];
+  collections: CollectionItem[];
+  products: ProductItem[];
+}
+
+export default function PromotionsClient({
+  initialPromotions,
+  collections,
+  products,
+}: PromotionsClientProps) {
   const [promotions, setPromotions] = useState<PromotionItem[]>(initialPromotions);
   const [isCreating, setIsCreating] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
-    subtitle: '',
-    badge: '',
-    discountText: '',
-    targetUrl: '/productos',
     imageUrl: '',
+    targetType: 'COLLECTION' as 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL',
+    collectionId: collections[0]?.id || '',
+    productIds: [] as string[],
+    discountPercent: 0,
+    targetUrl: '',
     sortOrder: 0,
   });
 
+  const [productSearch, setProductSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleToggleProduct = (productId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      productIds: prev.productIds.includes(productId)
+        ? prev.productIds.filter((id) => id !== productId)
+        : [...prev.productIds, productId],
+    }));
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,13 +79,20 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
     setError('');
 
     try {
+      let targetUrl = formData.targetUrl;
+      if (formData.targetType === 'COLLECTION') {
+        const col = collections.find((c) => c.id === formData.collectionId);
+        targetUrl = col ? `/productos?collection=${col.slug}` : '/productos';
+      }
+
       const res = await adminCreatePromotionAction({
         title: formData.title,
-        subtitle: formData.subtitle || undefined,
-        badge: formData.badge || undefined,
-        discountText: formData.discountText || undefined,
-        targetUrl: formData.targetUrl || '/productos',
         imageUrl: formData.imageUrl,
+        targetType: formData.targetType,
+        collectionId: formData.targetType === 'COLLECTION' ? formData.collectionId : null,
+        productIds: formData.targetType === 'PRODUCTS' ? formData.productIds : [],
+        discountPercent: formData.discountPercent > 0 ? formData.discountPercent : null,
+        targetUrl: targetUrl || undefined,
         sortOrder: formData.sortOrder,
       });
 
@@ -58,11 +101,12 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
         setIsCreating(false);
         setFormData({
           title: '',
-          subtitle: '',
-          badge: '',
-          discountText: '',
-          targetUrl: '/productos',
           imageUrl: '',
+          targetType: 'COLLECTION',
+          collectionId: collections[0]?.id || '',
+          productIds: [],
+          discountPercent: 0,
+          targetUrl: '',
           sortOrder: 0,
         });
       } else {
@@ -87,6 +131,10 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
     }
   };
 
+  const filteredProducts = products.filter((p) =>
+    p.title.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -97,7 +145,7 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
             Banners & Promociones
           </h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Administra las tarjetas promocionales cuadradas y horizontales que se muestran en la página de inicio.
+            Configura los banners de inicio que redirigen a colecciones exclusivas o conjuntos de productos en oferta.
           </p>
         </div>
 
@@ -116,14 +164,17 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
         </div>
       )}
 
-      {/* Create Modal */}
+      {/* Create Modal Form */}
       {isCreating && (
         <form
           onSubmit={handleCreate}
-          className="bg-white p-6 rounded-3xl border border-[#DFD0EC] shadow-sm space-y-4 animate-fade-in"
+          className="bg-white p-6 sm:p-7 rounded-3xl border border-[#DFD0EC] shadow-lg space-y-5 animate-fade-in"
         >
           <div className="flex items-center justify-between border-b border-[#DFD0EC] pb-3">
-            <h3 className="font-bold text-sm text-zinc-900">Crear Tarjeta Promocional</h3>
+            <h3 className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+              <Gem size={17} className="text-[#7043A0]" />
+              Crear Nuevo Banner Promocional
+            </h3>
             <button
               type="button"
               onClick={() => setIsCreating(false)}
@@ -135,11 +186,13 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">Título *</label>
+              <label className="text-xs font-semibold text-zinc-700 block mb-1">
+                Nombre Interno (Solo visible para el Admin) *
+              </label>
               <input
                 type="text"
                 required
-                placeholder="Ej: Anillos de Promesa"
+                placeholder="Ej: Promo Colección Diamante Morado 2026"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
@@ -148,50 +201,7 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
 
             <div>
               <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                Badge / Distintivo (Opcional)
-              </label>
-              <input
-                type="text"
-                placeholder="Ej: NUEVA COLECCIÓN"
-                value={formData.badge}
-                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                Subtítulo / Mensaje
-              </label>
-              <input
-                type="text"
-                placeholder="El símbolo eterno del amor en plata fina 925"
-                value={formData.subtitle}
-                onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                Texto de Descuento (Opcional)
-              </label>
-              <input
-                type="text"
-                placeholder="Ej: HASTA 25% OFF"
-                value={formData.discountText}
-                onChange={(e) => setFormData({ ...formData, discountText: e.target.value })}
-                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                URL de Imagen de Fondo *
+                URL de Imagen del Banner (Arte completo) *
               </label>
               <input
                 type="url"
@@ -202,9 +212,134 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
                 className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
               />
             </div>
+          </div>
+
+          {/* Target Type Selector */}
+          <div className="space-y-2 pt-1">
+            <label className="text-xs font-semibold text-zinc-700 block">
+              Tipo de Destino al dar Clic en la Promoción *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, targetType: 'COLLECTION' })}
+                className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
+                  formData.targetType === 'COLLECTION'
+                    ? 'bg-[#F0E9F5] border-[#7043A0] text-[#3F235F] shadow-xs'
+                    : 'bg-[#F8F5FA] border-[#DFD0EC] text-zinc-700 hover:border-zinc-400'
+                }`}
+              >
+                <Layers size={18} className="text-[#7043A0]" />
+                <div>
+                  <span className="font-bold text-xs block">Dirigir a una Colección</span>
+                  <span className="text-[10.5px] text-zinc-500 font-light">
+                    Redirige al catálogo filtrado por la colección elegida
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, targetType: 'PRODUCTS' })}
+                className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
+                  formData.targetType === 'PRODUCTS'
+                    ? 'bg-[#F0E9F5] border-[#7043A0] text-[#3F235F] shadow-xs'
+                    : 'bg-[#F8F5FA] border-[#DFD0EC] text-zinc-700 hover:border-zinc-400'
+                }`}
+              >
+                <Package size={18} className="text-[#7043A0]" />
+                <div>
+                  <span className="font-bold text-xs block">Productos Específicos</span>
+                  <span className="text-[10.5px] text-zinc-500 font-light">
+                    Selecciona varios productos específicos en promoción
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional Target UI */}
+          {formData.targetType === 'COLLECTION' ? (
+            <div className="p-4 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] space-y-2">
+              <label className="text-xs font-semibold text-zinc-800 block">
+                Seleccionar Colección de Destino:
+              </label>
+              <select
+                value={formData.collectionId}
+                onChange={(e) => setFormData({ ...formData, collectionId: e.target.value })}
+                className="w-full px-4 py-2.5 text-xs bg-white border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
+              >
+                {collections.map((col) => (
+                  <option key={col.id} value={col.id}>
+                    {col.name} (/productos?collection={col.slug})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="p-4 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-zinc-800">
+                  Seleccionar Productos en Promoción ({formData.productIds.length} seleccionados):
+                </label>
+                <input
+                  type="text"
+                  placeholder="Buscar producto..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="px-3 py-1.5 text-xs bg-white border border-[#DFD0EC] rounded-lg focus:outline-none"
+                />
+              </div>
+
+              <div className="max-h-48 overflow-y-auto space-y-1.5 border border-[#DFD0EC] bg-white rounded-xl p-2.5">
+                {filteredProducts.map((prod) => {
+                  const isSelected = formData.productIds.includes(prod.id);
+                  return (
+                    <label
+                      key={prod.id}
+                      className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer transition ${
+                        isSelected
+                          ? 'bg-[#F0E9F5] text-[#3F235F] font-bold'
+                          : 'hover:bg-zinc-50 text-zinc-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleProduct(prod.id)}
+                          className="rounded border-[#DFD0EC] text-[#3F235F] focus:ring-[#7043A0]"
+                        />
+                        <span>{prod.title}</span>
+                      </div>
+                      <span className="text-zinc-500 font-medium">${prod.basePrice.toFixed(2)}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-zinc-700 block mb-1">
+                Descuento Promocional % (Opcional)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="Ej: 20 para 20% OFF"
+                value={formData.discountPercent || ''}
+                onChange={(e) => setFormData({ ...formData, discountPercent: Number(e.target.value) })}
+                className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
+              />
+            </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 block mb-1">Orden de Aparición</label>
+              <label className="text-xs font-semibold text-zinc-700 block mb-1">
+                Orden de Aparición
+              </label>
               <input
                 type="number"
                 value={formData.sortOrder}
@@ -212,17 +347,6 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
                 className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-zinc-700 block mb-1">Enlace de Destino (URL)</label>
-            <input
-              type="text"
-              placeholder="/productos?collection=diamante-morado-2026"
-              value={formData.targetUrl}
-              onChange={(e) => setFormData({ ...formData, targetUrl: e.target.value })}
-              className="w-full px-4 py-2.5 text-xs bg-[#F8F5FA] border border-[#DFD0EC] rounded-xl focus:outline-none focus:border-[#7043A0]"
-            />
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#DFD0EC]">
@@ -236,7 +360,7 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
             <button
               type="submit"
               disabled={loading}
-              className="btn-purple-diamond px-6 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
+              className="btn-purple-diamond px-6 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer shadow-md"
             >
               {loading ? 'Guardando...' : 'Crear Promoción'}
             </button>
@@ -246,56 +370,55 @@ export default function PromotionsClient({ initialPromotions }: { initialPromoti
 
       {/* Promotions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {promotions.map((p) => (
-          <div
-            key={p.id}
-            className="relative h-64 rounded-3xl overflow-hidden border border-[#DFD0EC] group shadow-sm flex flex-col justify-between p-5 text-white"
-          >
-            <Image
-              src={p.imageUrl}
-              alt={p.title}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1B1124]/90 via-[#1B1124]/40 to-transparent" />
+        {promotions.map((p) => {
+          const destinationLabel =
+            p.targetType === 'COLLECTION'
+              ? `Colección: ${p.collection?.name || 'Asignada'}`
+              : p.targetType === 'PRODUCTS'
+              ? `${p.products?.length || 0} Productos en Oferta`
+              : 'Enlace personalizado';
 
-            {/* Content on top */}
-            <div className="relative z-10 flex justify-between items-start">
-              {p.badge ? (
-                <span className="bg-[#3F235F]/90 backdrop-blur-xs text-white text-[9px] uppercase font-black px-2.5 py-1 rounded-full border border-white/20">
-                  {p.badge}
-                </span>
-              ) : p.discountText ? (
-                <span className="bg-[#7043A0]/90 backdrop-blur-xs text-white text-[9px] uppercase font-black px-2.5 py-1 rounded-full border border-white/20">
-                  {p.discountText}
-                </span>
-              ) : (
-                <span />
-              )}
+          return (
+            <div
+              key={p.id}
+              className="relative aspect-[16/9.5] rounded-3xl overflow-hidden border border-[#DFD0EC] group shadow-sm flex flex-col justify-between p-5 text-white bg-[#1B1124]"
+            >
+              <Image
+                src={p.imageUrl}
+                alt={p.title}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-85"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1B1124]/90 via-[#1B1124]/30 to-transparent" />
 
-              <button
-                type="button"
-                onClick={() => handleDelete(p.id)}
-                className="p-2 bg-black/50 hover:bg-red-600 text-white rounded-xl transition cursor-pointer backdrop-blur-xs"
-                title="Eliminar banner"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-
-            <div className="relative z-10 space-y-1">
-              <h3 className="font-sans font-bold text-base text-white leading-snug">{p.title}</h3>
-              {p.subtitle && (
-                <p className="text-xs text-zinc-200 line-clamp-2">{p.subtitle}</p>
-              )}
-              <div className="pt-2">
-                <span className="inline-block text-[10px] uppercase font-bold tracking-widest text-[#E6D4F8] bg-white/10 px-3 py-1 rounded-full border border-white/20">
-                  Ver Colección
+              {/* Top Controls */}
+              <div className="relative z-10 flex justify-between items-start">
+                <span className="bg-black/60 backdrop-blur-xs text-white text-[9.5px] uppercase font-bold px-3 py-1 rounded-full border border-white/20">
+                  {destinationLabel}
                 </span>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(p.id)}
+                  className="p-2 bg-black/60 hover:bg-red-600 text-white rounded-xl transition cursor-pointer backdrop-blur-xs shadow-md"
+                  title="Eliminar banner"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+
+              {/* Bottom Admin Title info */}
+              <div className="relative z-10 space-y-1">
+                <h3 className="font-sans font-bold text-base text-white leading-snug">{p.title}</h3>
+                {p.discountPercent && (
+                  <span className="inline-block text-[10px] font-black uppercase text-amber-300">
+                    🔥 Descuento: {p.discountPercent}% OFF
+                  </span>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

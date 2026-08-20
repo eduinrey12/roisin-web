@@ -129,6 +129,22 @@ export default async function AdminLayout({
             <span>Cupones de Descuento</span>
           </Link>
 
+          <Link
+            href="/admin/resenas"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <ShieldCheck size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Reseñas & Testimonios</span>
+          </Link>
+
+          <Link
+            href="/admin/faqs"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <FolderTree size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Preguntas Frecuentes</span>
+          </Link>
+
           <div className="pt-4 border-t border-[#341F48] mt-4 space-y-2">
             <Link
               href="/"

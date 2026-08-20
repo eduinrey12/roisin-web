@@ -26,10 +26,34 @@ export async function getCollections() {
 }
 
 export async function getPromotions() {
-  return prisma.promotion.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
-  });
+  try {
+    return await prisma.promotion.findMany({
+      where: { isActive: true },
+      include: {
+        collection: true,
+        products: {
+          include: {
+            product: {
+              include: {
+                images: { orderBy: { sortOrder: 'asc' } },
+                variants: { where: { isActive: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+  } catch {
+    try {
+      return await prisma.promotion.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+      });
+    } catch {
+      return [];
+    }
+  }
 }
 
 export async function getMaxProductPrice() {
@@ -60,9 +84,29 @@ export async function getFeaturedProducts(limit = 12) {
   });
 }
 
+export async function getNewArrivals(limit = 8) {
+  return prisma.product.findMany({
+    where: { isActive: true },
+    include: {
+      images: { orderBy: { sortOrder: 'asc' } },
+      variants: {
+        where: { isActive: true },
+        include: { inventory: true },
+      },
+      category: true,
+      collections: {
+        include: { collection: true },
+      },
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
 export async function getProducts(params?: {
   categorySlug?: string;
   collectionSlug?: string;
+  promoId?: string;
   onlyDiscounts?: boolean;
   query?: string;
   minPrice?: number;
@@ -84,6 +128,13 @@ export async function getProducts(params?: {
       collections: {
         some: {
           collection: { slug: params.collectionSlug, isActive: true },
+        },
+      },
+    }),
+    ...(params?.promoId && {
+      promotionLinks: {
+        some: {
+          promotionId: params.promoId,
         },
       },
     }),
@@ -452,29 +503,56 @@ export async function adminDeleteCollection(id: string) {
 // Promotions Admin Operations
 export async function adminGetAllPromotions() {
   return prisma.promotion.findMany({
+    include: {
+      collection: true,
+      products: {
+        include: {
+          product: true,
+        },
+      },
+    },
     orderBy: { sortOrder: 'asc' },
   });
 }
 
 export async function adminCreatePromotion(data: {
   title: string;
-  subtitle?: string;
-  badge?: string;
-  discountText?: string;
   imageUrl: string;
-  targetUrl: string;
+  targetType?: 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL';
+  collectionId?: string | null;
+  productIds?: string[];
+  discountPercent?: number | null;
+  targetUrl?: string;
   sortOrder?: number;
 }) {
+  const targetType = data.targetType || (data.productIds && data.productIds.length > 0 ? 'PRODUCTS' : 'COLLECTION');
+
   return prisma.promotion.create({
     data: {
       title: data.title,
-      subtitle: data.subtitle,
-      badge: data.badge,
-      discountText: data.discountText,
       imageUrl: data.imageUrl,
-      targetUrl: data.targetUrl,
+      targetType: targetType as any,
+      collectionId: data.collectionId || null,
+      discountPercent: data.discountPercent ?? null,
+      targetUrl: data.targetUrl || null,
       sortOrder: data.sortOrder ?? 0,
       isActive: true,
+      ...(data.productIds && data.productIds.length > 0 && {
+        products: {
+          create: data.productIds.map((productId, idx) => ({
+            productId,
+            sortOrder: idx,
+          })),
+        },
+      }),
+    },
+    include: {
+      collection: true,
+      products: {
+        include: {
+          product: true,
+        },
+      },
     },
   });
 }
@@ -483,18 +561,49 @@ export async function adminUpdatePromotion(
   id: string,
   data: {
     title?: string;
-    subtitle?: string;
-    badge?: string;
-    discountText?: string;
     imageUrl?: string;
+    targetType?: 'COLLECTION' | 'PRODUCTS' | 'CUSTOM_URL';
+    collectionId?: string | null;
+    productIds?: string[];
+    discountPercent?: number | null;
     targetUrl?: string;
     sortOrder?: number;
     isActive?: boolean;
   }
 ) {
+  if (data.productIds !== undefined) {
+    await prisma.promotionProduct.deleteMany({ where: { promotionId: id } });
+    if (data.productIds.length > 0) {
+      await prisma.promotionProduct.createMany({
+        data: data.productIds.map((productId, idx) => ({
+          promotionId: id,
+          productId,
+          sortOrder: idx,
+        })),
+      });
+    }
+  }
+
   return prisma.promotion.update({
     where: { id },
-    data,
+    data: {
+      ...(data.title && { title: data.title }),
+      ...(data.imageUrl && { imageUrl: data.imageUrl }),
+      ...(data.targetType && { targetType: data.targetType as any }),
+      ...(data.collectionId !== undefined && { collectionId: data.collectionId }),
+      ...(data.discountPercent !== undefined && { discountPercent: data.discountPercent }),
+      ...(data.targetUrl !== undefined && { targetUrl: data.targetUrl }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+    },
+    include: {
+      collection: true,
+      products: {
+        include: {
+          product: true,
+        },
+      },
+    },
   });
 }
 
@@ -507,6 +616,149 @@ export async function adminUpdatePromotionStatus(id: string, isActive: boolean) 
 
 export async function adminDeletePromotion(id: string) {
   return prisma.promotion.update({
+    where: { id },
+    data: { isActive: false },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Customer Reviews & Testimonials Operations
+// -----------------------------------------------------------------------------
+
+export async function getReviews(limit = 12) {
+  try {
+    if (!prisma.review) return [];
+    return await prisma.review.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function adminGetAllReviews() {
+  return prisma.review.findMany({
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+  });
+}
+
+export async function adminCreateReview(data: {
+  authorName: string;
+  location?: string;
+  rating?: number;
+  comment: string;
+  mediaUrl?: string;
+  mediaType?: 'IMAGE' | 'VIDEO' | 'NONE';
+  productTitle?: string;
+  isVerified?: boolean;
+  sortOrder?: number;
+}) {
+  return prisma.review.create({
+    data: {
+      authorName: data.authorName,
+      location: data.location || null,
+      rating: data.rating ?? 5,
+      comment: data.comment,
+      mediaUrl: data.mediaUrl || null,
+      mediaType: (data.mediaType as any) || (data.mediaUrl ? 'IMAGE' : 'NONE'),
+      productTitle: data.productTitle || null,
+      isVerified: data.isVerified ?? true,
+      sortOrder: data.sortOrder ?? 0,
+      isActive: true,
+    },
+  });
+}
+
+export async function adminUpdateReview(
+  id: string,
+  data: {
+    authorName?: string;
+    location?: string;
+    rating?: number;
+    comment?: string;
+    mediaUrl?: string;
+    mediaType?: 'IMAGE' | 'VIDEO' | 'NONE';
+    productTitle?: string;
+    isVerified?: boolean;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  return prisma.review.update({
+    where: { id },
+    data: {
+      ...data,
+      ...(data.mediaType && { mediaType: data.mediaType as any }),
+    },
+  });
+}
+
+export async function adminDeleteReview(id: string) {
+  return prisma.review.update({
+    where: { id },
+    data: { isActive: false },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Frequently Asked Questions (FAQ) Operations
+// -----------------------------------------------------------------------------
+
+export async function getFaqs() {
+  try {
+    if (!prisma.faq) return [];
+    return await prisma.faq.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function adminGetAllFaqs() {
+  return prisma.faq.findMany({
+    orderBy: { sortOrder: 'asc' },
+  });
+}
+
+export async function adminCreateFaq(data: {
+  question: string;
+  answer: string;
+  category?: string;
+  sortOrder?: number;
+}) {
+  return prisma.faq.create({
+    data: {
+      question: data.question,
+      answer: data.answer,
+      category: data.category || 'General',
+      sortOrder: data.sortOrder ?? 0,
+      isActive: true,
+    },
+  });
+}
+
+export async function adminUpdateFaq(
+  id: string,
+  data: {
+    question?: string;
+    answer?: string;
+    category?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  return prisma.faq.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function adminDeleteFaq(id: string) {
+  return prisma.faq.update({
     where: { id },
     data: { isActive: false },
   });

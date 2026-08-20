@@ -159,14 +159,14 @@ export default function Header({ user }: { user?: { email: string; role: string 
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setCollectionsMenuOpen(!collectionsMenuOpen)}
-              className={`flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl border text-xs font-bold uppercase tracking-wider transition ${
+              className={`flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl border text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer ${
                 collectionsMenuOpen
-                  ? 'bg-[#F0E9F5] border-[#7043A0] text-[#3F235F] shadow-xs'
-                  : 'bg-[#F8F5FA] hover:bg-[#F0E9F5] border-[#DFD0EC] text-zinc-800 hover:border-[#7043A0]'
+                  ? 'bg-gradient-to-r from-[#F0E9F5] to-[#DFD0EC] border-[#7043A0] text-[#3F235F] shadow-sm ring-2 ring-[#7043A0]/20'
+                  : 'bg-gradient-to-r from-[#FAF7FC] to-[#F0E9F5] hover:from-[#F0E9F5] hover:to-[#DFD0EC] border-[#DFD0EC] text-[#3F235F] hover:border-[#7043A0] shadow-2xs hover:shadow-xs'
               }`}
               aria-label="Ver Colecciones y Categorías"
             >
-              <Gem size={16} className="text-[#7043A0]" />
+              <Gem size={16} className="text-[#7043A0] drop-shadow-2xs" />
               <span className="hidden xl:inline">Colecciones</span>
               <ChevronDown
                 size={14}
@@ -294,41 +294,41 @@ export default function Header({ user }: { user?: { email: string; role: string 
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="p-2.5 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl transition shadow-2xs"
+            className="p-2.5 text-emerald-800 hover:text-emerald-900 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200 hover:border-emerald-400 rounded-2xl transition-all shadow-2xs hover:shadow-xs active:scale-95"
             title="Asesoría personalizada por WhatsApp"
             aria-label="Asesoría WhatsApp"
           >
-            <MessageCircle size={19} />
+            <MessageCircle size={19} className="drop-shadow-2xs" />
           </a>
 
           {/* 3. User Login / Account Icon Button */}
           <Link
             href={user ? '/cuenta' : '/login'}
-            className="p-2.5 text-zinc-700 hover:text-[#3F235F] bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl transition shadow-2xs flex items-center gap-1.5"
+            className="p-2.5 text-[#3F235F] hover:text-[#221235] bg-gradient-to-r from-[#FAF7FC] to-[#F0E9F5] hover:from-[#F0E9F5] hover:to-[#DFD0EC] border border-[#DFD0EC] hover:border-[#7043A0] rounded-2xl transition-all shadow-2xs hover:shadow-xs active:scale-95 flex items-center gap-1.5"
             title={user ? 'Mi Cuenta' : 'Iniciar Sesión'}
             aria-label="Mi Cuenta"
           >
-            <User size={19} />
+            <User size={19} className="text-[#7043A0]" />
             {user && (
-              <span className="hidden lg:inline text-xs font-bold text-zinc-900">
+              <span className="hidden lg:inline text-xs font-bold text-[#3F235F]">
                 {user.role === 'ADMIN' ? 'Admin' : 'Mi Cuenta'}
               </span>
             )}
           </Link>
 
-          {/* 4. Carrito Trigger Button (Renamed from Bolsa to Carrito) */}
+          {/* 4. Carrito Trigger Button (Luminous Purple Diamond) */}
           <button
             onClick={toggleCart}
-            className="relative flex items-center gap-2 p-2.5 sm:px-4 sm:py-2.5 bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] hover:border-[#7043A0] rounded-2xl transition-all duration-200 group shadow-2xs cursor-pointer"
+            className="relative flex items-center gap-2 p-2.5 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#3F235F] via-[#552E80] to-[#7043A0] hover:from-[#4D2B75] hover:to-[#8150B5] text-white border border-[#552E80] hover:border-[#DFD0EC] rounded-2xl transition-all duration-200 group shadow-xs hover:shadow-md cursor-pointer active:scale-95"
             aria-label="Carrito de compras"
           >
             <ShoppingBag
               size={19}
-              className="text-[#3F235F] transition-transform group-hover:scale-108"
+              className="text-[#DFD0EC] group-hover:text-white transition-transform group-hover:scale-108"
             />
-            <span className="hidden sm:inline text-xs font-bold text-zinc-900">Carrito</span>
+            <span className="hidden sm:inline text-xs font-bold text-white tracking-wide">Carrito</span>
             {itemCount > 0 && (
-              <span className="bg-[#3F235F] text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-scale-in">
+              <span className="bg-white text-[#3F235F] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-scale-in">
                 {itemCount}
               </span>
             )}

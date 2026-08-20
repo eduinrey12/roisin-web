@@ -38,10 +38,25 @@ function createPrismaClient() {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) {
+    // In dev mode, if schema was updated while dev server was running, ensure delegates exist
+    if (!(globalForPrisma.prisma as any).review || !(globalForPrisma.prisma as any).faq) {
+      try {
+        globalForPrisma.prisma.$disconnect().catch(() => {});
+      } catch {}
+      globalForPrisma.prisma = createPrismaClient();
+    }
+    return globalForPrisma.prisma;
+  }
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
+  const client = createPrismaClient();
+  if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = client;
+  }
+  return client;
 }
+
+export const prisma = getPrismaClient();
 
 export default prisma;

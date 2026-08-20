@@ -1,19 +1,18 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface PromotionItem {
   id: string;
   title: string;
-  subtitle?: string | null;
-  badge?: string | null;
-  discountText?: string | null;
   imageUrl: string;
-  targetUrl: string;
+  targetType?: string | null;
+  collectionId?: string | null;
+  collection?: { id: string; name: string; slug: string } | null;
+  targetUrl?: string | null;
   sortOrder?: number;
 }
 
@@ -23,13 +22,29 @@ interface PromotionsCarouselProps {
 
 export default function PromotionsCarousel({ promotions }: PromotionsCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [promotions]);
 
   if (!promotions || promotions.length === 0) return null;
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.75;
+      const scrollAmount = container.clientWidth * 0.7;
       container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
     }
   };
@@ -37,96 +52,82 @@ export default function PromotionsCarousel({ promotions }: PromotionsCarouselPro
   const scrollRight = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.75;
+      const scrollAmount = container.clientWidth * 0.7;
       container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
+  const getDestinationUrl = (promo: PromotionItem) => {
+    if (promo.targetType === 'COLLECTION' && promo.collection?.slug) {
+      return `/productos?collection=${promo.collection.slug}`;
+    }
+    if (promo.targetType === 'PRODUCTS') {
+      return `/productos?promo=${promo.id}`;
+    }
+    return promo.targetUrl || '/productos';
+  };
+
   return (
-    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-      <div className="space-y-4">
-        {/* Header with Title & Navigation Arrow Controls */}
-        <div className="flex items-center justify-between pb-1">
-          <div className="flex items-center gap-2">
-            <RoisinDiamond size={15} color="#7043A0" />
-            <span className="text-xs uppercase font-bold tracking-[0.25em] text-[#3F235F]">
-              Promociones & Colecciones Destacadas
-            </span>
-          </div>
-
-          {/* Navigation Controls (< / >) */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={scrollLeft}
-              className="p-2 rounded-full bg-white hover:bg-[#F0E9F5] border border-[#DFD0EC] text-[#3F235F] hover:border-[#7043A0] transition shadow-xs cursor-pointer active:scale-90"
-              aria-label="Promoción anterior"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={scrollRight}
-              className="p-2 rounded-full bg-white hover:bg-[#F0E9F5] border border-[#DFD0EC] text-[#3F235F] hover:border-[#7043A0] transition shadow-xs cursor-pointer active:scale-90"
-              aria-label="Promoción siguiente"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Carousel Container showing 2 to 3 cards visible */}
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1"
+    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 relative group/carousel">
+      {/* 1. Left Navigation Arrow */}
+      {canScrollLeft && (
+        <button
+          onClick={scrollLeft}
+          className="absolute left-6 sm:left-8 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/90 hover:bg-[#552E80] text-white border border-[#DFD0EC]/60 hover:border-white shadow-xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
+          aria-label="Promoción anterior"
         >
-          {promotions.map((promo) => (
+          <ChevronLeft size={20} className="stroke-[2.5]" />
+        </button>
+      )}
+
+      {/* 2. Right Navigation Arrow */}
+      {canScrollRight && (
+        <button
+          onClick={scrollRight}
+          className="absolute right-6 sm:right-8 top-1/2 -translate-y-1/2 z-20 p-3 sm:p-3.5 rounded-full bg-[#3F235F]/90 hover:bg-[#552E80] text-white border border-[#DFD0EC]/60 hover:border-white shadow-xl backdrop-blur-md transition-all duration-300 active:scale-90 cursor-pointer flex items-center justify-center diamond-glow"
+          aria-label="Promoción siguiente"
+        >
+          <ChevronRight size={20} className="stroke-[2.5]" />
+        </button>
+      )}
+
+      {/* 3. Horizontal Panoramas with Peek Layout (2 to 3 cards + partial view of next) */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={checkScroll}
+        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1"
+      >
+        {promotions.map((promo) => {
+          const href = getDestinationUrl(promo);
+          return (
             <Link
               key={promo.id}
-              href={promo.targetUrl || '/productos'}
-              className="group relative flex-none w-[82vw] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] aspect-square sm:aspect-[1/1] sm:h-[340px] lg:h-[360px] rounded-3xl overflow-hidden border border-[#DFD0EC] shadow-xs hover:shadow-xl hover:border-[#7043A0] transition-all duration-300 flex flex-col justify-end p-5 sm:p-6 bg-[#1B1124] snap-start"
+              href={href}
+              className="group relative flex-none w-[84vw] sm:w-[calc(48%-12px)] lg:w-[calc(36%-14px)] aspect-[16/9] sm:aspect-[16/9.5] rounded-2xl overflow-hidden border border-[#DFD0EC] shadow-sm hover:shadow-2xl hover:border-[#7043A0] transition-all duration-400 bg-[#1B1124] snap-start select-none"
             >
+              {/* Pure Graphic Banner Image */}
               <Image
                 src={promo.imageUrl}
-                alt={promo.title}
+                alt={promo.title || 'Promoción ROISIN'}
                 fill
-                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover object-center group-hover:scale-106 transition-transform duration-700 opacity-80 group-hover:opacity-90"
+                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 36vw"
+                className="object-cover object-center group-hover:scale-104 transition-transform duration-700 ease-out"
+                priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1B1124]/95 via-[#1B1124]/40 to-transparent" />
 
-              {/* Promo Badges & Content */}
-              <div className="relative z-10 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  {promo.badge && (
-                    <span className="bg-white text-[#3F235F] text-[10.5px] uppercase font-bold tracking-wider px-3.5 py-1 rounded-full shadow-xs leading-normal inline-block">
-                      {promo.badge}
-                    </span>
-                  )}
-                  {promo.discountText && (
-                    <span className="bg-gradient-to-r from-[#7043A0] to-[#3F235F] text-white text-[10.5px] uppercase font-black tracking-wider px-3.5 py-1 rounded-full shadow-sm leading-normal inline-block">
-                      {promo.discountText}
-                    </span>
-                  )}
-                </div>
+              {/* Subtle hover gradient shadow at bottom */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <h3 className="font-sans text-base sm:text-lg font-bold text-white leading-snug group-hover:text-[#DFD0EC] transition-colors">
-                  {promo.title}
-                </h3>
-
-                {promo.subtitle && (
-                  <p className="text-xs text-zinc-300 font-light line-clamp-1">
-                    {promo.subtitle}
-                  </p>
-                )}
-
-                <div className="pt-1.5">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#DFD0EC] group-hover:text-white transition-colors">
-                    Ver Joyas <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </div>
+              {/* Luxurious Floating "Ver más" Button on Hover */}
+              <div className="absolute inset-x-0 bottom-4 sm:bottom-5 z-10 flex justify-center items-center opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out px-4 pointer-events-none">
+                <span className="inline-flex items-center gap-2 btn-purple-diamond text-xs uppercase tracking-widest font-extrabold px-6 py-2.5 rounded-full shadow-xl border border-white/30 backdrop-blur-xs">
+                  <span>Ver más</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </span>
               </div>
             </Link>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );

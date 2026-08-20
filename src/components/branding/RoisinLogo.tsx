@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import RoisinDiamond from './RoisinDiamond';
+import Image from 'next/image';
 
 interface RoisinLogoProps {
   className?: string;
@@ -13,47 +13,31 @@ interface RoisinLogoProps {
 
 export default function RoisinLogo({
   className = '',
-  theme = 'dark',
+  width = 160,
+  height = 56,
+  theme = 'purple',
   href = '/',
-  showTagline = true,
 }: RoisinLogoProps) {
   const isLight = theme === 'light';
-  const isPurple = theme === 'purple';
-
-  const diamondColor = isLight ? '#DFD0EC' : '#3F235F';
-  const textColor = isLight ? 'text-white' : isPurple ? 'text-[#3F235F]' : 'text-zinc-900';
-  const tagColor = isLight ? 'text-[#DFD0EC]' : 'text-[#3F235F]';
-  const containerBg = isLight
-    ? 'bg-[#2A1442] border-[#4E2975] group-hover:border-[#DFD0EC]'
-    : 'bg-[#F8F5FA] border-[#DFD0EC] group-hover:border-[#7043A0]';
 
   const content = (
-    <div className={`inline-flex items-center gap-3 select-none group transition-transform duration-300 group-hover:scale-102 ${className}`}>
-      {/* Official Diamond Vector Symbol in Purple */}
-      <div className={`relative flex items-center justify-center p-1 rounded-2xl border shadow-xs transition-colors ${containerBg}`}>
-        <RoisinDiamond
-          size={32}
-          color={diamondColor}
-          className="transition-transform duration-300 group-hover:scale-108 drop-shadow-xs"
+    <div
+      className={`inline-flex items-center justify-center select-none group transition-transform duration-300 group-hover:scale-103 ${className}`}
+    >
+      <div className="relative flex items-center justify-center">
+        <Image
+          src="/branding/diapo-1/logo-sin-sombra.svg"
+          alt="ROISIN Joyas"
+          width={width}
+          height={height}
+          priority
+          className={`h-auto w-auto max-h-12 sm:max-h-14 object-contain transition-all duration-300 drop-shadow-xs ${
+            isLight
+              ? 'brightness-0 invert opacity-95 group-hover:opacity-100'
+              : 'contrast-105 group-hover:brightness-105'
+          }`}
+          style={{ width: `${width}px`, height: 'auto' }}
         />
-      </div>
-
-      {/* Brand Wordmark & Tagline */}
-      <div className="flex flex-col text-left">
-        <span
-          className={`font-roisin text-2xl sm:text-3xl tracking-[0.06em] leading-none transition-colors ${textColor}`}
-          style={{ letterSpacing: '0.06em' }}
-        >
-          Roisin
-        </span>
-        {showTagline && (
-          <span
-            className={`text-[8.5px] uppercase tracking-[0.32em] font-bold mt-1 leading-none ${tagColor}`}
-            style={{ letterSpacing: '0.32em' }}
-          >
-            Joyas & Accesorios
-          </span>
-        )}
       </div>
     </div>
   );

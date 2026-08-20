@@ -5,31 +5,25 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient() {
-  const dbUrl = process.env.DATABASE_URL;
-
-  if (!dbUrl) {
-    console.error('❌ ERROR CRÍTICO: La variable DATABASE_URL no está configurada en el archivo .env');
-  }
+function createPrismaClient(): PrismaClient {
+  const dbUrl = process.env.DATABASE_URL || 'mysql://root:qwer@127.0.0.1:3306/roisin_db';
 
   let adapter: PrismaMariaDb;
   try {
-    const urlString = dbUrl || 'mysql://root:@127.0.0.1:3306/roisin_db';
-    const parsed = new URL(urlString);
-
+    const parsed = new URL(dbUrl);
     adapter = new PrismaMariaDb({
       host: parsed.hostname || '127.0.0.1',
       port: parsed.port ? parseInt(parsed.port, 10) : 3306,
       user: decodeURIComponent(parsed.username || 'root'),
-      password: decodeURIComponent(parsed.password || ''),
+      password: decodeURIComponent(parsed.password || 'qwer'),
       database: parsed.pathname.replace(/^\//, '') || 'roisin_db',
-      connectionLimit: 5,
-      connectTimeout: 5000,
-      acquireTimeout: 3000,
+      connectionLimit: 10,
+      connectTimeout: 8000,
+      acquireTimeout: 8000,
       allowPublicKeyRetrieval: true,
     });
   } catch {
-    adapter = new PrismaMariaDb(dbUrl || 'mysql://root:@127.0.0.1:3306/roisin_db');
+    adapter = new PrismaMariaDb(dbUrl);
   }
 
   return new PrismaClient({
@@ -40,8 +34,9 @@ function createPrismaClient() {
 
 export function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
-    // In dev mode, if schema was updated while dev server was running, ensure delegates exist
-    if (!(globalForPrisma.prisma as any).review || !(globalForPrisma.prisma as any).faq) {
+    const p = globalForPrisma.prisma as any;
+    // If delegates like faq or review are missing, recreate client
+    if (!p.faq || !p.review || !p.promotion || !p.category || !p.product) {
       try {
         globalForPrisma.prisma.$disconnect().catch(() => {});
       } catch {}
@@ -57,6 +52,17 @@ export function getPrismaClient(): PrismaClient {
   return client;
 }
 
-export const prisma = getPrismaClient();
+// Proxy wrapper so any direct property access like prisma.faq, prisma.review, etc.
+// dynamically routes to the current up-to-date client instance!
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, prop, receiver);
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  },
+});
 
 export default prisma;

@@ -141,7 +141,7 @@ export default async function AccountPage() {
             </div>
           ) : (
             <div className="space-y-5">
-              {orders.map((order) => {
+              {orders.map((order: any) => {
                 const isPaid = order.payment?.status === 'COMPLETED';
                 const isVerifying = order.payment?.status === 'VERIFYING';
 
@@ -188,7 +188,7 @@ export default async function AccountPage() {
 
                     {/* Order Items List */}
                     <div className="space-y-2 text-xs">
-                      {order.items.map((i) => (
+                      {order.items.map((i: any) => (
                         <div
                           key={i.id}
                           className="flex justify-between items-center py-2 px-3 bg-[#F8F5FA] rounded-2xl border border-[#DFD0EC]/60"

@@ -93,7 +93,7 @@ export default async function OrderSuccessPage({
           <div className="pt-4 border-t border-[#DFD0EC] space-y-2">
             <p className="text-[10px] text-zinc-400 uppercase font-bold">Joyas Seleccionadas ({order.items.length})</p>
             <div className="divide-y divide-[#DFD0EC]/60">
-              {order.items.map((item) => {
+              {order.items.map((item: any) => {
                 const product = item.variant.product;
                 const img =
                   product.images?.[0]?.url ||

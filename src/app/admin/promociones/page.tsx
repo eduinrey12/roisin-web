@@ -34,7 +34,7 @@ export default async function AdminPromotionsPage() {
     <PromotionsClient
       initialPromotions={serializePlain(promotions) as any}
       collections={serializePlain(collections)}
-      products={serializePlain(products.map((p) => ({ ...p, basePrice: Number(p.basePrice) })))}
+      products={serializePlain((products || []).map((p: any) => ({ ...p, basePrice: Number(p.basePrice) })))}
     />
   );
 }

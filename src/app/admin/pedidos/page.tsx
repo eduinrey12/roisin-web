@@ -24,7 +24,7 @@ export default async function AdminOrdersPage() {
       </div>
 
       <OrdersTableClient
-        orders={orders.map((o) => ({
+        orders={(orders || []).map((o: any) => ({
           id: o.id,
           orderNumber: o.orderNumber,
           customerName: o.customerName,
@@ -36,7 +36,7 @@ export default async function AdminOrdersPage() {
           dedication: o.dedication,
           total: Number(o.total),
           status: o.status,
-          createdAt: o.createdAt.toISOString(),
+          createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : '',
           payment: o.payment
             ? {
                 id: o.payment.id,
@@ -49,10 +49,10 @@ export default async function AdminOrdersPage() {
                 referenceNumber: o.payment.referenceNumber,
               }
             : null,
-          items: o.items.map((i) => ({
+          items: (o.items || []).map((i: any) => ({
             id: i.id,
-            productTitle: i.variant.product.title,
-            sku: i.variant.sku,
+            productTitle: i.variant?.product?.title || '',
+            sku: i.variant?.sku || '',
             quantity: i.quantity,
             price: Number(i.price),
             dedication: i.dedication,

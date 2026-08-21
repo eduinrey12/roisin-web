@@ -33,16 +33,16 @@ export default async function AdminProductsPage() {
       </div>
 
       <ProductListClient
-        products={products.map((p) => ({
+        products={(products || []).map((p: any) => ({
           id: p.id,
           title: p.title,
           slug: p.slug,
           basePrice: Number(p.basePrice),
-          categoryName: p.category.name,
+          categoryName: p.category?.name || '',
           isActive: p.isActive,
-          imageUrl: p.images[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
-          variantsCount: p.variants.length,
-          totalStock: p.variants.reduce((acc, v) => acc + (v.inventory?.quantity || 0), 0),
+          imageUrl: p.images?.[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
+          variantsCount: p.variants?.length || 0,
+          totalStock: (p.variants || []).reduce((acc: number, v: any) => acc + (v.inventory?.quantity || 0), 0),
         }))}
       />
     </div>

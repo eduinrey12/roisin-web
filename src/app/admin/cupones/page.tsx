@@ -22,7 +22,7 @@ export default async function AdminCouponsPage() {
       </div>
 
       <CouponsClient
-        coupons={coupons.map((c) => ({
+        coupons={(coupons || []).map((c: any) => ({
           id: c.id,
           code: c.code,
           discountPercentage: c.discountPercentage,

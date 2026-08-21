@@ -119,7 +119,7 @@ export default async function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#DFD0EC]/60">
-              {metrics.recentOrders.map((order) => (
+              {(metrics.recentOrders || []).map((order: any) => (
                 <tr key={order.id} className="hover:bg-[#F8F5FA]/50 transition">
                   <td className="p-4 font-mono font-bold text-zinc-900">
                     <Link

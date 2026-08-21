@@ -22,19 +22,19 @@ export default async function AdminInventoryPage() {
       </div>
 
       <InventoryTableClient
-        items={inventory.map((item) => ({
+        items={(inventory || []).map((item: any) => ({
           id: item.id,
           variantId: item.variantId,
           sku: item.variant.sku,
           productTitle: item.variant.product.title,
           price: Number(item.variant.price),
           quantity: item.quantity,
-          imageUrl: item.variant.product.images[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
-          lastMovements: item.movements.map((m) => ({
+          imageUrl: item.variant.product.images?.[0]?.url || 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop',
+          lastMovements: (item.movements || []).map((m: any) => ({
             id: m.id,
             change: m.quantityChange,
             reason: m.reason,
-            date: m.createdAt.toISOString(),
+            date: m.createdAt ? new Date(m.createdAt).toISOString() : '',
           })),
         }))}
       />

@@ -120,8 +120,8 @@ export default async function CatalogPage({
 
       {/* 2. Interactive Filter & Sorting Bar with Dynamic Max Price and Collections */}
       <CatalogFilterBar
-        categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
-        collections={collections.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
+        categories={(categories || []).map((c: any) => ({ id: c.id, name: c.name, slug: c.slug }))}
+        collections={(collections || []).map((c: any) => ({ id: c.id, name: c.name, slug: c.slug }))}
         totalProducts={total}
         maxCatalogPrice={maxPriceInDb > 5 ? maxPriceInDb : 120}
       />

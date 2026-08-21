@@ -1,5 +1,10 @@
 packages:
   - "."
-ignoredBuiltDependencies:
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - bcryptjs
+  - esbuild
+  - prisma
   - sharp
   - unrs-resolver

@@ -594,17 +594,17 @@ async function main() {
     include: { values: true },
   });
 
-  const valPlata = attrColor.values.find((v) => v.value.includes('Plata'))!;
-  const valOro = attrColor.values.find((v) => v.value.includes('Oro 18k'))!;
-  const valOroRosa = attrColor.values.find((v) => v.value.includes('Oro Rosa'))!;
+  const valPlata = attrColor.values.find((v: any) => v.value.includes('Plata'))!;
+  const valOro = attrColor.values.find((v: any) => v.value.includes('Oro 18k'))!;
+  const valOroRosa = attrColor.values.find((v: any) => v.value.includes('Oro Rosa'))!;
 
-  const valTalla6 = attrTalla.values.find((v) => v.value.includes('Talla 6'))!;
-  const valTalla7 = attrTalla.values.find((v) => v.value.includes('Talla 7'))!;
-  const valTalla8 = attrTalla.values.find((v) => v.value.includes('Talla 8'))!;
-  const valTalla9 = attrTalla.values.find((v) => v.value.includes('Talla 9'))!;
-  const valLong45 = attrTalla.values.find((v) => v.value.includes('45 cm'))!;
-  const valLong50 = attrTalla.values.find((v) => v.value.includes('50 cm'))!;
-  const valAjustable = attrTalla.values.find((v) => v.value.includes('Ajustable'))!;
+  const valTalla6 = attrTalla.values.find((v: any) => v.value.includes('Talla 6'))!;
+  const valTalla7 = attrTalla.values.find((v: any) => v.value.includes('Talla 7'))!;
+  const valTalla8 = attrTalla.values.find((v: any) => v.value.includes('Talla 8'))!;
+  const valTalla9 = attrTalla.values.find((v: any) => v.value.includes('Talla 9'))!;
+  const valLong45 = attrTalla.values.find((v: any) => v.value.includes('45 cm'))!;
+  const valLong50 = attrTalla.values.find((v: any) => v.value.includes('50 cm'))!;
+  const valAjustable = attrTalla.values.find((v: any) => v.value.includes('Ajustable'))!;
 
   // 10. CREACIÓN DE PRODUCTOS CON NOMBRES CORTOS, DESCRIPCIÓN CORTA Y LARGA
   console.log('💍 Creando catálogo de joyas con nombres concisos y variantes...');

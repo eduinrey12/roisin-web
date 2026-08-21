@@ -20,7 +20,7 @@ export async function generateMetadata({
   const product = await getProductBySlug(slug);
   if (!product) return { title: 'Joya no encontrada | ROISIN' };
 
-  const primaryImg = product.images.find((i) => i.isPrimary)?.url || product.images[0]?.url;
+  const primaryImg = product.images?.find((i: any) => i.isPrimary)?.url || product.images?.[0]?.url;
 
   return {
     title: `${product.title} | ROISIN Joyas`,
@@ -84,7 +84,7 @@ export default async function ProductDetailPage({
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
-    image: product.images.map((i) => i.url),
+    image: (product.images || []).map((i: any) => i.url),
     description: product.shortDescription || product.description,
     sku: product.variants[0]?.sku || product.id,
     brand: {

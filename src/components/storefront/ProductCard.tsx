@@ -32,8 +32,8 @@ export default function ProductCard({ product, isMostDesired = false }: ProductC
   const router = useRouter();
 
   const primaryImg =
-    product.images.find((i) => i.isPrimary)?.url ||
-    product.images[0]?.url ||
+    product.images?.find((i: any) => i.isPrimary)?.url ||
+    product.images?.[0]?.url ||
     'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=800&auto=format&fit=crop';
 
   const price = Number(product.basePrice);

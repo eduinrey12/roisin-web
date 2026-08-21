@@ -15,11 +15,11 @@ function createPrismaClient(): PrismaClient {
       host: parsed.hostname || '127.0.0.1',
       port: parsed.port ? parseInt(parsed.port, 10) : 3306,
       user: decodeURIComponent(parsed.username || 'root'),
-      password: decodeURIComponent(parsed.password || 'qwer'),
+      password: decodeURIComponent(parsed.password || ''),
       database: parsed.pathname.replace(/^\//, '') || 'roisin_db',
-      connectionLimit: 10,
-      connectTimeout: 8000,
-      acquireTimeout: 8000,
+      connectionLimit: 20,
+      connectTimeout: 20000,
+      acquireTimeout: 20000,
       allowPublicKeyRetrieval: true,
     });
   } catch {
@@ -33,23 +33,10 @@ function createPrismaClient(): PrismaClient {
 }
 
 export function getPrismaClient(): PrismaClient {
-  if (globalForPrisma.prisma) {
-    const p = globalForPrisma.prisma as any;
-    // If delegates like faq, review or homeSection are missing, recreate client
-    if (!p.faq || !p.review || !p.promotion || !p.category || !p.product || !p.homeSection) {
-      try {
-        globalForPrisma.prisma.$disconnect().catch(() => {});
-      } catch {}
-      globalForPrisma.prisma = createPrismaClient();
-    }
-    return globalForPrisma.prisma;
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
   }
-
-  const client = createPrismaClient();
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = client;
-  }
-  return client;
+  return globalForPrisma.prisma;
 }
 
 // Proxy wrapper so any direct property access like prisma.faq, prisma.review, etc.

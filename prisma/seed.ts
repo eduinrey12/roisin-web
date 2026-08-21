@@ -27,10 +27,10 @@ const IMAGES = {
   ],
   bracelet1: [
     { url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
-    { url: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop', label: 'Detalle Circonias', isPrimary: false },
+    { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop', label: 'Detalle Circonias', isPrimary: false },
   ],
   bracelet2: [
-    { url: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
+    { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop', label: 'Frontal', isPrimary: true },
     { url: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop', label: 'Puesto en Muñeca', isPrimary: false },
   ],
   earrings1: [
@@ -341,7 +341,7 @@ async function main() {
         location: 'Ambato, Ecuador',
         rating: 5,
         comment: 'Llegó rapidísimo por Servientrega y todo súper bien embalado. Las joyas en persona son aún más hermosas que en las fotos.',
-        mediaUrl: 'https://images.unsplash.com/photo-1611591475152-4779a557b779?q=80&w=800&auto=format&fit=crop',
+        mediaUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop',
         mediaType: 'IMAGE',
         productTitle: 'Brazalete Infinito Plata 925',
         isVerified: true,

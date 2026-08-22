@@ -271,14 +271,6 @@ export async function getProducts(params?: {
         { compareAtPrice: { gt: 0 } },
       ],
     }),
-    ...(params?.query && {
-      OR: [
-        { title: { contains: params.query } },
-        { description: { contains: params.query } },
-        { shortDescription: { contains: params.query } },
-        { tag: { contains: params.query } },
-      ],
-    }),
     ...((params?.minPrice !== undefined || params?.maxPrice !== undefined) && {
       basePrice: {
         ...(params?.minPrice !== undefined && { gte: new Prisma.Decimal(params.minPrice) }),
@@ -286,6 +278,30 @@ export async function getProducts(params?: {
       },
     }),
   };
+
+  // Collation-safe search across MySQL (avoids error 1267)
+  if (params?.query && params.query.trim()) {
+    try {
+      const q = params.query.trim();
+      const matching = await prisma.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM \`Product\`
+        WHERE \`isActive\` = 1
+          AND (
+            \`title\` LIKE CONCAT('%', ${q}, '%')
+            OR \`description\` LIKE CONCAT('%', ${q}, '%')
+            OR (\`shortDescription\` IS NOT NULL AND \`shortDescription\` LIKE CONCAT('%', ${q}, '%'))
+            OR (\`tag\` IS NOT NULL AND \`tag\` LIKE CONCAT('%', ${q}, '%'))
+          )
+      `;
+      const ids = matching.map((m) => m.id);
+      where.id = { in: ids.length > 0 ? ids : ['__no_match_found__'] };
+    } catch {
+      where.OR = [
+        { title: { contains: params.query } },
+        { description: { contains: params.query } },
+      ];
+    }
+  }
 
   let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
   if (params?.sort === 'price_asc') {

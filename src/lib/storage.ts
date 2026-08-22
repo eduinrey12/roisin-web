@@ -50,6 +50,24 @@ export function getUploadsDirectory(): string {
   return path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads');
 }
 
+export function getPossibleUploadDirectories(): string[] {
+  const dirs: string[] = [];
+  if (process.env.UPLOADS_DIR) {
+    dirs.push(path.resolve(/*turbopackIgnore: true*/ process.env.UPLOADS_DIR));
+  }
+  // Standard Next.js paths
+  dirs.push(path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads'));
+  dirs.push(path.join(/*turbopackIgnore: true*/ process.cwd(), '.next', 'standalone', 'public', 'uploads'));
+  
+  // Hostinger relative & standard paths
+  dirs.push(path.join(/*turbopackIgnore: true*/ process.cwd(), '..', 'public', 'uploads'));
+  dirs.push(path.join(/*turbopackIgnore: true*/ process.cwd(), '..', '..', 'public', 'uploads'));
+  dirs.push('/home/u275304993/public_html/uploads');
+  dirs.push('/home/u275304993/domains/roisinjoyasyaccesorios.com/public_html/uploads');
+
+  return dirs;
+}
+
 export async function saveUploadedFile(file: File): Promise<{
   url: string;
   filename: string;
@@ -82,6 +100,15 @@ export async function saveUploadedFile(file: File): Promise<{
 
   await writeFile(filePath, buffer);
 
+  // Also write to public/uploads as fallback
+  const fallbackDir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads');
+  if (fallbackDir !== uploadsDir) {
+    try {
+      await mkdir(fallbackDir, { recursive: true });
+      await writeFile(path.join(fallbackDir, filename), buffer);
+    } catch {}
+  }
+
   // Return standard public URL
   const publicUrl = `/api/uploads/${filename}`;
   return { url: publicUrl, filename, size: file.size };
@@ -107,22 +134,19 @@ export async function readUploadedFile(
   const contentType = extToMime[ext];
   if (!contentType) return null;
 
-  const uploadsDir = getUploadsDirectory();
-  const filePath = path.join(uploadsDir, safeFilename);
-
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) return null;
-    const buffer = await readFile(filePath);
-    return { buffer, contentType };
-  } catch {
-    // If not found in custom uploadsDir, also check public/uploads as fallback
-    const fallbackPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads', safeFilename);
+  const candidateDirs = getPossibleUploadDirectories();
+  for (const dir of candidateDirs) {
     try {
-      const buffer = await readFile(fallbackPath);
-      return { buffer, contentType };
+      const filePath = path.join(dir, safeFilename);
+      const fileStat = await stat(filePath);
+      if (fileStat.isFile()) {
+        const buffer = await readFile(filePath);
+        return { buffer, contentType };
+      }
     } catch {
-      return null;
+      // Continue checking next candidate directory
     }
   }
+
+  return null;
 }

@@ -359,19 +359,85 @@ export default function ProductCreateForm({
     );
   };
 
+  // Helper to parse image label
+  const parseProductImageLabel = (label: string | null | undefined) => {
+    if (!label) return { customLabel: '' };
+    const trimmed = label.trim();
+    if (trimmed.includes('|')) {
+      const [matPart, rest] = trimmed.split('|').map((s) => s.trim());
+      let finishPart = rest || '';
+      let customLabel = '';
+      if (finishPart.includes('-')) {
+        const dashParts = finishPart.split('-');
+        finishPart = dashParts[0].trim();
+        customLabel = dashParts.slice(1).join('-').trim();
+      }
+      const slashParts = finishPart.split('/').map((s) => s.trim());
+      return {
+        material: matPart,
+        metal: slashParts[0] || '',
+        gem: slashParts[1] || '',
+        customLabel,
+      };
+    }
+    return { customLabel: trimmed };
+  };
+
+  // Helper to format image label cleanly without prefix recursion
+  const formatImageLabel = (
+    materialName: string,
+    metalColor: string,
+    gemColor: string | undefined,
+    userLabel: string | undefined
+  ) => {
+    const parsed = parseProductImageLabel(userLabel);
+    const cleanCustom = parsed.customLabel;
+    const finish = `${metalColor || 'Estándar'}${gemColor ? ' / ' + gemColor : ''}`;
+    return `${materialName} | ${finish}${cleanCustom ? ' - ' + cleanCustom : ''}`;
+  };
+
   // ==================== COLOR & IMAGE FINISH HANDLERS ====================
   const handleAddColorFinish = (matId: string) => {
     setMaterialVariants((prev) =>
       prev.map((m) => {
         if (m.id !== matId) return m;
+
+        // Find a unique metal + gem pair not already used in this material
+        let chosenMetal = metalColorOptions[0]?.value || initialMetalColor;
+        let chosenGem = gemColorOptions[0]?.value || initialGemColor;
+        let foundUnique = false;
+
+        for (const mOpt of metalColorOptions) {
+          for (const gOpt of gemColorOptions) {
+            const exists = m.colors.some(
+              (c) => c.metalColor === mOpt.value && (c.gemColor || '') === (gOpt.value || '')
+            );
+            if (!exists) {
+              chosenMetal = mOpt.value;
+              chosenGem = gOpt.value;
+              foundUnique = true;
+              break;
+            }
+          }
+          if (foundUnique) break;
+        }
+
+        if (!foundUnique) {
+          setError(
+            `⚠️ Ya has configurado todas las combinaciones de metal y gema posibles para "${m.materialName}".`
+          );
+          return m;
+        }
+
+        setError('');
         return {
           ...m,
           colors: [
             ...m.colors,
             {
               id: `col-${matId}-${Date.now()}`,
-              metalColor: initialMetalColor,
-              gemColor: initialGemColor,
+              metalColor: chosenMetal,
+              gemColor: chosenGem,
               images: [],
               pendingFile: null,
               pendingPreviewUrl: '',
@@ -406,6 +472,29 @@ export default function ProductCreateForm({
     field: 'metalColor' | 'gemColor',
     value: string
   ) => {
+    const mat = materialVariants.find((m) => m.id === matId);
+    const col = mat?.colors.find((c) => c.id === colId);
+    if (mat && col) {
+      const nextMetal = field === 'metalColor' ? value : col.metalColor;
+      const nextGem = field === 'gemColor' ? value : col.gemColor || '';
+
+      const isDuplicate = mat.colors.some(
+        (c) =>
+          c.id !== colId &&
+          c.metalColor === nextMetal &&
+          (c.gemColor || '') === nextGem
+      );
+
+      if (isDuplicate) {
+        const finishName = `${nextMetal}${nextGem ? ' / ' + nextGem : ''}`;
+        setError(
+          `⚠️ La combinación "${finishName}" ya existe en este material. Elige una opción diferente.`
+        );
+        return;
+      }
+    }
+
+    setError('');
     setMaterialVariants((prev) =>
       prev.map((m) => {
         if (m.id !== matId) return m;
@@ -589,9 +678,23 @@ export default function ProductCreateForm({
     e.preventDefault();
     setError('');
 
-    // 1. Mandatory photos validation per combination finish (Metal + Gem)
+    // 1. Mandatory photos & duplicate validation per finish
     for (const mat of materialVariants) {
+      const comboSet = new Set<string>();
+
       for (const col of mat.colors) {
+        const key = `${col.metalColor}|||${col.gemColor || ''}`;
+        if (comboSet.has(key)) {
+          const finishName = `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`;
+          setError(
+            `⚠️ La combinación "${finishName}" está repetida en "${mat.materialName}". Elimina o modifica la combinación duplicada.`
+          );
+          const el = document.getElementById(`color-finish-${col.id}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        comboSet.add(key);
+
         if (col.images.length === 0) {
           const finishName = col.metalColor
             ? `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
@@ -610,19 +713,22 @@ export default function ProductCreateForm({
       }
     }
 
-    // Collect all images across all color finishes with structured labels
+    // Collect all images across all color finishes with clean structured labels
     const allImages: { url: string; label?: string; isPrimary?: boolean; altText?: string }[] = [];
     materialVariants.forEach((m) => {
       m.colors.forEach((c) => {
         c.images.forEach((img) => {
-          const formattedLabel = `${m.materialName} | ${c.metalColor || ''}${
-            c.gemColor ? ' / ' + c.gemColor : ''
-          }${img.label ? ' - ' + img.label : ''}`;
+          const formattedLabel = formatImageLabel(
+            m.materialName,
+            c.metalColor,
+            c.gemColor,
+            img.label
+          );
           allImages.push({
             url: img.url,
             label: formattedLabel,
             isPrimary: img.isPrimary,
-            altText: `${formData.title} - ${m.materialName} ${c.metalColor} ${c.gemColor}`,
+            altText: `${formData.title} - ${m.materialName} ${c.metalColor} ${c.gemColor || ''}`.trim(),
           });
         });
       });

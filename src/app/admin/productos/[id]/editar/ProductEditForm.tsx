@@ -12,7 +12,6 @@ import {
   Layers,
   Palette,
   Ruler,
-  DollarSign,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -57,11 +56,17 @@ interface JewelryColorItem {
   type: 'METAL' | 'GEM';
 }
 
+interface ColorImageItem {
+  url: string;
+  label?: string;
+  isPrimary?: boolean;
+}
+
 interface ColorFinishState {
   id: string;
   metalColor: string;
   gemColor: string;
-  images: { url: string; label?: string; isPrimary?: boolean }[];
+  images: ColorImageItem[];
   pendingFile: File | null;
   pendingPreviewUrl: string;
   pendingImageLabel: string;
@@ -110,6 +115,53 @@ interface ProductEditFormProps {
   jewelryColors?: JewelryColorItem[];
 }
 
+// Helper to parse image label and extract custom label, material, and finish
+function parseProductImageLabel(label: string | null | undefined): {
+  material?: string;
+  metal?: string;
+  gem?: string;
+  customLabel: string;
+} {
+  if (!label) return { customLabel: '' };
+  const trimmed = label.trim();
+  if (trimmed.includes('|')) {
+    const [matPart, rest] = trimmed.split('|').map((s) => s.trim());
+    let finishPart = rest || '';
+    let customLabel = '';
+    if (finishPart.includes('-')) {
+      const dashParts = finishPart.split('-');
+      finishPart = dashParts[0].trim();
+      customLabel = dashParts.slice(1).join('-').trim();
+    }
+
+    const slashParts = finishPart.split('/').map((s) => s.trim());
+    const metal = slashParts[0] || '';
+    const gem = slashParts[1] || '';
+
+    return {
+      material: matPart,
+      metal,
+      gem,
+      customLabel,
+    };
+  }
+
+  return { customLabel: trimmed };
+}
+
+// Helper to format image label cleanly without prefix duplication
+function formatImageLabel(
+  materialName: string,
+  metalColor: string,
+  gemColor: string | undefined,
+  userLabel: string | undefined
+): string {
+  const parsed = parseProductImageLabel(userLabel);
+  const cleanCustom = parsed.customLabel;
+  const finish = `${metalColor || 'Estándar'}${gemColor ? ' / ' + gemColor : ''}`;
+  return `${materialName} | ${finish}${cleanCustom ? ' - ' + cleanCustom : ''}`;
+}
+
 export default function ProductEditForm({
   product,
   categories,
@@ -132,14 +184,17 @@ export default function ProductEditForm({
     isActive: product.isActive !== undefined ? product.isActive : true,
   });
 
-  // Reconstruct materialVariants from existing product data
+  // Reconstruct materialVariants accurately from existing product data
   const initialMaterialVariants = useMemo<MaterialVariantState[]>(() => {
-    const matMap: Record<string, {
-      prices: number[];
-      stocks: number[];
-      sizes: Map<string, { priceOverride?: string; stock?: string }>;
-      colors: Map<string, { metal: string; gem: string }>;
-    }> = {};
+    const matMap: Record<
+      string,
+      {
+        prices: number[];
+        stocks: number[];
+        sizes: Map<string, { priceOverride?: string; stock?: string }>;
+        colors: Map<string, { metal: string; gem: string }>;
+      }
+    > = {};
 
     product.variants.forEach((v) => {
       let mat = '';
@@ -207,7 +262,7 @@ export default function ProductEditForm({
               gemColor: jewelryColors.find((c) => c.type === 'GEM')?.name || '',
               images: product.images.map((img) => ({
                 url: img.url,
-                label: img.label || '',
+                label: parseProductImageLabel(img.label).customLabel,
                 isPrimary: img.isPrimary,
               })),
               pendingFile: null,
@@ -222,7 +277,8 @@ export default function ProductEditForm({
 
     return entries.map(([matName, matData], mIdx) => {
       const officialMat = materials.find((m) => m.name === matName);
-      const minPrice = matData.prices.length > 0 ? Math.min(...matData.prices) : Number(product.basePrice) || 48;
+      const minPrice =
+        matData.prices.length > 0 ? Math.min(...matData.prices) : Number(product.basePrice) || 48;
       const avgStock = matData.stocks.length > 0 ? matData.stocks[0] : 15;
 
       const reconstructedSizes = Array.from(matData.sizes.entries()).map(([szName, szData]) => ({
@@ -235,23 +291,23 @@ export default function ProductEditForm({
       const colorEntries = Array.from(matData.colors.entries());
 
       if (colorEntries.length === 0) {
-        // Fallback color
+        // Find images strictly matching this material
         const matImages = product.images.filter((img) => {
+          const parsed = parseProductImageLabel(img.label);
+          if (parsed.material) {
+            return parsed.material.toLowerCase() === matName.toLowerCase();
+          }
           const l = (img.label || '').toLowerCase();
-          return l.includes(matName.toLowerCase()) || entries.length === 1;
+          return l.includes(matName.toLowerCase());
         });
 
         reconstructedColors.push({
           id: `col-${mIdx + 1}-1`,
           metalColor: jewelryColors.find((c) => c.type === 'METAL')?.name || 'Plateado Rodio',
           gemColor: jewelryColors.find((c) => c.type === 'GEM')?.name || '',
-          images: matImages.length > 0 ? matImages.map((img) => ({
+          images: matImages.map((img) => ({
             url: img.url,
-            label: img.label || '',
-            isPrimary: img.isPrimary,
-          })) : product.images.map((img) => ({
-            url: img.url,
-            label: img.label || '',
+            label: parseProductImageLabel(img.label).customLabel,
             isPrimary: img.isPrimary,
           })),
           pendingFile: null,
@@ -261,28 +317,35 @@ export default function ProductEditForm({
         });
       } else {
         colorEntries.forEach(([colKey, colObj], cIdx) => {
-          // Find images matching this material and color
+          // Find images strictly matching this material AND this specific finish
           const matchingImages = product.images.filter((img) => {
-            const l = (img.label || '').toLowerCase();
-            const matPart = matName.toLowerCase();
-            const colPart = colKey.toLowerCase();
-            const metalPart = colObj.metal.toLowerCase();
-            return (
-              (l.includes(matPart) && (l.includes(colPart) || l.includes(metalPart))) ||
-              l.includes(colPart) ||
-              (entries.length === 1 && colorEntries.length === 1)
-            );
-          });
+            const parsed = parseProductImageLabel(img.label);
+            if (parsed.material) {
+              const matMatch = parsed.material.toLowerCase() === matName.toLowerCase();
+              const metalMatch =
+                !parsed.metal || parsed.metal.toLowerCase() === colObj.metal.toLowerCase();
+              const gemMatch =
+                !parsed.gem || parsed.gem.toLowerCase() === (colObj.gem || '').toLowerCase();
+              return matMatch && metalMatch && (gemMatch || !colObj.gem);
+            }
 
-          const imgsToUse = matchingImages.length > 0 ? matchingImages : product.images;
+            const rawLabel = (img.label || '').toLowerCase();
+            const alt = (img.altText || '').toLowerCase();
+            const combined = `${rawLabel} ${alt}`;
+
+            const matchesMat = combined.includes(matName.toLowerCase());
+            const matchesMetal = combined.includes(colObj.metal.toLowerCase());
+            const matchesGem = colObj.gem ? combined.includes(colObj.gem.toLowerCase()) : true;
+            return matchesMat && matchesMetal && matchesGem;
+          });
 
           reconstructedColors.push({
             id: `col-${mIdx + 1}-${cIdx + 1}`,
             metalColor: colObj.metal,
             gemColor: colObj.gem,
-            images: imgsToUse.map((img) => ({
+            images: matchingImages.map((img) => ({
               url: img.url,
-              label: img.label || '',
+              label: parseProductImageLabel(img.label).customLabel,
               isPrimary: img.isPrimary,
             })),
             pendingFile: null,
@@ -296,7 +359,9 @@ export default function ProductEditForm({
       return {
         id: `mat-${mIdx + 1}`,
         materialName: matName,
-        description: officialMat?.description || 'Material certificado de joyería fina de alta durabilidad e hipoalergénico.',
+        description:
+          officialMat?.description ||
+          'Material certificado de joyería fina de alta durabilidad e hipoalergénico.',
         basePrice: String(minPrice),
         initialStock: String(avgStock),
         selectedSizes: reconstructedSizes,
@@ -305,7 +370,8 @@ export default function ProductEditForm({
     });
   }, [product, materials, jewelryColors]);
 
-  const [materialVariants, setMaterialVariants] = useState<MaterialVariantState[]>(initialMaterialVariants);
+  const [materialVariants, setMaterialVariants] =
+    useState<MaterialVariantState[]>(initialMaterialVariants);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -409,7 +475,7 @@ export default function ProductEditForm({
           {
             id: `col-${Date.now()}-1`,
             metalColor: metalColorOptions[0]?.value || 'Plateado Rodio',
-            gemColor: gemColorOptions[1]?.value || '',
+            gemColor: gemColorOptions[0]?.value || '',
             images: [],
             pendingFile: null,
             pendingPreviewUrl: '',
@@ -501,19 +567,47 @@ export default function ProductEditForm({
     );
   };
 
-  // Handlers for Colors & Images
+  // Handlers for Colors & Images with Duplicate Combination Prevention
   const handleAddColorFinish = (matId: string) => {
     setMaterialVariants((prev) =>
       prev.map((m) => {
         if (m.id === matId) {
+          // Find a unique metal + gem pair not already used in this material
+          let chosenMetal = metalColorOptions[0]?.value || 'Plateado Rodio';
+          let chosenGem = gemColorOptions[0]?.value || '';
+          let foundUnique = false;
+
+          for (const mOpt of metalColorOptions) {
+            for (const gOpt of gemColorOptions) {
+              const exists = m.colors.some(
+                (c) => c.metalColor === mOpt.value && (c.gemColor || '') === (gOpt.value || '')
+              );
+              if (!exists) {
+                chosenMetal = mOpt.value;
+                chosenGem = gOpt.value;
+                foundUnique = true;
+                break;
+              }
+            }
+            if (foundUnique) break;
+          }
+
+          if (!foundUnique) {
+            setError(
+              `⚠️ Ya has agregado todas las combinaciones de metal y gema posibles para "${m.materialName}".`
+            );
+            return m;
+          }
+
+          setError('');
           return {
             ...m,
             colors: [
               ...m.colors,
               {
                 id: `col-${Date.now()}-${m.colors.length + 1}`,
-                metalColor: metalColorOptions[0]?.value || 'Plateado Rodio',
-                gemColor: gemColorOptions[0]?.value || '',
+                metalColor: chosenMetal,
+                gemColor: chosenGem,
                 images: [],
                 pendingFile: null,
                 pendingPreviewUrl: '',
@@ -549,6 +643,29 @@ export default function ProductEditForm({
     field: 'metalColor' | 'gemColor',
     val: string
   ) => {
+    const mat = materialVariants.find((m) => m.id === matId);
+    const col = mat?.colors.find((c) => c.id === colId);
+    if (mat && col) {
+      const nextMetal = field === 'metalColor' ? val : col.metalColor;
+      const nextGem = field === 'gemColor' ? val : col.gemColor || '';
+
+      const isDuplicate = mat.colors.some(
+        (c) =>
+          c.id !== colId &&
+          c.metalColor === nextMetal &&
+          (c.gemColor || '') === nextGem
+      );
+
+      if (isDuplicate) {
+        const finishName = `${nextMetal}${nextGem ? ' / ' + nextGem : ''}`;
+        setError(
+          `⚠️ La combinación "${finishName}" ya existe en este material. Elige una opción diferente.`
+        );
+        return;
+      }
+    }
+
+    setError('');
     setMaterialVariants((prev) =>
       prev.map((m) => {
         if (m.id === matId) {
@@ -635,7 +752,7 @@ export default function ProductEditForm({
                       ...c.images,
                       {
                         url: serverUrl,
-                        label: c.pendingImageLabel || `${m.materialName} - ${c.metalColor}`,
+                        label: c.pendingImageLabel || '',
                         isPrimary: isFirst,
                       },
                     ],
@@ -736,9 +853,23 @@ export default function ProductEditForm({
     setError('');
     setSuccessMsg('');
 
-    // 1. Mandatory photos validation per combination finish
+    // 1. Mandatory photos & duplicate validation per finish
     for (const mat of materialVariants) {
+      const comboSet = new Set<string>();
+
       for (const col of mat.colors) {
+        const key = `${col.metalColor}|||${col.gemColor || ''}`;
+        if (comboSet.has(key)) {
+          const finishName = `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`;
+          setError(
+            `⚠️ La combinación "${finishName}" está repetida en "${mat.materialName}". Elimina o modifica la combinación duplicada.`
+          );
+          const el = document.getElementById(`color-finish-${col.id}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        comboSet.add(key);
+
         if (col.images.length === 0) {
           const finishName = col.metalColor
             ? `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
@@ -757,19 +888,22 @@ export default function ProductEditForm({
       }
     }
 
-    // Collect all images across all color finishes with structured labels
+    // Collect all images across all color finishes with clean structured labels
     const allImages: { url: string; label?: string; isPrimary?: boolean; altText?: string }[] = [];
     materialVariants.forEach((m) => {
       m.colors.forEach((c) => {
         c.images.forEach((img) => {
-          const formattedLabel = `${m.materialName} | ${c.metalColor || ''}${
-            c.gemColor ? ' / ' + c.gemColor : ''
-          }${img.label ? ' - ' + img.label : ''}`;
+          const formattedLabel = formatImageLabel(
+            m.materialName,
+            c.metalColor,
+            c.gemColor,
+            img.label
+          );
           allImages.push({
             url: img.url,
             label: formattedLabel,
             isPrimary: img.isPrimary,
-            altText: `${formData.title} - ${m.materialName} ${c.metalColor} ${c.gemColor}`,
+            altText: `${formData.title} - ${m.materialName} ${c.metalColor} ${c.gemColor || ''}`.trim(),
           });
         });
       });
@@ -982,7 +1116,9 @@ export default function ProductEditForm({
             <input
               type="text"
               value={formData.shortDescription}
-              onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))
+              }
               className="w-full px-4 py-2.5 bg-[#FAF8FC] border border-[#DFD0EC] rounded-2xl text-xs focus:outline-hidden focus:border-[#7043A0] transition"
             />
           </div>
@@ -996,7 +1132,9 @@ export default function ProductEditForm({
               rows={4}
               required
               value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, description: e.target.value }))
+              }
               className="w-full px-4 py-3 bg-[#FAF8FC] border border-[#DFD0EC] rounded-2xl text-xs focus:outline-hidden focus:border-[#7043A0] transition"
             />
           </div>
@@ -1207,7 +1345,12 @@ export default function ProductEditForm({
                                 placeholder={`$${mat.basePrice}`}
                                 value={selectedData?.priceOverride || ''}
                                 onChange={(e) =>
-                                  handleSizeOverrideChange(mat.id, size.name, 'priceOverride', e.target.value)
+                                  handleSizeOverrideChange(
+                                    mat.id,
+                                    size.name,
+                                    'priceOverride',
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full px-2 py-1 bg-[#FAF8FC] border border-[#DFD0EC] rounded-lg text-xs font-bold text-[#3F235F]"
                               />
@@ -1220,7 +1363,12 @@ export default function ProductEditForm({
                                 placeholder={mat.initialStock}
                                 value={selectedData?.stock || ''}
                                 onChange={(e) =>
-                                  handleSizeOverrideChange(mat.id, size.name, 'stock', e.target.value)
+                                  handleSizeOverrideChange(
+                                    mat.id,
+                                    size.name,
+                                    'stock',
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full px-2 py-1 bg-[#FAF8FC] border border-[#DFD0EC] rounded-lg text-xs font-bold text-zinc-800"
                               />
@@ -1351,7 +1499,9 @@ export default function ProductEditForm({
                             <label className="font-bold text-zinc-700 block">Color del Metal</label>
                             <CustomSelect
                               value={col.metalColor}
-                              onChange={(val) => handleColorChange(mat.id, col.id, 'metalColor', val)}
+                              onChange={(val) =>
+                                handleColorChange(mat.id, col.id, 'metalColor', val)
+                              }
                               options={metalColorOptions}
                               triggerClassName="py-2.5 px-3.5 rounded-xl bg-[#FAF8FC] border border-[#DFD0EC] text-xs font-semibold text-zinc-900"
                             />
@@ -1361,7 +1511,9 @@ export default function ProductEditForm({
                             <label className="font-bold text-zinc-700 block">Color / Tipo de Gema</label>
                             <CustomSelect
                               value={col.gemColor}
-                              onChange={(val) => handleColorChange(mat.id, col.id, 'gemColor', val)}
+                              onChange={(val) =>
+                                handleColorChange(mat.id, col.id, 'gemColor', val)
+                              }
                               options={gemColorOptions}
                               triggerClassName="py-2.5 px-3.5 rounded-xl bg-[#FAF8FC] border border-[#DFD0EC] text-xs font-semibold text-zinc-900"
                             />

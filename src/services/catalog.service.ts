@@ -508,7 +508,8 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
     for (let mIdx = 0; mIdx < data.materials.length; mIdx++) {
       const mat = data.materials[mIdx];
       const matPrice = Number(mat.basePrice) || basePrice || 10;
-      const matCode = mat.materialName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `M${mIdx + 1}`;
+      const matCode =
+        mat.materialName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `M${mIdx + 1}`;
 
       // Get or create material attribute value
       let matVal = await prisma.productAttributeValue.findFirst({
@@ -520,14 +521,39 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
         });
       }
 
-      if (mat.sizes && mat.sizes.length > 0) {
-        for (let sIdx = 0; sIdx < mat.sizes.length; sIdx++) {
-          const sz = mat.sizes[sIdx];
+      const colorsList = mat.colors && mat.colors.length > 0
+        ? mat.colors
+        : [{ metalColor: 'Estándar', gemColor: undefined }];
+
+      const sizesList = mat.sizes && mat.sizes.length > 0
+        ? mat.sizes
+        : [{ sizeName: 'Estándar', price: null, stock: mat.initialStock ?? 10 }];
+
+      for (let cIdx = 0; cIdx < colorsList.length; cIdx++) {
+        const col = colorsList[cIdx];
+        const colorName = col.metalColor
+          ? `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
+          : 'Acabado Estándar';
+        const colCode =
+          colorName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `C${cIdx + 1}`;
+
+        let colorVal = await prisma.productAttributeValue.findFirst({
+          where: { attributeId: attrColor.id, value: colorName },
+        });
+        if (!colorVal) {
+          colorVal = await prisma.productAttributeValue.create({
+            data: { attributeId: attrColor.id, value: colorName },
+          });
+        }
+
+        for (let sIdx = 0; sIdx < sizesList.length; sIdx++) {
+          const sz = sizesList[sIdx];
           const szPrice =
             sz.price != null && Number(sz.price) > 0 ? Number(sz.price) : matPrice;
           const szStock = sz.stock != null ? Number(sz.stock) : (mat.initialStock ?? 10);
-          const szCode = sz.sizeName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `T${sIdx + 1}`;
-          const sku = `${slugPrefix}-${matCode}-${szCode}-${mIdx + 1}${sIdx + 1}`;
+          const szCode =
+            sz.sizeName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `T${sIdx + 1}`;
+          const sku = `${slugPrefix}-${matCode}-${colCode}-${szCode}-${mIdx + 1}${cIdx + 1}${sIdx + 1}`;
 
           // Get or create size attribute value
           let sizeVal = await prisma.productAttributeValue.findFirst({
@@ -544,18 +570,9 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
             price: new Prisma.Decimal(szPrice),
             compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
             initialStock: szStock,
-            attributeValueIds: [matVal.id, sizeVal.id],
+            attributeValueIds: [matVal.id, colorVal.id, sizeVal.id],
           });
         }
-      } else {
-        const sku = `${slugPrefix}-${matCode}-${mIdx + 1}`;
-        variantsToCreate.push({
-          sku,
-          price: new Prisma.Decimal(matPrice),
-          compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
-          initialStock: mat.initialStock ?? 10,
-          attributeValueIds: [matVal.id],
-        });
       }
     }
   } else if (data.variants && data.variants.length > 0) {

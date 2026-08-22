@@ -63,9 +63,32 @@ interface AddToCartSectionProps {
     }[];
   };
   onVariantChange?: (variantId: string) => void;
+  selectedMaterial?: string;
+  onSelectMaterial?: (mat: string) => void;
+  materialsList?: string[];
+  selectedColor?: string;
+  onSelectColor?: (col: string) => void;
+  availableColors?: string[];
+  selectedSize?: string;
+  onSelectSize?: (sz: string) => void;
+  availableSizes?: string[];
+  activeVariant?: any;
 }
 
-export default function AddToCartSection({ product, onVariantChange }: AddToCartSectionProps) {
+export default function AddToCartSection({
+  product,
+  onVariantChange,
+  selectedMaterial: extMaterial,
+  onSelectMaterial: extOnSelectMaterial,
+  materialsList: extMaterialsList,
+  selectedColor: extColor,
+  onSelectColor: extOnSelectColor,
+  availableColors: extAvailableColors,
+  selectedSize: extSize,
+  onSelectSize: extOnSelectSize,
+  availableSizes: extAvailableSizes,
+  activeVariant: extActiveVariant,
+}: AddToCartSectionProps) {
   const router = useRouter();
   const { addItem, openCart } = useCartStore();
   const packScrollRef = useRef<HTMLDivElement>(null);
@@ -75,7 +98,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
     setMounted(true);
   }, []);
 
-  // --- Attribute & Variant Extraction ---
+  // --- Fallback Attribute & Variant Extraction if external props not provided ---
   const { colorAttrValues, sizeAttrValues, hasMultiAttributes } = useMemo(() => {
     const colors = new Set<string>();
     const sizes = new Set<string>();
@@ -106,10 +129,20 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
     };
   }, [product.variants]);
 
-  // Initial selections
-  const [selectedColor, setSelectedColor] = useState<string>(colorAttrValues[0] || '');
-  const [selectedSize, setSelectedSize] = useState<string>(sizeAttrValues[0] || '');
-  const [selectedVariantId, setSelectedVariantId] = useState<string>(product.variants[0]?.id || '');
+  // Internal state fallback
+  const [intSelectedColor, setIntSelectedColor] = useState<string>(colorAttrValues[0] || '');
+  const [intSelectedSize, setIntSelectedSize] = useState<string>(sizeAttrValues[0] || '');
+  const [intSelectedVariantId, setIntSelectedVariantId] = useState<string>(product.variants[0]?.id || '');
+
+  const selectedColor = extColor !== undefined ? extColor : intSelectedColor;
+  const setSelectedColor = extOnSelectColor || setIntSelectedColor;
+
+  const selectedSize = extSize !== undefined ? extSize : intSelectedSize;
+  const setSelectedSize = extOnSelectSize || setIntSelectedSize;
+
+  const currentVariant = extActiveVariant ||
+    product.variants.find((v) => v.id === intSelectedVariantId) ||
+    product.variants[0];
 
   // Options (Presentation / Packaging)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
@@ -167,14 +200,11 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
       }
     }
 
-    if (match && match.id !== selectedVariantId) {
-      setSelectedVariantId(match.id);
+    if (match && match.id !== intSelectedVariantId) {
+      setIntSelectedVariantId(match.id);
       if (onVariantChange) onVariantChange(match.id);
     }
-  }, [selectedColor, selectedSize, hasMultiAttributes, product.variants, selectedVariantId, onVariantChange]);
-
-  const currentVariant =
-    product.variants.find((v) => v.id === selectedVariantId) || product.variants[0];
+  }, [selectedColor, selectedSize, hasMultiAttributes, product.variants, intSelectedVariantId, onVariantChange]);
 
   const variantPrice = currentVariant ? Number(currentVariant.price) : Number(product.basePrice);
   const compareAt = currentVariant?.compareAtPrice
@@ -198,7 +228,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
   const isOutOfStock = stock <= 0;
 
   const handleSelectSingleVariant = (variantId: string) => {
-    setSelectedVariantId(variantId);
+    setIntSelectedVariantId(variantId);
     if (onVariantChange) onVariantChange(variantId);
   };
 
@@ -311,8 +341,112 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
           </span>
         </div>
 
-        {/* 5. VARIANTES CONECTADAS (Color / Material & Tallas) */}
-        {hasMultiAttributes ? (
+        {/* 5. VARIANTES CONECTADAS (Material, Color & Tallas) */}
+        {extMaterialsList && extMaterialsList.length > 0 ? (
+          <div className="space-y-4 pt-2 border-t border-[#DFD0EC]">
+            {/* 5A. Selector de Material (si hay más de 1 material) */}
+            {extMaterialsList.length > 1 && (
+              <div className="space-y-2">
+                <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
+                  <span>Material de la Joya:</span>
+                  <span className="text-[#7043A0] font-bold">
+                    {extMaterial}
+                  </span>
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {extMaterialsList.map((mat) => {
+                    const isSelected = mat === extMaterial;
+                    return (
+                      <button
+                        key={mat}
+                        type="button"
+                        onClick={() => extOnSelectMaterial && extOnSelectMaterial(mat)}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'btn-purple-diamond shadow-xs'
+                            : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                        }`}
+                      >
+                        <RoisinDiamond size={11} color={isSelected ? '#FFFFFF' : '#7043A0'} />
+                        <span>{mat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 5B. Selector de Acabado / Color (Metal + Gema) */}
+            {extAvailableColors && extAvailableColors.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 flex items-center justify-between">
+                  <span>Color / Acabado:</span>
+                  <span className="text-[#7043A0] font-bold">
+                    {selectedColor || 'Estándar'}
+                  </span>
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {extAvailableColors.map((color) => {
+                    const isSelected = color === selectedColor;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer flex items-center gap-2 ${
+                          isSelected
+                            ? 'btn-purple-diamond shadow-xs'
+                            : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                        }`}
+                      >
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#7043A0] shrink-0 opacity-80" />
+                        <span>{color}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 5C. Selector de Talla / Medida */}
+            {extAvailableSizes && extAvailableSizes.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs uppercase font-bold tracking-wider text-zinc-800 block">
+                    Medida / Talla:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setSizeGuideOpen(true)}
+                    className="text-[10.5px] font-bold text-[#3F235F] hover:text-[#7043A0] inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] transition cursor-pointer shadow-2xs"
+                  >
+                    <Ruler size={12} className="text-[#7043A0]" /> Guía de Tallas
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-2.5">
+                  {extAvailableSizes.map((size) => {
+                    const isSelected = size === selectedSize;
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                          isSelected
+                            ? 'btn-purple-diamond shadow-xs'
+                            : 'border-[#DFD0EC] bg-[#F8F5FA] text-zinc-800 hover:border-[#7043A0]'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : hasMultiAttributes ? (
           <div className="space-y-3.5 pt-1 border-t border-[#DFD0EC]">
             {/* 5A. Selector de Color / Material */}
             <div className="space-y-2">
@@ -411,7 +545,7 @@ export default function AddToCartSection({ product, onVariantChange }: AddToCart
                   v.attributes?.map((a) => a.attributeValue.value).join(' - ') ||
                   v.sku.split('-').pop() ||
                   v.sku;
-                const isSelected = v.id === selectedVariantId;
+                const isSelected = v.id === (currentVariant?.id || '');
 
                 return (
                   <button

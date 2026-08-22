@@ -1,8 +1,7 @@
 import { getProductBySlug, getRelatedProducts } from '@/services/catalog.service';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ProductGallery from '@/components/storefront/ProductGallery';
-import AddToCartSection from '@/components/storefront/AddToCartSection';
+import ProductDetailClient from './ProductDetailClient';
 import ProductCard from '@/components/storefront/ProductCard';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import { serializePlain } from '@/lib/utils';
@@ -129,24 +128,8 @@ export default async function ProductDetailPage({
         </span>
       </nav>
 
-      {/* Main Grid: Gallery (Left - 6 cols, Sticky Scroll) + Purchasing Details (Right - 6 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
-        {/* Left Column: Sticky Gallery with Direct Navigation Arrows & Discount Badge */}
-        <div className="lg:col-span-6 lg:sticky lg:top-24 self-start">
-          <ProductGallery
-            images={product.images}
-            title={product.title}
-            discountPercent={product.discountPercent}
-            compareAtPrice={product.compareAtPrice}
-            basePrice={product.basePrice}
-          />
-        </div>
-
-        {/* Right Column: Title -> Short Desc -> Long Desc -> Price -> Variants -> Presentations Carousel -> Dedication -> Add to Cart */}
-        <div className="lg:col-span-6 flex flex-col">
-          <AddToCartSection product={enhancedProduct} />
-        </div>
-      </div>
+      {/* Synchronized Product Detail & Dynamic Gallery */}
+      <ProductDetailClient product={enhancedProduct} />
 
       {/* Related Products Section ("Otras personas combinaron con") */}
       {filteredRelated.length > 0 && (

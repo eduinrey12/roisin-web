@@ -33,8 +33,10 @@ export default function ProductGallery({
   useEffect(() => {
     if (selectedImageIndex !== undefined && selectedImageIndex >= 0 && selectedImageIndex < images.length) {
       setSelectedIdx(selectedImageIndex);
+    } else {
+      setSelectedIdx(0);
     }
-  }, [selectedImageIndex, images.length]);
+  }, [selectedImageIndex, images]);
 
   const activeImages =
     images.length > 0

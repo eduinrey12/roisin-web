@@ -17,9 +17,11 @@ function createPrismaClient(): PrismaClient {
       user: decodeURIComponent(parsed.username || 'root'),
       password: decodeURIComponent(parsed.password || ''),
       database: parsed.pathname.replace(/^\//, '') || 'roisin_db',
-      connectionLimit: 10,
-      connectTimeout: 20000,
-      acquireTimeout: 20000,
+      connectionLimit: 5,
+      connectTimeout: 6000,
+      acquireTimeout: 6000,
+      idleTimeout: 120000,
+      minDelayValidation: 500,
       allowPublicKeyRetrieval: true,
     });
   } catch {

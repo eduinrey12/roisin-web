@@ -187,20 +187,26 @@ export default function ProductCreateForm({
     ];
   }, [collections]);
 
-  const materialOptions = useMemo(() => {
+  const getAvailableMaterialOptions = (currentMatId: string) => {
+    const selectedInOtherCards = materialVariants
+      .filter((m) => m.id !== currentMatId)
+      .map((m) => m.materialName);
+
     if (materials.length > 0) {
-      return materials.map((m) => ({
-        value: m.name,
-        label: m.name,
-      }));
+      return materials
+        .filter((m) => !selectedInOtherCards.includes(m.name))
+        .map((m) => ({
+          value: m.name,
+          label: m.name,
+        }));
     }
     return [
       { value: 'Plata de Ley 925', label: 'Plata de Ley 925' },
       { value: 'Baño de Oro 18k', label: 'Baño de Oro 18k' },
       { value: 'Oro Rosa 18k', label: 'Oro Rosa 18k' },
       { value: 'Acero Quirúrgico 316L', label: 'Acero Quirúrgico 316L' },
-    ];
-  }, [materials]);
+    ].filter((m) => !selectedInOtherCards.includes(m.value));
+  };
 
   const metalColorOptions = useMemo(() => {
     const metals = jewelryColors.filter((c) => c.type === 'METAL');
@@ -230,14 +236,30 @@ export default function ProductCreateForm({
     ];
   }, [jewelryColors]);
 
+  const canAddMoreMaterials = useMemo(() => {
+    const maxAvailable = materials.length > 0 ? materials.length : 4;
+    return materialVariants.length < maxAvailable;
+  }, [materials.length, materialVariants.length]);
+
   // ==================== MATERIAL VARIANT HANDLERS ====================
   const handleAddMaterial = () => {
+    const selectedNames = materialVariants.map((m) => m.materialName);
+    const remaining = materials.filter((m) => !selectedNames.includes(m.name));
+
+    if (remaining.length === 0 && materials.length > 0) {
+      alert('Todos los materiales registrados en el catálogo ya han sido añadidos.');
+      return;
+    }
+
     const nextMat =
-      materials.find((m) => !materialVariants.some((mv) => mv.materialName === m.name))?.name ||
-      'Baño de Oro 18k';
+      remaining[0]?.name ||
+      ['Plata de Ley 925', 'Baño de Oro 18k', 'Oro Rosa 18k', 'Acero Quirúrgico 316L'].find(
+        (n) => !selectedNames.includes(n)
+      ) ||
+      'Otro Material';
     const nextDesc =
       materials.find((m) => m.name === nextMat)?.description ||
-      'Estructura de plata 925 con triple baño electrolítico de oro amarillo de 18 quilates.';
+      'Estructura forjada con finos acabados de joyería artesanal.';
 
     setMaterialVariants((prev) => [
       ...prev,
@@ -569,14 +591,30 @@ export default function ProductCreateForm({
     e.preventDefault();
     setError('');
 
-    // Collect all images across all color finishes
+    // 1. Mandatory photos validation per material
+    for (const mat of materialVariants) {
+      const totalPhotos = mat.colors.reduce((sum, c) => sum + c.images.length, 0);
+      if (totalPhotos === 0) {
+        setError(`⚠️ El material "${mat.materialName}" debe tener al menos una fotografía subida.`);
+        const el = document.getElementById(`material-colors-${mat.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+    }
+
+    // Collect all images across all color finishes with structured labels
     const allImages: { url: string; label?: string; isPrimary?: boolean; altText?: string }[] = [];
     materialVariants.forEach((m) => {
       m.colors.forEach((c) => {
         c.images.forEach((img) => {
+          const formattedLabel = `${m.materialName} | ${c.metalColor || ''}${
+            c.gemColor ? ' / ' + c.gemColor : ''
+          }${img.label ? ' - ' + img.label : ''}`;
           allImages.push({
             url: img.url,
-            label: img.label || `${m.materialName} - ${c.metalColor} / ${c.gemColor}`,
+            label: formattedLabel,
             isPrimary: img.isPrimary,
             altText: `${formData.title} - ${m.materialName} ${c.metalColor} ${c.gemColor}`,
           });
@@ -792,105 +830,116 @@ export default function ProductCreateForm({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddMaterial}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#F0E9F5] hover:bg-[#E4D5EE] text-[#3F235F] font-bold text-xs border border-[#DFD0EC] transition cursor-pointer self-start sm:self-auto"
-          >
-            <Plus size={15} />
-            <span>Añadir Otro Material</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAddMaterial}
+              disabled={!canAddMoreMaterials}
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl font-bold text-xs border transition ${
+                canAddMoreMaterials
+                  ? 'bg-[#F0E9F5] hover:bg-[#E4D5EE] text-[#3F235F] border-[#DFD0EC] cursor-pointer'
+                  : 'bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed'
+              }`}
+            >
+              <Plus size={15} />
+              <span>{canAddMoreMaterials ? 'Añadir Otro Material' : 'Todos los Materiales Añadidos'}</span>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-6">
-          {materialVariants.map((mat, mIdx) => (
-            <div
-              key={mat.id}
-              className="p-5 bg-[#FAF8FC] border border-[#DFD0EC] rounded-3xl space-y-4 relative"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#3F235F] flex items-center gap-2">
-                  <RoisinDiamond size={13} color="#7043A0" /> Opción de Material #{mIdx + 1}
-                </span>
-                {materialVariants.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMaterial(mat.id)}
-                    className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-bold cursor-pointer transition p-1 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 size={13} /> Eliminar Material
-                  </button>
-                )}
-              </div>
+          {materialVariants.map((mat, mIdx) => {
+            const officialMaterial = materials.find((m) => m.name === mat.materialName);
+            const availableOptions = getAvailableMaterialOptions(mat.id);
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                {/* Material Select */}
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-700 block">Tipo de Material</label>
-                  <CustomSelect
-                    value={mat.materialName}
-                    onChange={(val) => handleMaterialChange(mat.id, val)}
-                    options={materialOptions}
-                    triggerClassName="py-2.5 px-3.5 rounded-2xl bg-white border border-[#DFD0EC] text-xs font-semibold text-zinc-900"
-                  />
+            return (
+              <div
+                key={mat.id}
+                id={`material-card-${mat.id}`}
+                className="p-5 bg-[#FAF8FC] border border-[#DFD0EC] rounded-3xl space-y-4 relative transition-all"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#3F235F] flex items-center gap-2">
+                    <RoisinDiamond size={13} color="#7043A0" /> Opción de Material #{mIdx + 1}
+                  </span>
+                  {materialVariants.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMaterial(mat.id)}
+                      className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-bold cursor-pointer transition p-1 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 size={13} /> Eliminar Material
+                    </button>
+                  )}
                 </div>
 
-                {/* Base Price */}
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-700 block">
-                    Precio de Venta ($ USD) <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="48.00"
-                      value={mat.basePrice}
-                      onChange={(e) =>
-                        handleMaterialFieldChange(mat.id, 'basePrice', e.target.value)
-                      }
-                      className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#DFD0EC] rounded-2xl text-sm font-bold text-[#3F235F] focus:outline-hidden focus:border-[#7043A0] transition"
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  {/* Material Select */}
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-zinc-700 block">Tipo de Material</label>
+                    <CustomSelect
+                      value={mat.materialName}
+                      onChange={(val) => handleMaterialChange(mat.id, val)}
+                      options={availableOptions}
+                      triggerClassName="py-2.5 px-3.5 rounded-2xl bg-white border border-[#DFD0EC] text-xs font-semibold text-zinc-900"
                     />
                   </div>
-                </div>
 
-                {/* Stock */}
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-700 block">Stock Inicial</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="15"
-                    value={mat.initialStock}
-                    onChange={(e) =>
-                      handleMaterialFieldChange(mat.id, 'initialStock', e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 bg-white border border-[#DFD0EC] rounded-2xl text-xs font-bold text-zinc-800 focus:outline-hidden focus:border-[#7043A0] transition"
-                  />
-                </div>
+                  {/* Base Price */}
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-zinc-700 block">
+                      Precio de Venta ($ USD) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">
+                        $
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        placeholder="48.00"
+                        value={mat.basePrice}
+                        onChange={(e) =>
+                          handleMaterialFieldChange(mat.id, 'basePrice', e.target.value)
+                        }
+                        className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#DFD0EC] rounded-2xl text-sm font-bold text-[#3F235F] focus:outline-hidden focus:border-[#7043A0] transition"
+                      />
+                    </div>
+                  </div>
 
-                {/* Description */}
-                <div className="space-y-1.5 sm:col-span-3">
-                  <label className="font-bold text-zinc-700 block">
-                    Descripción del Material <span className="text-zinc-400 font-normal">(Informativo para la clienta)</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Plata fina de ley 925 con recubrimiento de rodio hipoalergénico..."
-                    value={mat.description}
-                    onChange={(e) =>
-                      handleMaterialFieldChange(mat.id, 'description', e.target.value)
-                    }
-                    className="w-full px-4 py-2 bg-white border border-[#DFD0EC] rounded-xl text-xs focus:outline-hidden focus:border-[#7043A0] transition"
-                  />
+                  {/* Stock */}
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-zinc-700 block">Stock Inicial</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="15"
+                      value={mat.initialStock}
+                      onChange={(e) =>
+                        handleMaterialFieldChange(mat.id, 'initialStock', e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 bg-white border border-[#DFD0EC] rounded-2xl text-xs font-bold text-zinc-800 focus:outline-hidden focus:border-[#7043A0] transition"
+                    />
+                  </div>
+
+                  {/* Official Description from DB (Read-only) */}
+                  <div className="sm:col-span-3 p-3 bg-white border border-[#DFD0EC] rounded-2xl flex items-start gap-2.5">
+                    <RoisinDiamond size={13} color="#7043A0" className="shrink-0 mt-0.5" />
+                    <div className="space-y-0.5 text-xs">
+                      <span className="font-bold text-zinc-800 block">
+                        Descripción Oficial del Material (Catálogo):
+                      </span>
+                      <p className="text-zinc-500 font-light leading-relaxed">
+                        {officialMaterial?.description ||
+                          'Material certificado de joyería fina de alta durabilidad e hipoalergénico.'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1009,26 +1058,47 @@ export default function ProductCreateForm({
         </div>
 
         <div className="space-y-8">
-          {materialVariants.map((mat) => (
-            <div
-              key={`colors-${mat.id}`}
-              className="p-6 bg-[#FAF8FC] border border-[#DFD0EC] rounded-3xl space-y-6"
-            >
-              <div className="flex items-center justify-between border-b border-[#DFD0EC] pb-3">
-                <div className="flex items-center gap-2">
-                  <RoisinDiamond size={15} color="#7043A0" />
-                  <h4 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                    Acabados y Fotos para: <span className="text-[#7043A0]">{mat.materialName}</span>
-                  </h4>
+          {materialVariants.map((mat) => {
+            const totalMatPhotos = mat.colors.reduce((sum, c) => sum + c.images.length, 0);
+            const hasNoPhotos = totalMatPhotos === 0;
+
+            return (
+              <div
+                key={`colors-${mat.id}`}
+                id={`material-colors-${mat.id}`}
+                className={`p-6 rounded-3xl space-y-6 transition-all border ${
+                  hasNoPhotos
+                    ? 'bg-[#FFF9F9] border-red-200 shadow-xs'
+                    : 'bg-[#FAF8FC] border-[#DFD0EC]'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DFD0EC] pb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <RoisinDiamond size={15} color="#7043A0" />
+                    <h4 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                      Acabados y Fotos: <span className="text-[#7043A0]">{mat.materialName}</span>
+                    </h4>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                        hasNoPhotos
+                          ? 'bg-red-100 text-red-700 border-red-300'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}
+                    >
+                      {hasNoPhotos
+                        ? '⚠️ Requiere al menos 1 fotografía'
+                        : `✅ ${totalMatPhotos} fotografía(s) lista(s)`}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAddColorFinish(mat.id)}
+                    className="inline-flex items-center gap-1 text-xs text-[#3F235F] font-bold hover:text-[#7043A0] bg-[#F0E9F5] px-3 py-1.5 rounded-xl border border-[#DFD0EC] cursor-pointer transition self-start sm:self-auto"
+                  >
+                    <Plus size={13} /> Añadir Otra Combinación de Color
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleAddColorFinish(mat.id)}
-                  className="inline-flex items-center gap-1 text-xs text-[#3F235F] font-bold hover:text-[#7043A0] bg-[#F0E9F5] px-3 py-1.5 rounded-xl border border-[#DFD0EC] cursor-pointer transition"
-                >
-                  <Plus size={13} /> Añadir Otra Combinación de Color
-                </button>
-              </div>
 
               <div className="space-y-6">
                 {mat.colors.map((col, cIdx) => (
@@ -1240,9 +1310,10 @@ export default function ProductCreateForm({
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
+    </div>
 
       {/* ========================================================================= */}
       {/* ACCIONES Y BOTÓN DE GUARDADO */}

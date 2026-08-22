@@ -1,13 +1,20 @@
-import { getCategories, getCollections } from '@/services/catalog.service';
+import {
+  getCategories,
+  getCollections,
+  getMaterials,
+  getCategorySizes,
+} from '@/services/catalog.service';
 import ProductCreateForm from './ProductCreateForm';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminNewProductPage() {
-  const [categories, collections] = await Promise.all([
+  const [categories, collections, materials, categorySizes] = await Promise.all([
     getCategories(),
     getCollections(),
+    getMaterials(),
+    getCategorySizes(),
   ]);
 
   return (
@@ -20,11 +27,16 @@ export default async function AdminNewProductPage() {
           Crear Nueva Joya
         </h1>
         <p className="text-xs text-zinc-500 font-light mt-0.5">
-          Registra una pieza artesanal en el catálogo con sus fotografías, variantes de talla, colecciones exclusivas y precios.
+          Registra una pieza artesanal en el catálogo con sus fotografías, variantes de material, tallas y acabados.
         </p>
       </div>
 
-      <ProductCreateForm categories={categories} collections={collections} />
+      <ProductCreateForm
+        categories={categories}
+        collections={collections}
+        materials={materials}
+        categorySizes={categorySizes}
+      />
     </div>
   );
 }

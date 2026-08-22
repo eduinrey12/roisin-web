@@ -50,6 +50,8 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  const [statusModalOrder, setStatusModalOrder] = useState<OrderData | null>(null);
+
   const filteredOrders =
     filterStatus === 'ALL'
       ? orders
@@ -59,6 +61,7 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
     setUpdatingId(orderId);
     const res = await adminUpdateOrderStatusAction(orderId, newStatus);
     setUpdatingId(null);
+    setStatusModalOrder(null);
 
     if (res.success) {
       setOrders(
@@ -69,6 +72,15 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
       }
     }
   };
+
+  const STATUS_OPTIONS: { value: OrderStatus; label: string; description: string }[] = [
+    { value: 'PENDING', label: 'Pendiente', description: 'Pedido recién recibido sin verificar.' },
+    { value: 'PAYMENT_PENDING', label: 'Pago Pendiente', description: 'Esperando transferencia o comprobante de pago.' },
+    { value: 'PROCESSING', label: 'En Proceso', description: 'Empacando joya y preparando guía de envío.' },
+    { value: 'SHIPPED', label: 'Enviado', description: 'En camino con Servientrega / courier.' },
+    { value: 'DELIVERED', label: 'Entregado', description: 'Entregado satisfactoriamente al cliente.' },
+    { value: 'CANCELLED', label: 'Cancelado', description: 'Pedido anulado o rechazado.' },
+  ];
 
   return (
     <div className="space-y-5">
@@ -98,17 +110,17 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-3xl border border-[#DFD0EC] shadow-xs overflow-hidden">
+      <div className="bg-white rounded-3xl border border-[#DFD0EC] overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-[#DFD0EC] bg-[#F8F5FA] text-zinc-900 font-bold">
-                <th className="p-4 uppercase tracking-wider">Código</th>
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F8F5FA] border-b border-[#DFD0EC] text-zinc-500 font-bold">
+              <tr>
+                <th className="p-4 uppercase tracking-wider">Nº Pedido</th>
                 <th className="p-4 uppercase tracking-wider">Cliente</th>
                 <th className="p-4 uppercase tracking-wider">Fecha</th>
-                <th className="p-4 uppercase tracking-wider">Total</th>
+                <th className="p-4 uppercase tracking-wider">Total ($)</th>
                 <th className="p-4 uppercase tracking-wider">Método de Pago</th>
-                <th className="p-4 uppercase tracking-wider">Estado (Español)</th>
+                <th className="p-4 uppercase tracking-wider">Estado</th>
                 <th className="p-4 uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
@@ -158,23 +170,18 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                     </div>
                   </td>
                   <td className="p-4">
-                    <CustomSelect
-                      value={order.status}
+                    <button
+                      type="button"
                       disabled={updatingId === order.id}
-                      onChange={(val) => handleStatusChange(order.id, val as OrderStatus)}
-                      options={[
-                        { value: 'PENDING', label: 'Pendiente' },
-                        { value: 'PAYMENT_PENDING', label: 'Pago Pendiente' },
-                        { value: 'PROCESSING', label: 'En Proceso' },
-                        { value: 'SHIPPED', label: 'Enviado' },
-                        { value: 'DELIVERED', label: 'Entregado' },
-                        { value: 'CANCELLED', label: 'Cancelado' },
-                      ]}
-                      triggerClassName={`text-xs font-bold border rounded-xl px-3 py-1.5 shadow-2xs ${getOrderStatusColor(
+                      onClick={() => setStatusModalOrder(order)}
+                      className={`text-xs font-bold border rounded-xl px-3 py-1.5 shadow-2xs inline-flex items-center gap-1.5 transition cursor-pointer hover:scale-105 active:scale-95 ${getOrderStatusColor(
                         order.status
                       )}`}
-                      dropdownClassName="w-48 right-0 left-auto"
-                    />
+                      title="Haz clic para cambiar el estado"
+                    >
+                      <span>{getOrderStatusLabel(order.status)}</span>
+                      <span className="text-[10px] opacity-70">▾</span>
+                    </button>
                   </td>
                   <td className="p-4 text-right">
                     <button
@@ -199,6 +206,82 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
           </table>
         </div>
       </div>
+
+      {/* External Status Selector Modal (Prevents table resizing) */}
+      {statusModalOrder && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-[#DFD0EC]">
+            <div className="flex justify-between items-center pb-3 border-b border-[#DFD0EC]">
+              <div className="flex items-center gap-2">
+                <RoisinDiamond size={16} color="#7043A0" />
+                <h3 className="font-bold text-zinc-900 text-sm">
+                  Cambiar Estado del Pedido #{statusModalOrder.orderNumber}
+                </h3>
+              </div>
+              <button
+                onClick={() => setStatusModalOrder(null)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-[#F8F5FA] transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-500 font-light">
+              Selecciona el nuevo estado para actualizar el seguimiento de la orden del cliente:
+            </p>
+
+            <div className="space-y-2">
+              {STATUS_OPTIONS.map((opt) => {
+                const isCurrent = statusModalOrder.status === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    disabled={updatingId === statusModalOrder.id}
+                    onClick={() => handleStatusChange(statusModalOrder.id, opt.value)}
+                    className={`w-full p-3.5 rounded-2xl text-left border flex items-center justify-between transition cursor-pointer ${
+                      isCurrent
+                        ? 'border-[#7043A0] bg-[#F0E9F5] shadow-xs'
+                        : 'border-[#DFD0EC] bg-[#F8F5FA] hover:bg-[#F0E9F5]/60 hover:border-[#7043A0]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold px-2 py-0.5 rounded-md border ${getOrderStatusColor(
+                            opt.value
+                          )}`}
+                        >
+                          {opt.label}
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[10px] text-[#7043A0] font-bold">
+                            (Actual)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-zinc-500 font-light mt-1">
+                        {opt.description}
+                      </p>
+                    </div>
+                    {isCurrent && <CheckCircle2 size={16} className="text-[#7043A0] shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setStatusModalOrder(null)}
+                className="text-xs font-bold px-5 py-2.5 rounded-2xl border border-[#DFD0EC] bg-white hover:bg-[#F8F5FA] text-zinc-700 cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Order Detail Modal */}
       {selectedOrder && (

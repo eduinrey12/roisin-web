@@ -33,28 +33,50 @@ export const productSchema = z.object({
   shortDescription: z.string().optional(),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
   tag: z.string().optional(),
-  basePrice: z.number().positive('El precio debe ser mayor a 0'),
-  compareAtPrice: z.number().positive().optional(),
-  discountPercent: z.number().min(0).max(100).optional(),
-  categoryId: z.string().uuid('Categoría inválida'),
-  collectionIds: z.array(z.string().uuid()).optional(),
+  basePrice: z.number().positive('El precio debe ser mayor a 0').optional(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  discountPercent: z.number().min(0).max(100).optional().nullable(),
+  categoryId: z.string().min(1, 'Categoría inválida'),
+  collectionId: z.string().optional().nullable(),
+  collectionIds: z.array(z.string()).optional(),
   isFeatured: z.boolean().default(false),
   images: z.array(
     z.object({
-      url: z.string().url('URL de imagen no válida'),
+      url: z.string().min(1, 'URL de imagen no válida'),
       altText: z.string().optional(),
       label: z.string().optional(),
       isPrimary: z.boolean().optional(),
     })
   ).min(1, 'Se requiere al menos una imagen'),
+  materials: z.array(
+    z.object({
+      materialName: z.string().min(1, 'El nombre del material es requerido'),
+      basePrice: z.number().positive('El precio del material debe ser positivo'),
+      initialStock: z.number().int().nonnegative().optional(),
+      sizes: z.array(
+        z.object({
+          sizeName: z.string().min(1, 'La talla es requerida'),
+          price: z.number().positive().optional().nullable(),
+          stock: z.number().int().nonnegative().optional(),
+        })
+      ).optional(),
+      colors: z.array(
+        z.object({
+          metalColor: z.string().optional(),
+          gemColor: z.string().optional(),
+          imageUrls: z.array(z.string()).optional(),
+        })
+      ).optional(),
+    })
+  ).optional(),
   variants: z.array(
     z.object({
       sku: z.string().min(2, 'SKU requerido'),
       price: z.number().positive('El precio debe ser positivo'),
-      compareAtPrice: z.number().positive().optional(),
+      compareAtPrice: z.number().positive().optional().nullable(),
       initialStock: z.number().int().nonnegative().default(0),
     })
-  ).min(1, 'Se requiere al menos una variante'),
+  ).optional(),
 });
 
 export const couponSchema = z.object({

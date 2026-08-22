@@ -19,10 +19,11 @@ model Category {
   isActive    Boolean    @default(true)
   parentId    String?
   parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryToCategory")
+  children    Category[]     @relation("CategoryToCategory")
   products    Product[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  sizes       CategorySize[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([slug])
   @@index([isActive])
@@ -147,6 +148,35 @@ model VariantAttributeValue {
   attributeValue   ProductAttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
 
   @@id([variantId, attributeValueId])
+}
+
+model Material {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "Plata de Ley 925", "Baño de Oro 18k", "Oro Rosa 18k"
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model CategorySize {
+  id           String   @id @default(uuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name         String   // e.g. "Talla 6", "Talla 7", "45 cm", "Talla Ajustable", "Ajustable 16-19 cm"
+  isAdjustable Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([sortOrder])
 }
 
 model ProductOptionGroup {

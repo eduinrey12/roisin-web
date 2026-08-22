@@ -449,29 +449,164 @@ export async function adminGetAllProducts() {
   });
 }
 
-export async function adminCreateProduct(data: {
+export interface AdminProductCreateInput {
   title: string;
   slug: string;
   tag?: string;
   shortDescription?: string;
   description: string;
-  basePrice: number;
-  compareAtPrice?: number;
-  discountPercent?: number;
+  basePrice?: number;
+  compareAtPrice?: number | null;
+  discountPercent?: number | null;
   categoryId: string;
+  collectionId?: string | null;
   collectionIds?: string[];
   isFeatured?: boolean;
+  materials?: {
+    materialName: string;
+    basePrice: number;
+    initialStock?: number;
+    sizes?: {
+      sizeName: string;
+      price?: number | null;
+      stock?: number;
+    }[];
+    colors?: {
+      metalColor?: string;
+      gemColor?: string;
+      imageUrls?: string[];
+    }[];
+  }[];
   images: { url: string; altText?: string; label?: string; isPrimary?: boolean }[];
-  variants: { sku: string; price: number; compareAtPrice?: number; initialStock?: number }[];
-}) {
-  return prisma.product.create({
+  variants?: { sku: string; price: number; compareAtPrice?: number | null; initialStock?: number }[];
+}
+
+export async function adminCreateProduct(data: AdminProductCreateInput) {
+  // Ensure default attributes exist
+  let attrMaterial = await prisma.productAttribute.findUnique({ where: { name: 'Material' } });
+  if (!attrMaterial) {
+    attrMaterial = await prisma.productAttribute.create({ data: { name: 'Material' } });
+  }
+
+  let attrSize = await prisma.productAttribute.findUnique({ where: { name: 'Talla' } });
+  if (!attrSize) {
+    attrSize = await prisma.productAttribute.create({ data: { name: 'Talla' } });
+  }
+
+  let attrColor = await prisma.productAttribute.findUnique({ where: { name: 'Color' } });
+  if (!attrColor) {
+    attrColor = await prisma.productAttribute.create({ data: { name: 'Color' } });
+  }
+
+  // Calculate base price
+  let basePrice = data.basePrice || 0;
+  if (data.materials && data.materials.length > 0) {
+    const validPrices = data.materials.map((m) => Number(m.basePrice)).filter((p) => p > 0);
+    if (validPrices.length > 0) {
+      basePrice = Math.min(...validPrices);
+    }
+  }
+
+  // Generate variants data
+  const slugPrefix = data.slug.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'ROI';
+  const variantsToCreate: {
+    sku: string;
+    price: Prisma.Decimal;
+    compareAtPrice: Prisma.Decimal | null;
+    initialStock: number;
+    attributeValueIds: string[];
+  }[] = [];
+
+  if (data.materials && data.materials.length > 0) {
+    for (let mIdx = 0; mIdx < data.materials.length; mIdx++) {
+      const mat = data.materials[mIdx];
+      const matPrice = Number(mat.basePrice) || basePrice || 10;
+      const matCode = mat.materialName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `M${mIdx + 1}`;
+
+      // Get or create material attribute value
+      let matVal = await prisma.productAttributeValue.findFirst({
+        where: { attributeId: attrMaterial.id, value: mat.materialName },
+      });
+      if (!matVal) {
+        matVal = await prisma.productAttributeValue.create({
+          data: { attributeId: attrMaterial.id, value: mat.materialName },
+        });
+      }
+
+      if (mat.sizes && mat.sizes.length > 0) {
+        for (let sIdx = 0; sIdx < mat.sizes.length; sIdx++) {
+          const sz = mat.sizes[sIdx];
+          const szPrice =
+            sz.price != null && Number(sz.price) > 0 ? Number(sz.price) : matPrice;
+          const szStock = sz.stock != null ? Number(sz.stock) : (mat.initialStock ?? 10);
+          const szCode = sz.sizeName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `T${sIdx + 1}`;
+          const sku = `${slugPrefix}-${matCode}-${szCode}-${mIdx + 1}${sIdx + 1}`;
+
+          // Get or create size attribute value
+          let sizeVal = await prisma.productAttributeValue.findFirst({
+            where: { attributeId: attrSize.id, value: sz.sizeName },
+          });
+          if (!sizeVal) {
+            sizeVal = await prisma.productAttributeValue.create({
+              data: { attributeId: attrSize.id, value: sz.sizeName },
+            });
+          }
+
+          variantsToCreate.push({
+            sku,
+            price: new Prisma.Decimal(szPrice),
+            compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
+            initialStock: szStock,
+            attributeValueIds: [matVal.id, sizeVal.id],
+          });
+        }
+      } else {
+        const sku = `${slugPrefix}-${matCode}-${mIdx + 1}`;
+        variantsToCreate.push({
+          sku,
+          price: new Prisma.Decimal(matPrice),
+          compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
+          initialStock: mat.initialStock ?? 10,
+          attributeValueIds: [matVal.id],
+        });
+      }
+    }
+  } else if (data.variants && data.variants.length > 0) {
+    data.variants.forEach((v, idx) => {
+      variantsToCreate.push({
+        sku: v.sku || `${slugPrefix}-VAR-${idx + 1}`,
+        price: new Prisma.Decimal(v.price || basePrice || 10),
+        compareAtPrice: v.compareAtPrice ? new Prisma.Decimal(v.compareAtPrice) : null,
+        initialStock: v.initialStock ?? 10,
+        attributeValueIds: [],
+      });
+    });
+  } else {
+    // Default single variant
+    variantsToCreate.push({
+      sku: `${slugPrefix}-STD`,
+      price: new Prisma.Decimal(basePrice || 10),
+      compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
+      initialStock: 10,
+      attributeValueIds: [],
+    });
+  }
+
+  // Combine collections
+  const collectionIdsSet = new Set<string>();
+  if (data.collectionId) collectionIdsSet.add(data.collectionId);
+  if (data.collectionIds) data.collectionIds.forEach((id) => collectionIdsSet.add(id));
+  const finalCollectionIds = Array.from(collectionIdsSet).filter(Boolean);
+
+  // Create product
+  const product = await prisma.product.create({
     data: {
       title: data.title,
       slug: data.slug,
       tag: data.tag || null,
       shortDescription: data.shortDescription || null,
       description: data.description,
-      basePrice: new Prisma.Decimal(data.basePrice),
+      basePrice: new Prisma.Decimal(basePrice),
       compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
       discountPercent: data.discountPercent || null,
       categoryId: data.categoryId,
@@ -486,20 +621,25 @@ export async function adminCreateProduct(data: {
         })),
       },
       variants: {
-        create: data.variants.map((v) => ({
+        create: variantsToCreate.map((v) => ({
           sku: v.sku,
-          price: new Prisma.Decimal(v.price),
-          compareAtPrice: v.compareAtPrice ? new Prisma.Decimal(v.compareAtPrice) : null,
+          price: v.price,
+          compareAtPrice: v.compareAtPrice,
           inventory: {
             create: {
-              quantity: v.initialStock ?? 0,
+              quantity: v.initialStock,
             },
+          },
+          attributes: {
+            create: v.attributeValueIds.map((attrValId) => ({
+              attributeValueId: attrValId,
+            })),
           },
         })),
       },
-      ...(data.collectionIds && data.collectionIds.length > 0 && {
+      ...(finalCollectionIds.length > 0 && {
         collections: {
-          create: data.collectionIds.map((cid, idx) => ({
+          create: finalCollectionIds.map((cid, idx) => ({
             collectionId: cid,
             sortOrder: idx,
           })),
@@ -507,6 +647,28 @@ export async function adminCreateProduct(data: {
       }),
     },
   });
+
+  // Automatically assign default packaging options group if exists
+  try {
+    const packagingGroup = await getOrCreatePresentationOptionGroup();
+    if (packagingGroup) {
+      await prisma.productOptionGroupAssignment.upsert({
+        where: {
+          productId_groupId: {
+            productId: product.id,
+            groupId: packagingGroup.id,
+          },
+        },
+        create: {
+          productId: product.id,
+          groupId: packagingGroup.id,
+        },
+        update: {},
+      });
+    }
+  } catch {}
+
+  return product;
 }
 
 export async function adminUpdateProductStatus(id: string, isActive: boolean) {
@@ -521,6 +683,211 @@ export async function adminDeleteProduct(id: string) {
   return prisma.product.update({
     where: { id },
     data: { isActive: false },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Materials Admin Operations
+// -----------------------------------------------------------------------------
+
+export const DEFAULT_MATERIALS = [
+  {
+    id: 'mat-plata-925',
+    name: 'Plata de Ley 925',
+    description: 'Plata fina de ley 925 con recubrimiento de rodio hipoalergénico y acabado espejo brillante.',
+    sortOrder: 0,
+    isActive: true,
+  },
+  {
+    id: 'mat-oro-18k',
+    name: 'Baño de Oro 18k',
+    description: 'Estructura de plata 925 con triple baño electrolítico de oro amarillo de 18 quilates.',
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 'mat-oro-rosa-18k',
+    name: 'Oro Rosa 18k',
+    description: 'Plata de ley 925 con baño de oro rosa de 18 quilates y brillo satinado elegante.',
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 'mat-acero-316l',
+    name: 'Acero Quirúrgico 316L',
+    description: 'Acero inoxidable hipoalergénico de alta durabilidad resistente al agua y uso diario.',
+    sortOrder: 3,
+    isActive: true,
+  },
+];
+
+export async function getMaterials() {
+  try {
+    if (!prisma.material) return DEFAULT_MATERIALS;
+    let materials = await prisma.material.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (!materials || materials.length === 0) {
+      await prisma.material.createMany({
+        data: DEFAULT_MATERIALS.map((m, idx) => ({
+          name: m.name,
+          description: m.description,
+          sortOrder: idx,
+          isActive: true,
+        })),
+        skipDuplicates: true,
+      });
+      materials = await prisma.material.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+      });
+    }
+    return materials;
+  } catch {
+    return DEFAULT_MATERIALS;
+  }
+}
+
+export async function adminGetAllMaterials() {
+  try {
+    if (!prisma.material) return DEFAULT_MATERIALS;
+    let materials = await prisma.material.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    if (!materials || materials.length === 0) {
+      await prisma.material.createMany({
+        data: DEFAULT_MATERIALS.map((m, idx) => ({
+          name: m.name,
+          description: m.description,
+          sortOrder: idx,
+          isActive: true,
+        })),
+        skipDuplicates: true,
+      });
+      materials = await prisma.material.findMany({
+        orderBy: { sortOrder: 'asc' },
+      });
+    }
+    return materials;
+  } catch {
+    return DEFAULT_MATERIALS;
+  }
+}
+
+export async function adminCreateMaterial(data: {
+  name: string;
+  description?: string;
+  sortOrder?: number;
+}) {
+  return prisma.material.create({
+    data: {
+      name: data.name,
+      description: data.description || null,
+      sortOrder: data.sortOrder ?? 0,
+      isActive: true,
+    },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Category Sizes Admin Operations
+// -----------------------------------------------------------------------------
+
+export async function getCategorySizes(categoryId?: string) {
+  try {
+    if (!prisma.categorySize) return [];
+
+    let sizes = await prisma.categorySize.findMany({
+      where: {
+        isActive: true,
+        ...(categoryId ? { categoryId } : {}),
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    // Auto-seed category sizes if empty
+    if (!sizes || sizes.length === 0) {
+      const categories = await prisma.category.findMany();
+      for (const cat of categories) {
+        const catNameLower = cat.name.toLowerCase();
+        let defaultSizesForCat: { name: string; isAdjustable: boolean; sortOrder: number }[] = [];
+
+        if (catNameLower.includes('anillo')) {
+          defaultSizesForCat = [
+            { name: 'Talla 5', isAdjustable: false, sortOrder: 1 },
+            { name: 'Talla 6', isAdjustable: false, sortOrder: 2 },
+            { name: 'Talla 7', isAdjustable: false, sortOrder: 3 },
+            { name: 'Talla 8', isAdjustable: false, sortOrder: 4 },
+            { name: 'Talla 9', isAdjustable: false, sortOrder: 5 },
+            { name: 'Talla 10', isAdjustable: false, sortOrder: 6 },
+            { name: 'Talla Ajustable', isAdjustable: true, sortOrder: 7 },
+          ];
+        } else if (catNameLower.includes('collar') || catNameLower.includes('dije')) {
+          defaultSizesForCat = [
+            { name: '40 cm (Choker)', isAdjustable: false, sortOrder: 1 },
+            { name: '45 cm (Princesa)', isAdjustable: false, sortOrder: 2 },
+            { name: '50 cm (Matinee)', isAdjustable: false, sortOrder: 3 },
+            { name: '55 cm', isAdjustable: false, sortOrder: 4 },
+            { name: '60 cm (Ópera)', isAdjustable: false, sortOrder: 5 },
+            { name: 'Ajustable 40-45 cm', isAdjustable: true, sortOrder: 6 },
+          ];
+        } else if (catNameLower.includes('pulsera') || catNameLower.includes('brazalete')) {
+          defaultSizesForCat = [
+            { name: '16 cm (Pequeña)', isAdjustable: false, sortOrder: 1 },
+            { name: '17 cm (Estándar)', isAdjustable: false, sortOrder: 2 },
+            { name: '18 cm (Mediana)', isAdjustable: false, sortOrder: 3 },
+            { name: '19 cm (Grande)', isAdjustable: false, sortOrder: 4 },
+            { name: 'Ajustable 16-19 cm', isAdjustable: true, sortOrder: 5 },
+          ];
+        } else {
+          defaultSizesForCat = [
+            { name: 'Talla Única / Estándar', isAdjustable: false, sortOrder: 1 },
+          ];
+        }
+
+        await prisma.categorySize.createMany({
+          data: defaultSizesForCat.map((s) => ({
+            categoryId: cat.id,
+            name: s.name,
+            isAdjustable: s.isAdjustable,
+            sortOrder: s.sortOrder,
+            isActive: true,
+          })),
+        });
+      }
+
+      sizes = await prisma.categorySize.findMany({
+        where: {
+          isActive: true,
+          ...(categoryId ? { categoryId } : {}),
+        },
+        orderBy: { sortOrder: 'asc' },
+      });
+    }
+
+    return sizes;
+  } catch {
+    return [];
+  }
+}
+
+export async function adminCreateCategorySize(data: {
+  categoryId: string;
+  name: string;
+  isAdjustable?: boolean;
+  sortOrder?: number;
+}) {
+  return prisma.categorySize.create({
+    data: {
+      categoryId: data.categoryId,
+      name: data.name,
+      isAdjustable: data.isAdjustable ?? false,
+      sortOrder: data.sortOrder ?? 0,
+      isActive: true,
+    },
   });
 }
 

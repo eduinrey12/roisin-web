@@ -53,6 +53,8 @@ async function main() {
   await prisma.cartItemOption.deleteMany({});
   await prisma.cartItem.deleteMany({});
   await prisma.cart.deleteMany({});
+  await prisma.categorySize.deleteMany({});
+  await prisma.material.deleteMany({});
   await prisma.collectionProduct.deleteMany({});
   await prisma.productOptionGroupAssignment.deleteMany({});
   await prisma.productOption.deleteMany({});
@@ -191,6 +193,67 @@ async function main() {
       description: 'Topos brillantes, aros colgantes y huggies de alta joyería.',
       imageUrl: IMAGES.earrings1[0].url,
     },
+  });
+
+  // 4.1 Materiales de Joyería Oficiales
+  console.log('✨ Creando catálogo de materiales...');
+  await prisma.material.createMany({
+    data: [
+      {
+        name: 'Plata de Ley 925',
+        description: 'Plata fina de ley 925 con recubrimiento de rodio hipoalergénico y acabado espejo brillante.',
+        sortOrder: 0,
+        isActive: true,
+      },
+      {
+        name: 'Baño de Oro 18k',
+        description: 'Estructura de plata 925 con triple baño electrolítico de oro amarillo de 18 quilates.',
+        sortOrder: 1,
+        isActive: true,
+      },
+      {
+        name: 'Oro Rosa 18k',
+        description: 'Plata de ley 925 con baño de oro rosa de 18 quilates y brillo satinado elegante.',
+        sortOrder: 2,
+        isActive: true,
+      },
+      {
+        name: 'Acero Quirúrgico 316L',
+        description: 'Acero inoxidable hipoalergénico de alta durabilidad resistente al agua y uso diario.',
+        sortOrder: 3,
+        isActive: true,
+      },
+    ],
+  });
+
+  // 4.2 Tallas de Joyería por Categoría
+  console.log('📐 Creando catálogo de tallas por categoría...');
+  await prisma.categorySize.createMany({
+    data: [
+      // Anillos
+      { categoryId: catAnillos.id, name: 'Talla 5', isAdjustable: false, sortOrder: 1 },
+      { categoryId: catAnillos.id, name: 'Talla 6', isAdjustable: false, sortOrder: 2 },
+      { categoryId: catAnillos.id, name: 'Talla 7', isAdjustable: false, sortOrder: 3 },
+      { categoryId: catAnillos.id, name: 'Talla 8', isAdjustable: false, sortOrder: 4 },
+      { categoryId: catAnillos.id, name: 'Talla 9', isAdjustable: false, sortOrder: 5 },
+      { categoryId: catAnillos.id, name: 'Talla 10', isAdjustable: false, sortOrder: 6 },
+      { categoryId: catAnillos.id, name: 'Talla Ajustable', isAdjustable: true, sortOrder: 7 },
+      // Collares
+      { categoryId: catCollares.id, name: '40 cm (Choker)', isAdjustable: false, sortOrder: 1 },
+      { categoryId: catCollares.id, name: '45 cm (Princesa)', isAdjustable: false, sortOrder: 2 },
+      { categoryId: catCollares.id, name: '50 cm (Matinee)', isAdjustable: false, sortOrder: 3 },
+      { categoryId: catCollares.id, name: '55 cm', isAdjustable: false, sortOrder: 4 },
+      { categoryId: catCollares.id, name: '60 cm (Ópera)', isAdjustable: false, sortOrder: 5 },
+      { categoryId: catCollares.id, name: 'Ajustable 40-45 cm', isAdjustable: true, sortOrder: 6 },
+      // Pulseras
+      { categoryId: catPulseras.id, name: '16 cm (Pequeña)', isAdjustable: false, sortOrder: 1 },
+      { categoryId: catPulseras.id, name: '17 cm (Estándar)', isAdjustable: false, sortOrder: 2 },
+      { categoryId: catPulseras.id, name: '18 cm (Mediana)', isAdjustable: false, sortOrder: 3 },
+      { categoryId: catPulseras.id, name: '19 cm (Grande)', isAdjustable: false, sortOrder: 4 },
+      { categoryId: catPulseras.id, name: 'Ajustable 16-19 cm', isAdjustable: true, sortOrder: 5 },
+      // Aretes
+      { categoryId: catAretes.id, name: 'Talla Única / Estándar', isAdjustable: false, sortOrder: 1 },
+    ],
   });
 
   // 5. Colecciones Exclusivas

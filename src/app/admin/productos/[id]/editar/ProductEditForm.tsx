@@ -1572,15 +1572,31 @@ function getSplitColorStyle(colorString: string): {
                               const styleInfo = getSplitColorStyle(
                                 `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
                               );
+                              const miniId = `mini-swatch-${col.id}`;
                               return (
                                 <div
-                                  className="w-5 h-5 rounded-full relative overflow-hidden border border-black/15 shadow-2xs shrink-0"
-                                  style={{ background: styleInfo.background }}
+                                  className="w-5 h-5 rounded-full relative shrink-0 shadow-2xs"
                                   title={`${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`}
                                 >
-                                  {styleInfo.isSplit && (
-                                    <div className="absolute inset-0 border-t border-black/25 -rotate-45 scale-150 origin-center pointer-events-none" />
-                                  )}
+                                  <svg viewBox="0 0 36 36" className="w-full h-full block rounded-full">
+                                    <defs>
+                                      <clipPath id={miniId}>
+                                        <circle cx="18" cy="18" r="18" />
+                                      </clipPath>
+                                    </defs>
+                                    <g clipPath={`url(#${miniId})`}>
+                                      {styleInfo.isSplit ? (
+                                        <>
+                                          <path d="M 0,0 L 36,0 L 0,36 Z" fill={styleInfo.metalHex} />
+                                          <path d="M 36,0 L 36,36 L 0,36 Z" fill={styleInfo.gemHex!} />
+                                          <line x1="0" y1="36" x2="36" y2="0" stroke="rgba(0,0,0,0.2)" strokeWidth="1.5" />
+                                        </>
+                                      ) : (
+                                        <rect width="36" height="36" fill={styleInfo.metalHex} />
+                                      )}
+                                      <circle cx="18" cy="18" r="17.5" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+                                    </g>
+                                  </svg>
                                 </div>
                               );
                             })()}

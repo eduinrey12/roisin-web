@@ -166,6 +166,85 @@ function getSplitColorStyle(colorString: string): {
   };
 }
 
+function ColorFinishSwatch({
+  color,
+  isSelected,
+  onClick,
+}: {
+  color: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const styleInfo = getSplitColorStyle(color);
+  const safeId = useMemo(
+    () => `swatch-${color.replace(/[^a-zA-Z0-9]/g, '_')}`,
+    [color]
+  );
+
+  return (
+    <div className="relative group shrink-0">
+      <button
+        type="button"
+        onClick={onClick}
+        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full p-[2px] transition-all duration-200 cursor-pointer flex items-center justify-center relative shrink-0 ${
+          isSelected
+            ? 'border-2 border-[#7043A0] shadow-sm scale-110 bg-white'
+            : 'border-2 border-transparent hover:border-[#DFD0EC] opacity-85 hover:opacity-100 hover:scale-105'
+        }`}
+        aria-label={`Seleccionar acabado ${color}`}
+        title={color}
+      >
+        <svg
+          viewBox="0 0 36 36"
+          className="w-full h-full block rounded-full overflow-hidden"
+        >
+          <defs>
+            <clipPath id={safeId}>
+              <circle cx="18" cy="18" r="18" />
+            </clipPath>
+          </defs>
+          <g clipPath={`url(#${safeId})`}>
+            {styleInfo.isSplit ? (
+              <>
+                {/* Diagonal Split Top-Left Half: Metal */}
+                <path d="M 0,0 L 36,0 L 0,36 Z" fill={styleInfo.metalHex} />
+                {/* Diagonal Split Bottom-Right Half: Gem */}
+                <path d="M 36,0 L 36,36 L 0,36 Z" fill={styleInfo.gemHex!} />
+                {/* Elegant subtle diagonal divider line */}
+                <line
+                  x1="0"
+                  y1="36"
+                  x2="36"
+                  y2="0"
+                  stroke="rgba(0,0,0,0.18)"
+                  strokeWidth="1.2"
+                />
+              </>
+            ) : (
+              <rect width="36" height="36" fill={styleInfo.metalHex} />
+            )}
+            {/* Inner subtle circular rim for luxury jewelry enamel shine */}
+            <circle
+              cx="18"
+              cy="18"
+              r="17.5"
+              fill="none"
+              stroke="rgba(0,0,0,0.15)"
+              strokeWidth="1"
+            />
+          </g>
+        </svg>
+      </button>
+
+      {/* Tooltip on Hover */}
+      <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30 shadow-lg">
+        {color}
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
+      </div>
+    </div>
+  );
+}
+
 export default function AddToCartSection({
   product,
   onVariantChange,
@@ -476,50 +555,15 @@ export default function AddToCartSection({
                     {selectedColor || 'Estándar'}
                   </span>
                 </label>
-                <div className="flex flex-wrap items-center gap-3.5 pt-1">
-                  {extAvailableColors.map((color) => {
-                    const isSelected = color === selectedColor;
-                    const styleInfo = getSplitColorStyle(color);
-
-                    return (
-                      <div key={color} className="relative group">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedColor(color)}
-                          className={`w-10 h-10 rounded-full p-0.5 transition-all duration-200 cursor-pointer flex items-center justify-center relative ${
-                            isSelected
-                              ? 'ring-3 ring-[#7043A0] ring-offset-2 ring-offset-white scale-110 shadow-md'
-                              : 'ring-1 ring-[#DFD0EC] hover:ring-[#7043A0] hover:scale-105 opacity-85 hover:opacity-100 shadow-2xs'
-                          }`}
-                          aria-label={`Seleccionar acabado ${color}`}
-                          title={color}
-                        >
-                          <div
-                            className="w-full h-full rounded-full relative overflow-hidden border border-black/10 shadow-inner"
-                            style={{
-                              background: styleInfo.background,
-                            }}
-                          >
-                            {styleInfo.isSplit && (
-                              <div className="absolute inset-0 border-t border-black/25 -rotate-45 scale-150 origin-center pointer-events-none" />
-                            )}
-                          </div>
-
-                          {isSelected && (
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#7043A0] text-white rounded-full flex items-center justify-center shadow-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                            </span>
-                          )}
-                        </button>
-
-                        {/* Tooltip con nombre de combinación al pasar cursor */}
-                        <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30 shadow-lg">
-                          {color}
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  {extAvailableColors.map((color) => (
+                    <ColorFinishSwatch
+                      key={color}
+                      color={color}
+                      isSelected={color === selectedColor}
+                      onClick={() => setSelectedColor(color)}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -573,48 +617,14 @@ export default function AddToCartSection({
                 </span>
               </label>
               <div className="flex flex-wrap items-center gap-3 pt-1">
-                {colorAttrValues.map((color) => {
-                  const isSelected = color === selectedColor;
-                  const styleInfo = getSplitColorStyle(color);
-
-                  return (
-                    <div key={color} className="relative group">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedColor(color)}
-                        className={`w-10 h-10 rounded-full p-0.5 transition-all duration-200 cursor-pointer flex items-center justify-center relative ${
-                          isSelected
-                            ? 'ring-3 ring-[#7043A0] ring-offset-2 ring-offset-white scale-110 shadow-md'
-                            : 'ring-1 ring-[#DFD0EC] hover:ring-[#7043A0] hover:scale-105 opacity-85 hover:opacity-100 shadow-2xs'
-                        }`}
-                        aria-label={`Seleccionar acabado ${color}`}
-                        title={color}
-                      >
-                        <div
-                          className="w-full h-full rounded-full relative overflow-hidden border border-black/10 shadow-inner"
-                          style={{
-                            background: styleInfo.background,
-                          }}
-                        >
-                          {styleInfo.isSplit && (
-                            <div className="absolute inset-0 border-t border-black/25 -rotate-45 scale-150 origin-center pointer-events-none" />
-                          )}
-                        </div>
-
-                        {isSelected && (
-                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#7043A0] text-white rounded-full flex items-center justify-center shadow-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          </span>
-                        )}
-                      </button>
-
-                      <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30 shadow-lg">
-                        {color}
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
-                      </div>
-                    </div>
-                  );
-                })}
+                {colorAttrValues.map((color) => (
+                  <ColorFinishSwatch
+                    key={color}
+                    color={color}
+                    isSelected={color === selectedColor}
+                    onClick={() => setSelectedColor(color)}
+                  />
+                ))}
               </div>
             </div>
 

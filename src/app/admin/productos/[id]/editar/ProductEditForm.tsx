@@ -496,13 +496,10 @@ function getSplitColorStyle(colorString: string): {
       'Baño Oro 18k (Dorado)',
       'Oro Rosa',
     ];
-    return baseList.map((name) => {
-      const hex = getColorHex(name);
-      return {
-        value: name,
-        label: `${name}${hex ? ` (${hex})` : ''}`,
-      };
-    });
+    return baseList.map((name) => ({
+      value: name,
+      label: name,
+    }));
   }, [jewelryColors]);
 
   const gemColorOptions = useMemo(() => {
@@ -516,13 +513,10 @@ function getSplitColorStyle(colorString: string): {
     ];
     return [
       { value: '', label: 'Sin Gema / Solo Metal Liso' },
-      ...baseList.map((name) => {
-        const hex = getColorHex(name);
-        return {
-          value: name,
-          label: `${name}${hex ? ` (${hex})` : ''}`,
-        };
-      }),
+      ...baseList.map((name) => ({
+        value: name,
+        label: name,
+      })),
     ];
   }, [jewelryColors]);
 
@@ -1601,13 +1595,10 @@ function getSplitColorStyle(colorString: string): {
                               );
                             })()}
                             <span className="text-xs font-bold text-zinc-800">
-                              Combinación de Color #{cIdx + 1}:
+                              Combinación #{cIdx + 1}:
                             </span>
-                            <span className="text-[11px] font-mono text-zinc-400 font-normal">
-                              ({getColorHex(col.metalColor) || '#E5E7EB'}
-                              {col.gemColor && getColorHex(col.gemColor)
-                                ? ` / ${getColorHex(col.gemColor)}`
-                                : ''})
+                            <span className="text-xs font-semibold text-[#7043A0]">
+                              {col.metalColor}{col.gemColor ? ` / ${col.gemColor}` : ''}
                             </span>
                             <span
                               className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${
@@ -1636,7 +1627,18 @@ function getSplitColorStyle(colorString: string): {
                         {/* Selects de Color */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                           <div className="space-y-1.5">
-                            <label className="font-bold text-zinc-700 block">Color del Metal</label>
+                            <div className="flex items-center justify-between">
+                              <label className="font-bold text-zinc-700 flex items-center gap-1.5">
+                                <span>Color del Metal</span>
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full inline-block border border-black/15 shadow-2xs shrink-0"
+                                  style={{ backgroundColor: getColorHex(col.metalColor) || '#E5E7EB' }}
+                                />
+                              </label>
+                              <span className="text-[11px] font-bold text-[#7043A0]">
+                                {col.metalColor}
+                              </span>
+                            </div>
                             <CustomSelect
                               value={col.metalColor}
                               onChange={(val) =>
@@ -1648,7 +1650,20 @@ function getSplitColorStyle(colorString: string): {
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="font-bold text-zinc-700 block">Color / Tipo de Gema</label>
+                            <div className="flex items-center justify-between">
+                              <label className="font-bold text-zinc-700 flex items-center gap-1.5">
+                                <span>Color / Tipo de Gema</span>
+                                {col.gemColor && getColorHex(col.gemColor) && (
+                                  <span
+                                    className="w-3.5 h-3.5 rounded-full inline-block border border-black/15 shadow-2xs shrink-0"
+                                    style={{ backgroundColor: getColorHex(col.gemColor)! }}
+                                  />
+                                )}
+                              </label>
+                              <span className="text-[11px] font-bold text-[#7043A0]">
+                                {col.gemColor || 'Sin Gema'}
+                              </span>
+                            </div>
                             <CustomSelect
                               value={col.gemColor}
                               onChange={(val) =>

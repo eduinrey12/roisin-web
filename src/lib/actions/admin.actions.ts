@@ -3,6 +3,7 @@
 import { requireAdmin } from '@/lib/auth';
 import {
   adminCreateProduct,
+  adminUpdateProduct,
   adminUpdateProductStatus,
   adminDeleteProduct,
   adminCreateCategory,
@@ -48,6 +49,22 @@ export async function adminCreateProductAction(formData: unknown) {
     return { success: true, product: serializePlain(product) };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error al crear producto' };
+  }
+}
+
+export async function adminUpdateProductAction(id: string, formData: unknown) {
+  try {
+    await requireAdmin();
+    const data = productSchema.parse(formData);
+    const product = await adminUpdateProduct(id, data);
+    revalidatePath('/admin/productos');
+    revalidatePath(`/admin/productos/${id}/editar`);
+    revalidatePath('/productos');
+    revalidatePath(`/productos/${data.slug}`);
+    revalidatePath('/');
+    return { success: true, product: serializePlain(product) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar producto' };
   }
 }
 

@@ -7,7 +7,7 @@ import {
 } from '@/lib/actions/admin.actions';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Trash2, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+import { Trash2, CheckCircle2, XCircle, ExternalLink, Edit3 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 
 interface ProductItem {
@@ -123,15 +123,25 @@ export default function ProductListClient({ products: initialProducts }: { produ
                   </button>
                 </td>
                 <td className="p-4 text-right">
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    disabled={loadingId === product.id}
-                    className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                    title="Desactivar joya"
-                    aria-label="Desactivar joya"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="inline-flex items-center gap-1 justify-end">
+                    <Link
+                      href={`/admin/productos/${product.id}/editar`}
+                      className="p-2 text-zinc-500 hover:text-[#7043A0] hover:bg-[#F0E9F5] rounded-xl transition cursor-pointer"
+                      title="Editar joya"
+                      aria-label="Editar joya"
+                    >
+                      <Edit3 size={15} />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      disabled={loadingId === product.id}
+                      className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                      title="Desactivar joya"
+                      aria-label="Desactivar joya"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

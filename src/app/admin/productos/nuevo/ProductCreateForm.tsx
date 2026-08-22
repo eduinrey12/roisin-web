@@ -15,6 +15,8 @@ import {
   DollarSign,
   Star,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -40,24 +42,24 @@ interface MaterialItem {
 }
 
 interface CategorySizeItem {
-  id?: string;
+  id: string;
   categoryId: string;
   name: string;
-  isAdjustable: boolean;
+  isAdjustable?: boolean;
   sortOrder: number;
 }
 
 interface JewelryColorItem {
-  id?: string;
+  id: string;
   name: string;
-  type: 'METAL' | 'GEM';
   hexCode?: string | null;
+  type: 'METAL' | 'GEM';
 }
 
 interface ColorImageItem {
   url: string;
   label?: string;
-  isPrimary: boolean;
+  isPrimary?: boolean;
 }
 
 interface ColorFinishState {
@@ -65,7 +67,6 @@ interface ColorFinishState {
   metalColor: string;
   gemColor: string;
   images: ColorImageItem[];
-  // Image staging per finish
   pendingFile: File | null;
   pendingPreviewUrl: string;
   pendingImageLabel: string;
@@ -78,11 +79,7 @@ interface MaterialVariantState {
   description: string;
   basePrice: string;
   initialStock: string;
-  selectedSizes: {
-    sizeName: string;
-    priceOverride: string;
-    stock: string;
-  }[];
+  selectedSizes: { sizeName: string; priceOverride?: string; stock?: string }[];
   colors: ColorFinishState[];
 }
 
@@ -110,6 +107,7 @@ export default function ProductCreateForm({
     tag: '',
     categoryId: categories[0]?.id || '',
     collectionId: '',
+    isActive: true,
   });
 
   // Materials & Variants State
@@ -591,16 +589,24 @@ export default function ProductCreateForm({
     e.preventDefault();
     setError('');
 
-    // 1. Mandatory photos validation per material
+    // 1. Mandatory photos validation per combination finish (Metal + Gem)
     for (const mat of materialVariants) {
-      const totalPhotos = mat.colors.reduce((sum, c) => sum + c.images.length, 0);
-      if (totalPhotos === 0) {
-        setError(`⚠️ El material "${mat.materialName}" debe tener al menos una fotografía subida.`);
-        const el = document.getElementById(`material-colors-${mat.id}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      for (const col of mat.colors) {
+        if (col.images.length === 0) {
+          const finishName = col.metalColor
+            ? `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
+            : 'Acabado Estándar';
+          setError(
+            `⚠️ La combinación de color "${finishName}" en "${mat.materialName}" debe tener al menos una fotografía subida.`
+          );
+          const el =
+            document.getElementById(`color-finish-${col.id}`) ||
+            document.getElementById(`material-colors-${mat.id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
         }
-        return;
       }
     }
 
@@ -643,6 +649,7 @@ export default function ProductCreateForm({
         tag: formData.tag.trim() || undefined,
         categoryId: formData.categoryId,
         collectionId: formData.collectionId ? formData.collectionId : undefined,
+        isActive: formData.isActive,
         materials: materialVariants.map((m) => ({
           materialName: m.materialName,
           basePrice: parseFloat(m.basePrice) || 10,
@@ -650,7 +657,7 @@ export default function ProductCreateForm({
           sizes: m.selectedSizes.map((s) => ({
             sizeName: s.sizeName,
             price: s.priceOverride ? parseFloat(s.priceOverride) : null,
-            stock: parseInt(s.stock) || parseInt(m.initialStock) || 10,
+            stock: parseInt(s.stock || '10') || parseInt(m.initialStock) || 10,
           })),
           colors: m.colors.map((c) => ({
             metalColor: c.metalColor,
@@ -1101,28 +1108,50 @@ export default function ProductCreateForm({
                 </div>
 
               <div className="space-y-6">
-                {mat.colors.map((col, cIdx) => (
-                  <div
-                    key={col.id}
-                    className="p-5 bg-white border border-[#DFD0EC] rounded-2xl space-y-4 shadow-2xs"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-zinc-700 flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-[#F0E9F5] text-[#3F235F] text-[10px] font-bold flex items-center justify-center">
-                          {cIdx + 1}
-                        </span>
-                        Combinación de Color #{cIdx + 1}
-                      </span>
-                      {mat.colors.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveColorFinish(mat.id, col.id)}
-                          className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-bold cursor-pointer"
-                        >
-                          <Trash2 size={12} /> Eliminar Color
-                        </button>
-                      )}
-                    </div>
+                {mat.colors.map((col, cIdx) => {
+                  const colHasPhotos = col.images.length > 0;
+
+                  return (
+                    <div
+                      key={col.id}
+                      id={`color-finish-${col.id}`}
+                      className={`p-5 rounded-2xl space-y-4 shadow-2xs border transition-all ${
+                        !colHasPhotos
+                          ? 'bg-[#FFFDF9] border-amber-300 ring-1 ring-amber-300/30'
+                          : 'bg-white border-[#DFD0EC]'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-5 h-5 rounded-full bg-[#F0E9F5] text-[#3F235F] text-[10px] font-bold flex items-center justify-center">
+                            {cIdx + 1}
+                          </span>
+                          <span className="text-xs font-bold text-zinc-800">
+                            Combinación de Color #{cIdx + 1}:
+                          </span>
+                          <span
+                            className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${
+                              !colHasPhotos
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            }`}
+                          >
+                            {!colHasPhotos
+                              ? '⚠️ Requiere al menos 1 fotografía'
+                              : `✅ ${col.images.length} foto(s) lista(s)`}
+                          </span>
+                        </div>
+
+                        {mat.colors.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveColorFinish(mat.id, col.id)}
+                            className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-bold cursor-pointer self-start sm:self-auto"
+                          >
+                            <Trash2 size={12} /> Eliminar Color
+                          </button>
+                        )}
+                      </div>
 
                     {/* Color Selects */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -1307,13 +1336,96 @@ export default function ProductCreateForm({
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
+  </div>
+
+      {/* ========================================================================= */}
+      {/* SECCIÓN 5: ESTADO DE LA PUBLICACIÓN (TIENDA VS BORRADOR ADMIN) */}
+      {/* ========================================================================= */}
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#DFD0EC] shadow-xs space-y-6">
+        <div className="flex items-center gap-3 border-b border-[#DFD0EC] pb-4">
+          <div className="w-8 h-8 rounded-xl bg-[#F0E9F5] border border-[#DFD0EC] flex items-center justify-center text-[#3F235F] font-bold text-sm">
+            5
+          </div>
+          <div>
+            <h3 className="font-sans text-xl font-bold text-zinc-900 flex items-center gap-2">
+              <Eye size={18} className="text-[#7043A0]" />
+              Estado de la Publicación & Visibilidad
+            </h3>
+            <p className="text-xs text-zinc-500 font-light">
+              Define si la joya será visible inmediatamente para todos los clientes en la tienda o si se guardará como borrador oculto para revisión interna del administrador.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Opción 1: Publicar Inmediatamente */}
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, isActive: true }))}
+            className={`p-5 rounded-2xl border text-left transition cursor-pointer flex items-start gap-3.5 ${
+              formData.isActive
+                ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'bg-[#FAF8FC] border-[#DFD0EC] hover:border-emerald-300'
+            }`}
+          >
+            <div
+              className={`mt-0.5 p-2 rounded-xl shrink-0 ${
+                formData.isActive ? 'bg-emerald-500 text-white' : 'bg-zinc-200 text-zinc-600'
+              }`}
+            >
+              <CheckCircle2 size={18} />
+            </div>
+            <div className="space-y-1">
+              <span className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+                Publicar en la Tienda
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Público
+                </span>
+              </span>
+              <p className="text-xs text-zinc-500 leading-relaxed font-light">
+                La joya estará visible de inmediato en el catálogo, buscador y páginas para todos los clientes.
+              </p>
+            </div>
+          </button>
+
+          {/* Opción 2: Guardar como Borrador Oculto */}
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, isActive: false }))}
+            className={`p-5 rounded-2xl border text-left transition cursor-pointer flex items-start gap-3.5 ${
+              !formData.isActive
+                ? 'bg-amber-50/50 border-amber-500 ring-2 ring-amber-500/20'
+                : 'bg-[#FAF8FC] border-[#DFD0EC] hover:border-amber-300'
+            }`}
+          >
+            <div
+              className={`mt-0.5 p-2 rounded-xl shrink-0 ${
+                !formData.isActive ? 'bg-amber-500 text-white' : 'bg-zinc-200 text-zinc-600'
+              }`}
+            >
+              <EyeOff size={18} />
+            </div>
+            <div className="space-y-1">
+              <span className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+                Guardar como Borrador Oculto
+                <span className="text-[10px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Solo Admin
+                </span>
+              </span>
+              <p className="text-xs text-zinc-500 leading-relaxed font-light">
+                Solo el Administrador podrá ver y revisar la joya en el panel. No aparecerá en la tienda pública hasta que decidas publicarla.
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
 
       {/* ========================================================================= */}
       {/* ACCIONES Y BOTÓN DE GUARDADO */}

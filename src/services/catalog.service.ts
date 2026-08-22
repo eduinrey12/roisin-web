@@ -449,6 +449,7 @@ export interface AdminProductCreateInput {
   categoryId: string;
   collectionId?: string | null;
   collectionIds?: string[];
+  isActive?: boolean;
   materials?: {
     materialName: string;
     basePrice: number;
@@ -614,6 +615,7 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
       compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
       discountPercent: data.discountPercent || null,
       categoryId: data.categoryId,
+      isActive: data.isActive !== undefined ? data.isActive : true,
       images: {
         create: data.images.map((img, idx) => ({
           url: img.url,
@@ -672,6 +674,229 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
   } catch {}
 
   return product;
+}
+
+export async function adminGetProductById(id: string) {
+  return prisma.product.findUnique({
+    where: { id },
+    include: {
+      category: true,
+      collections: {
+        include: { collection: true },
+      },
+      images: {
+        orderBy: { sortOrder: 'asc' },
+      },
+      variants: {
+        include: {
+          inventory: true,
+          attributes: {
+            include: {
+              attributeValue: {
+                include: {
+                  attribute: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function adminUpdateProduct(id: string, data: AdminProductCreateInput) {
+  // Ensure default attributes exist
+  let attrMaterial = await prisma.productAttribute.findUnique({ where: { name: 'Material' } });
+  if (!attrMaterial) {
+    attrMaterial = await prisma.productAttribute.create({ data: { name: 'Material' } });
+  }
+
+  let attrSize = await prisma.productAttribute.findUnique({ where: { name: 'Talla' } });
+  if (!attrSize) {
+    attrSize = await prisma.productAttribute.create({ data: { name: 'Talla' } });
+  }
+
+  let attrColor = await prisma.productAttribute.findUnique({ where: { name: 'Color' } });
+  if (!attrColor) {
+    attrColor = await prisma.productAttribute.create({ data: { name: 'Color' } });
+  }
+
+  // Calculate base price
+  let basePrice = data.basePrice || 0;
+  if (data.materials && data.materials.length > 0) {
+    const validPrices = data.materials.map((m) => Number(m.basePrice)).filter((p) => p > 0);
+    if (validPrices.length > 0) {
+      basePrice = Math.min(...validPrices);
+    }
+  }
+
+  // Generate variants data
+  const slugPrefix = data.slug.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'ROI';
+  const variantsToCreate: {
+    sku: string;
+    price: Prisma.Decimal;
+    compareAtPrice: Prisma.Decimal | null;
+    initialStock: number;
+    attributeValueIds: string[];
+  }[] = [];
+
+  if (data.materials && data.materials.length > 0) {
+    for (let mIdx = 0; mIdx < data.materials.length; mIdx++) {
+      const mat = data.materials[mIdx];
+      const matPrice = Number(mat.basePrice) || basePrice || 10;
+      const matCode =
+        mat.materialName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `M${mIdx + 1}`;
+
+      let matVal = await prisma.productAttributeValue.findFirst({
+        where: { attributeId: attrMaterial.id, value: mat.materialName },
+      });
+      if (!matVal) {
+        matVal = await prisma.productAttributeValue.create({
+          data: { attributeId: attrMaterial.id, value: mat.materialName },
+        });
+      }
+
+      const colorsList =
+        mat.colors && mat.colors.length > 0
+          ? mat.colors
+          : [{ metalColor: 'Estándar', gemColor: undefined }];
+
+      const sizesList =
+        mat.sizes && mat.sizes.length > 0
+          ? mat.sizes
+          : [{ sizeName: 'Estándar', price: null, stock: mat.initialStock ?? 10 }];
+
+      for (let cIdx = 0; cIdx < colorsList.length; cIdx++) {
+        const col = colorsList[cIdx];
+        const colorName = col.metalColor
+          ? `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
+          : 'Acabado Estándar';
+        const colCode =
+          colorName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `C${cIdx + 1}`;
+
+        let colorVal = await prisma.productAttributeValue.findFirst({
+          where: { attributeId: attrColor.id, value: colorName },
+        });
+        if (!colorVal) {
+          colorVal = await prisma.productAttributeValue.create({
+            data: { attributeId: attrColor.id, value: colorName },
+          });
+        }
+
+        for (let sIdx = 0; sIdx < sizesList.length; sIdx++) {
+          const sz = sizesList[sIdx];
+          const szPrice =
+            sz.price != null && Number(sz.price) > 0 ? Number(sz.price) : matPrice;
+          const szStock = sz.stock != null ? Number(sz.stock) : (mat.initialStock ?? 10);
+          const szCode =
+            sz.sizeName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || `T${sIdx + 1}`;
+          const sku = `${slugPrefix}-${matCode}-${colCode}-${szCode}-${mIdx + 1}${cIdx + 1}${sIdx + 1}`;
+
+          let sizeVal = await prisma.productAttributeValue.findFirst({
+            where: { attributeId: attrSize.id, value: sz.sizeName },
+          });
+          if (!sizeVal) {
+            sizeVal = await prisma.productAttributeValue.create({
+              data: { attributeId: attrSize.id, value: sz.sizeName },
+            });
+          }
+
+          variantsToCreate.push({
+            sku,
+            price: new Prisma.Decimal(szPrice),
+            compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
+            initialStock: szStock,
+            attributeValueIds: [matVal.id, colorVal.id, sizeVal.id],
+          });
+        }
+      }
+    }
+  }
+
+  // Combine collections
+  const collectionIdsSet = new Set<string>();
+  if (data.collectionId) collectionIdsSet.add(data.collectionId);
+  if (data.collectionIds) data.collectionIds.forEach((cid) => collectionIdsSet.add(cid));
+  const finalCollectionIds = Array.from(collectionIdsSet).filter(Boolean);
+
+  // Update base product
+  await prisma.product.update({
+    where: { id },
+    data: {
+      title: data.title,
+      slug: data.slug,
+      tag: data.tag || null,
+      shortDescription: data.shortDescription || null,
+      description: data.description,
+      basePrice: new Prisma.Decimal(basePrice),
+      compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
+      discountPercent: data.discountPercent || null,
+      categoryId: data.categoryId,
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+    },
+  });
+
+  // Re-sync collections
+  await prisma.collectionProduct.deleteMany({
+    where: { productId: id },
+  });
+  if (finalCollectionIds.length > 0) {
+    await prisma.collectionProduct.createMany({
+      data: finalCollectionIds.map((cid, idx) => ({
+        productId: id,
+        collectionId: cid,
+        sortOrder: idx,
+      })),
+    });
+  }
+
+  // Re-sync images
+  await prisma.productImage.deleteMany({
+    where: { productId: id },
+  });
+  if (data.images && data.images.length > 0) {
+    await prisma.productImage.createMany({
+      data: data.images.map((img, idx) => ({
+        productId: id,
+        url: img.url,
+        altText: img.altText || data.title,
+        label: img.label || null,
+        isPrimary: img.isPrimary ?? idx === 0,
+        sortOrder: idx,
+      })),
+    });
+  }
+
+  // Re-sync variants
+  if (variantsToCreate.length > 0) {
+    await prisma.productVariant.deleteMany({
+      where: { productId: id },
+    });
+
+    for (const v of variantsToCreate) {
+      await prisma.productVariant.create({
+        data: {
+          productId: id,
+          sku: v.sku,
+          price: v.price,
+          compareAtPrice: v.compareAtPrice,
+          inventory: {
+            create: {
+              quantity: v.initialStock,
+            },
+          },
+          attributes: {
+            create: v.attributeValueIds.map((attrValId) => ({
+              attributeValueId: attrValId,
+            })),
+          },
+        },
+      });
+    }
+  }
+
+  return adminGetProductById(id);
 }
 
 export async function adminUpdateProductStatus(id: string, isActive: boolean) {

@@ -1896,7 +1896,14 @@ export async function adminResetHomeSectionsOrder() {
 
 export async function getOrCreatePresentationOptionGroup() {
   let group = await prisma.productOptionGroup.findFirst({
-    where: { name: { contains: 'Presentación' } },
+    where: {
+      OR: [
+        { name: 'Presentación & Empaque' },
+        { name: 'Presentacion & Empaque' },
+        { name: 'Presentación' },
+        { name: 'Presentacion' },
+      ],
+    },
     include: {
       options: {
         where: { isActive: true },
@@ -1904,6 +1911,18 @@ export async function getOrCreatePresentationOptionGroup() {
       },
     },
   });
+
+  if (!group) {
+    // Try finding any existing option group
+    group = await prisma.productOptionGroup.findFirst({
+      include: {
+        options: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+  }
 
   if (!group) {
     group = await prisma.productOptionGroup.create({

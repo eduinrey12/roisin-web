@@ -98,7 +98,7 @@ export default function ProductGallery({
       {/* Sticky Gallery Container on Desktop */}
       <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 lg:sticky lg:top-24 self-start items-start w-full">
         {/* 1. Left Vertical Thumbnails Column with generous padding */}
-        {activeImages.length > 1 && (
+        {activeImages.length > 0 && (
           <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:overflow-x-hidden no-scrollbar w-full sm:w-20 lg:w-22 shrink-0 max-h-[580px] p-2">
             {activeImages.map((img, idx) => (
               <button

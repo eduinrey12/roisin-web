@@ -206,31 +206,132 @@ export default function ProductCreateForm({
     ].filter((m) => !selectedInOtherCards.includes(m.value));
   };
 
+// Color Hex Mapping and Split Swatch helper
+const COLOR_HEX_MAP: Record<string, string> = {
+  // Metals
+  'plateado rodio': '#E5E7EB',
+  'plateado': '#E5E7EB',
+  'plata': '#E5E7EB',
+  'plata 925': '#E5E7EB',
+  'plata de ley 925': '#E5E7EB',
+  'baño de oro 18k (dorado)': '#D4AF37',
+  'baño oro 18k (dorado)': '#D4AF37',
+  'baño de oro 18k': '#D4AF37',
+  'baño oro 18k': '#D4AF37',
+  'oro 18k': '#D4AF37',
+  'dorado': '#D4AF37',
+  'oro': '#D4AF37',
+  'oro rosa': '#E8A598',
+  'oro rosa 18k': '#E8A598',
+  'oro rosa 14k': '#E8A598',
+  'rose gold': '#E8A598',
+  'acero titanio 316l': '#4B5563',
+  'acero inoxidable plateado': '#9CA3AF',
+  'acero': '#4B5563',
+  'titanio': '#374151',
+  'negro': '#1F2937',
+
+  // Gems
+  'amatista morada (sello roisin)': '#7043A0',
+  'amatista morada': '#7043A0',
+  'amatista': '#7043A0',
+  'morada': '#7043A0',
+  'circonia blanca brillante': '#FFFFFF',
+  'circonia blanca': '#FFFFFF',
+  'circonia': '#FFFFFF',
+  'blanco': '#FFFFFF',
+  'esmeralda verde': '#047857',
+  'esmeralda': '#047857',
+  'verde': '#047857',
+  'rubí rojo pasión': '#B91C1C',
+  'rubí rojo': '#B91C1C',
+  'rubí': '#B91C1C',
+  'rojo': '#B91C1C',
+  'zafiro azul real': '#1D4ED8',
+  'zafiro azul profundo': '#1E3A8A',
+  'zafiro azul': '#1D4ED8',
+  'zafiro': '#1D4ED8',
+  'azul': '#1D4ED8',
+};
+
+function getColorHex(name: string | null | undefined): string | null {
+  if (!name) return null;
+  const lower = name.trim().toLowerCase();
+  if (lower.includes('sin gema') || lower.includes('lisa') || lower.includes('solo metal')) {
+    return null;
+  }
+  if (COLOR_HEX_MAP[lower]) return COLOR_HEX_MAP[lower];
+  for (const [key, hex] of Object.entries(COLOR_HEX_MAP)) {
+    if (lower.includes(key) || key.includes(lower)) return hex;
+  }
+  return '#9CA3AF';
+}
+
+function getSplitColorStyle(colorString: string): {
+  metalHex: string;
+  gemHex: string | null;
+  isSplit: boolean;
+  background: string;
+} {
+  const parts = colorString.split('/').map((s) => s.trim());
+  const metalName = parts[0] || '';
+  const gemName = parts[1] || '';
+
+  const metalHex = getColorHex(metalName) || '#E5E7EB';
+  const gemHex = getColorHex(gemName);
+
+  if (gemHex) {
+    return {
+      metalHex,
+      gemHex,
+      isSplit: true,
+      background: `linear-gradient(135deg, ${metalHex} 50%, ${gemHex} 50%)`,
+    };
+  }
+
+  return {
+    metalHex,
+    gemHex: null,
+    isSplit: false,
+    background: metalHex,
+  };
+}
+
   const metalColorOptions = useMemo(() => {
     const metals = jewelryColors.filter((c) => c.type === 'METAL');
-    if (metals.length > 0) {
-      return metals.map((m) => ({ value: m.name, label: m.name }));
-    }
-    return [
-      { value: 'Plateado Rodio', label: 'Plateado Rodio' },
-      { value: 'Baño de Oro 18k (Dorado)', label: 'Baño de Oro 18k (Dorado)' },
-      { value: 'Oro Rosa 18k', label: 'Oro Rosa 18k' },
-      { value: 'Acero Inoxidable Plateado', label: 'Acero Inoxidable Plateado' },
+    const baseList = metals.length > 0 ? metals.map((c) => c.name) : [
+      'Plateado Rodio',
+      'Baño de Oro 18k (Dorado)',
+      'Oro Rosa 18k',
+      'Acero Inoxidable Plateado',
     ];
+    return baseList.map((name) => {
+      const hex = getColorHex(name);
+      return {
+        value: name,
+        label: `${name}${hex ? ` (${hex})` : ''}`,
+      };
+    });
   }, [jewelryColors]);
 
   const gemColorOptions = useMemo(() => {
     const gems = jewelryColors.filter((c) => c.type === 'GEM');
-    if (gems.length > 0) {
-      return gems.map((g) => ({ value: g.name, label: g.name }));
-    }
+    const baseList = gems.length > 0 ? gems.map((c) => c.name) : [
+      'Amatista Morada (Sello Roisin)',
+      'Circonia Blanca Brillante',
+      'Esmeralda Verde',
+      'Rubí Rojo Pasión',
+      'Zafiro Azul Profundo',
+    ];
     return [
-      { value: 'Amatista Morada (Sello Roisin)', label: 'Amatista Morada (Sello Roisin)' },
-      { value: 'Circonia Blanca Brillante', label: 'Circonia Blanca Brillante' },
-      { value: 'Esmeralda Verde', label: 'Esmeralda Verde' },
-      { value: 'Rubí Rojo Pasión', label: 'Rubí Rojo Pasión' },
-      { value: 'Zafiro Azul Profundo', label: 'Zafiro Azul Profundo' },
-      { value: 'Sin Gema / Lisa', label: 'Sin Gema / Lisa' },
+      { value: '', label: 'Sin Gema / Lisa (Solo Metal)' },
+      ...baseList.map((name) => {
+        const hex = getColorHex(name);
+        return {
+          value: name,
+          label: `${name}${hex ? ` (${hex})` : ''}`,
+        };
+      }),
     ];
   }, [jewelryColors]);
 
@@ -1231,12 +1332,35 @@ export default function ProductCreateForm({
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="w-5 h-5 rounded-full bg-[#F0E9F5] text-[#3F235F] text-[10px] font-bold flex items-center justify-center">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <span className="w-5 h-5 rounded-full bg-[#F0E9F5] text-[#3F235F] text-[10px] font-bold flex items-center justify-center shrink-0">
                             {cIdx + 1}
                           </span>
+                          {/* Visual Dual Color Swatch */}
+                          {(() => {
+                            const styleInfo = getSplitColorStyle(
+                              `${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`
+                            );
+                            return (
+                              <div
+                                className="w-5 h-5 rounded-full relative overflow-hidden border border-black/15 shadow-2xs shrink-0"
+                                style={{ background: styleInfo.background }}
+                                title={`${col.metalColor}${col.gemColor ? ' / ' + col.gemColor : ''}`}
+                              >
+                                {styleInfo.isSplit && (
+                                  <div className="absolute inset-0 border-t border-black/25 -rotate-45 scale-150 origin-center pointer-events-none" />
+                                )}
+                              </div>
+                            );
+                          })()}
                           <span className="text-xs font-bold text-zinc-800">
                             Combinación de Color #{cIdx + 1}:
+                          </span>
+                          <span className="text-[11px] font-mono text-zinc-400 font-normal">
+                            ({getColorHex(col.metalColor) || '#E5E7EB'}
+                            {col.gemColor && getColorHex(col.gemColor)
+                              ? ` / ${getColorHex(col.gemColor)}`
+                              : ''})
                           </span>
                           <span
                             className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${

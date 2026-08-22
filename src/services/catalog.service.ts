@@ -369,17 +369,22 @@ async function attachOptionImages(options: any[]) {
   return options;
 }
 
-export async function getProductBySlug(slug: string) {
+export async function getProductBySlug(
+  slug: string,
+  options?: { allowInactive?: boolean }
+) {
+  const where = options?.allowInactive ? { slug } : { slug, isActive: true };
+
   const product = await prisma.product.findUnique({
-    where: { slug, isActive: true },
+    where,
     include: {
       category: true,
       collections: {
         include: { collection: true },
       },
-      images: { orderBy: { sortOrder: 'asc' } },
+      images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
       variants: {
-        where: { isActive: true },
+        where: options?.allowInactive ? {} : { isActive: true },
         include: {
           inventory: true,
           attributes: {

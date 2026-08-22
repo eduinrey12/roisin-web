@@ -744,6 +744,9 @@ export default function ProductCreateForm({
       allImages[0].isPrimary = true;
     }
 
+    // Place primary image first
+    allImages.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+
     setLoading(true);
 
     try {

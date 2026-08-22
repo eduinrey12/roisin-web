@@ -617,13 +617,15 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
       categoryId: data.categoryId,
       isActive: data.isActive !== undefined ? data.isActive : true,
       images: {
-        create: data.images.map((img, idx) => ({
-          url: img.url,
-          altText: img.altText || data.title,
-          label: img.label || null,
-          isPrimary: img.isPrimary ?? idx === 0,
-          sortOrder: idx,
-        })),
+        create: [...data.images]
+          .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+          .map((img, idx) => ({
+            url: img.url,
+            altText: img.altText || data.title,
+            label: img.label || null,
+            isPrimary: Boolean(img.isPrimary) || idx === 0,
+            sortOrder: idx,
+          })),
       },
       variants: {
         create: variantsToCreate.map((v) => ({
@@ -856,13 +858,17 @@ export async function adminUpdateProduct(id: string, data: AdminProductCreateInp
     where: { productId: id },
   });
   if (data.images && data.images.length > 0) {
+    const sortedImages = [...data.images].sort(
+      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0)
+    );
+
     await prisma.productImage.createMany({
-      data: data.images.map((img, idx) => ({
+      data: sortedImages.map((img, idx) => ({
         productId: id,
         url: img.url,
         altText: img.altText || data.title,
         label: img.label || null,
-        isPrimary: img.isPrimary ?? idx === 0,
+        isPrimary: Boolean(img.isPrimary) || idx === 0,
         sortOrder: idx,
       })),
     });

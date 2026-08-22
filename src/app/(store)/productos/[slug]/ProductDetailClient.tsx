@@ -203,48 +203,98 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     return match || product.variants[0];
   }, [product.variants, selectedMaterial, selectedColor, selectedSize]);
 
-  // Dynamic Image Gallery: Filter photos by selected finish/color and material
+// Helper to parse image label and extract custom label, material, metal and gem
+function parseProductImageLabel(label: string | null | undefined): {
+  material?: string;
+  metal?: string;
+  gem?: string;
+  customLabel: string;
+} {
+  if (!label) return { customLabel: '' };
+  const trimmed = label.trim();
+  if (trimmed.includes('|')) {
+    const [matPart, rest] = trimmed.split('|').map((s) => s.trim());
+    let finishPart = rest || '';
+    let customLabel = '';
+    if (finishPart.includes('-')) {
+      const dashParts = finishPart.split('-');
+      finishPart = dashParts[0].trim();
+      customLabel = dashParts.slice(1).join('-').trim();
+    }
+
+    const slashParts = finishPart.split('/').map((s) => s.trim());
+    const metal = slashParts[0] || '';
+    const gem = slashParts[1] || '';
+
+    return {
+      material: matPart,
+      metal,
+      gem,
+      customLabel,
+    };
+  }
+
+  return { customLabel: trimmed };
+}
+
+  // Dynamic Image Gallery: Filter photos strictly by selected finish/color and material
   const activeImages = useMemo(() => {
     if (!product.images || product.images.length === 0) {
       return [];
     }
 
-    const matLower = selectedMaterial.toLowerCase();
-    const colLower = selectedColor.toLowerCase();
+    const matLower = (selectedMaterial || '').toLowerCase().trim();
+    const slashParts = (selectedColor || '').split('/').map((s) => s.trim().toLowerCase());
+    const metalLower = slashParts[0] || '';
+    const gemLower = slashParts[1] || '';
 
-    // Try finding photos specific to this material + color
+    // 1. Exact match by structured label: (material + metal + gem)
+    const exactMatches = product.images.filter((img) => {
+      const parsed = parseProductImageLabel(img.label);
+      if (parsed.material) {
+        const matMatches = !matLower || parsed.material.toLowerCase() === matLower;
+        const metalMatches = !metalLower || !parsed.metal || parsed.metal.toLowerCase() === metalLower;
+        const gemMatches = !gemLower || !parsed.gem || parsed.gem.toLowerCase() === gemLower;
+        return matMatches && metalMatches && (gemMatches || !gemLower);
+      }
+      return false;
+    });
+
+    if (exactMatches.length > 0) {
+      return exactMatches;
+    }
+
+    // 2. Strict text match for legacy or non-piped images
     if (selectedColor) {
-      const specificMatches = product.images.filter((img) => {
-        const label = (img.label || '').toLowerCase();
-        const alt = (img.altText || '').toLowerCase();
-        const combined = `${label} ${alt}`;
-
-        // Extract color components (e.g. "plateado rodio", "amatista morada")
-        const colParts = colLower.split('/').map((s) => s.trim());
-        const matchesCol = colParts.some((part) => combined.includes(part)) || combined.includes(colLower);
-        const matchesMat = combined.includes(matLower);
-
-        return matchesCol || (matchesMat && matchesCol);
+      const textMatches = product.images.filter((img) => {
+        const text = `${img.label || ''} ${img.altText || ''}`.toLowerCase();
+        const matchesMat = !matLower || text.includes(matLower);
+        const matchesMetal = !metalLower || text.includes(metalLower);
+        const matchesGem = !gemLower || text.includes(gemLower);
+        return matchesMat && matchesMetal && matchesGem;
       });
 
-      if (specificMatches.length > 0) {
-        return specificMatches;
+      if (textMatches.length > 0) {
+        return textMatches;
       }
     }
 
-    // Try finding photos for this material
+    // 3. Fallback for material
     if (selectedMaterial) {
       const matMatches = product.images.filter((img) => {
-        const label = (img.label || '').toLowerCase();
-        const alt = (img.altText || '').toLowerCase();
-        return label.includes(matLower) || alt.includes(matLower);
+        const parsed = parseProductImageLabel(img.label);
+        if (parsed.material) {
+          return parsed.material.toLowerCase() === matLower;
+        }
+        const text = `${img.label || ''} ${img.altText || ''}`.toLowerCase();
+        return text.includes(matLower);
       });
       if (matMatches.length > 0) {
         return matMatches;
       }
     }
 
-    // Fallback: All images of the product
+    // 4. Default: All images of the product
     return product.images;
   }, [product.images, selectedMaterial, selectedColor]);
 

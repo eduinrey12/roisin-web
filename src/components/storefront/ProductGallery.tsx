@@ -116,6 +116,7 @@ export default function ProductGallery({
                   alt=""
                   fill
                   sizes="80px"
+                  unoptimized={img.url?.startsWith('/api/uploads/')}
                   className="object-cover object-center"
                 />
                 {img.label && (
@@ -139,6 +140,7 @@ export default function ProductGallery({
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 50vw"
+            unoptimized={currentImage.url?.startsWith('/api/uploads/')}
             className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-104"
           />
 
@@ -266,6 +268,7 @@ export default function ProductGallery({
                   fill
                   priority
                   sizes="100vw"
+                  unoptimized={currentImage.url?.startsWith('/api/uploads/')}
                   className="object-contain"
                 />
               </div>
@@ -303,7 +306,14 @@ export default function ProductGallery({
                         : 'border-white/30 opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img.url} alt="" fill sizes="48px" className="object-cover" />
+                    <Image
+                      src={img.url}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      unoptimized={img.url?.startsWith('/api/uploads/')}
+                      className="object-cover"
+                    />
                   </button>
                 ))}
               </div>

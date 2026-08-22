@@ -92,21 +92,23 @@ export async function saveUploadedFile(file: File): Promise<{
     throw new Error('El contenido del archivo no corresponde a una imagen válida.');
   }
 
-  const uploadsDir = getUploadsDirectory();
-  await mkdir(uploadsDir, { recursive: true });
-
   const filename = `${uuidv4()}.${safeExt}`;
-  const filePath = path.join(uploadsDir, filename);
+  const candidateDirs = getPossibleUploadDirectories();
+  let writeSuccess = false;
 
-  await writeFile(filePath, buffer);
-
-  // Also write to public/uploads as fallback
-  const fallbackDir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads');
-  if (fallbackDir !== uploadsDir) {
+  for (const dir of candidateDirs) {
     try {
-      await mkdir(fallbackDir, { recursive: true });
-      await writeFile(path.join(fallbackDir, filename), buffer);
+      await mkdir(dir, { recursive: true });
+      const filePath = path.join(dir, filename);
+      await writeFile(filePath, buffer);
+      writeSuccess = true;
     } catch {}
+  }
+
+  if (!writeSuccess) {
+    const fallbackDir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads');
+    await mkdir(fallbackDir, { recursive: true });
+    await writeFile(path.join(fallbackDir, filename), buffer);
   }
 
   // Return standard public URL

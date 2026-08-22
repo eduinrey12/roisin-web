@@ -496,10 +496,19 @@ function getSplitColorStyle(colorString: string): {
       'Baño Oro 18k (Dorado)',
       'Oro Rosa',
     ];
-    return baseList.map((name) => ({
-      value: name,
-      label: name,
-    }));
+    return baseList.map((name) => {
+      const hex = getColorHex(name) || '#E5E7EB';
+      return {
+        value: name,
+        label: name,
+        icon: (
+          <span
+            className="w-3.5 h-3.5 rounded-full inline-block border border-black/15 shadow-2xs shrink-0"
+            style={{ backgroundColor: hex }}
+          />
+        ),
+      };
+    });
   }, [jewelryColors]);
 
   const gemColorOptions = useMemo(() => {
@@ -512,11 +521,26 @@ function getSplitColorStyle(colorString: string): {
       'Zafiro Azul Real',
     ];
     return [
-      { value: '', label: 'Sin Gema / Solo Metal Liso' },
-      ...baseList.map((name) => ({
-        value: name,
-        label: name,
-      })),
+      {
+        value: '',
+        label: 'Sin Gema / Solo Metal Liso',
+        icon: (
+          <span className="w-3.5 h-3.5 rounded-full inline-block border border-dashed border-zinc-400 bg-zinc-100 shrink-0" />
+        ),
+      },
+      ...baseList.map((name) => {
+        const hex = getColorHex(name) || '#7043A0';
+        return {
+          value: name,
+          label: name,
+          icon: (
+            <span
+              className="w-3.5 h-3.5 rounded-full inline-block border border-black/15 shadow-2xs shrink-0"
+              style={{ backgroundColor: hex }}
+            />
+          ),
+        };
+      }),
     ];
   }, [jewelryColors]);
 

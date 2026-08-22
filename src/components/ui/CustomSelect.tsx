@@ -67,7 +67,13 @@ export default function CustomSelect({
           className={`w-full bg-[#F8F5FA] hover:bg-[#F0E9F5] border border-[#DFD0EC] rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-900 flex items-center justify-between gap-2.5 transition-all duration-200 shadow-2xs group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:border-[#7043A0] ${triggerClassName}`}
         >
           <div className="flex items-center gap-2 truncate">
-            {icon !== undefined ? icon : <RoisinDiamond size={13} color="#7043A0" />}
+            {selectedOption?.icon ? (
+              selectedOption.icon
+            ) : icon !== undefined ? (
+              icon
+            ) : (
+              <RoisinDiamond size={13} color="#7043A0" />
+            )}
             <span className="truncate">
               {selectedOption ? selectedOption.label : placeholder}
             </span>

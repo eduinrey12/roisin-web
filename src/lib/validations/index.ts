@@ -39,7 +39,6 @@ export const productSchema = z.object({
   categoryId: z.string().min(1, 'Categoría inválida'),
   collectionId: z.string().optional().nullable(),
   collectionIds: z.array(z.string()).optional(),
-  isFeatured: z.boolean().default(false),
   images: z.array(
     z.object({
       url: z.string().min(1, 'URL de imagen no válida'),

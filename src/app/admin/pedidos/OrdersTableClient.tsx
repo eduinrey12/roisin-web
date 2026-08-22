@@ -51,17 +51,24 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const [statusModalOrder, setStatusModalOrder] = useState<OrderData | null>(null);
+  const [selectedStatusInModal, setSelectedStatusInModal] = useState<OrderStatus | null>(null);
 
   const filteredOrders =
     filterStatus === 'ALL'
       ? orders
       : orders.filter((o) => o.status === filterStatus);
 
+  const openStatusModal = (order: OrderData) => {
+    setStatusModalOrder(order);
+    setSelectedStatusInModal(order.status);
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     const res = await adminUpdateOrderStatusAction(orderId, newStatus);
     setUpdatingId(null);
     setStatusModalOrder(null);
+    setSelectedStatusInModal(null);
 
     if (res.success) {
       setOrders(
@@ -173,7 +180,7 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                     <button
                       type="button"
                       disabled={updatingId === order.id}
-                      onClick={() => setStatusModalOrder(order)}
+                      onClick={() => openStatusModal(order)}
                       className={`text-xs font-bold border rounded-xl px-3 py-1.5 shadow-2xs inline-flex items-center gap-1.5 transition cursor-pointer hover:scale-105 active:scale-95 ${getOrderStatusColor(
                         order.status
                       )}`}
@@ -219,7 +226,10 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                 </h3>
               </div>
               <button
-                onClick={() => setStatusModalOrder(null)}
+                onClick={() => {
+                  setStatusModalOrder(null);
+                  setSelectedStatusInModal(null);
+                }}
                 className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-[#F8F5FA] transition cursor-pointer"
               >
                 <X size={18} />
@@ -227,22 +237,22 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
             </div>
 
             <p className="text-xs text-zinc-500 font-light">
-              Selecciona el nuevo estado para actualizar el seguimiento de la orden del cliente:
+              Selecciona el nuevo estado y haz clic en <strong>Guardar Cambios</strong> para actualizar el pedido:
             </p>
 
             <div className="space-y-2">
               {STATUS_OPTIONS.map((opt) => {
-                const isCurrent = statusModalOrder.status === opt.value;
+                const isSelected = selectedStatusInModal === opt.value;
+                const isCurrentInDb = statusModalOrder.status === opt.value;
                 return (
                   <button
                     key={opt.value}
                     type="button"
-                    disabled={updatingId === statusModalOrder.id}
-                    onClick={() => handleStatusChange(statusModalOrder.id, opt.value)}
+                    onClick={() => setSelectedStatusInModal(opt.value)}
                     className={`w-full p-3.5 rounded-2xl text-left border flex items-center justify-between transition cursor-pointer ${
-                      isCurrent
-                        ? 'border-[#7043A0] bg-[#F0E9F5] shadow-xs'
-                        : 'border-[#DFD0EC] bg-[#F8F5FA] hover:bg-[#F0E9F5]/60 hover:border-[#7043A0]'
+                      isSelected
+                        ? 'border-[#7043A0] bg-[#F0E9F5] shadow-xs ring-1 ring-[#7043A0]'
+                        : 'border-[#DFD0EC] bg-[#F8F5FA] hover:bg-[#F0E9F5]/50 hover:border-[#7043A0]'
                     }`}
                   >
                     <div>
@@ -254,9 +264,14 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                         >
                           {opt.label}
                         </span>
-                        {isCurrent && (
+                        {isCurrentInDb && (
+                          <span className="text-[10px] text-zinc-400 font-medium">
+                            (Estado Actual)
+                          </span>
+                        )}
+                        {isSelected && !isCurrentInDb && (
                           <span className="text-[10px] text-[#7043A0] font-bold">
-                            (Actual)
+                            (Seleccionado)
                           </span>
                         )}
                       </div>
@@ -264,19 +279,42 @@ export default function OrdersTableClient({ orders: initialOrders }: { orders: O
                         {opt.description}
                       </p>
                     </div>
-                    {isCurrent && <CheckCircle2 size={16} className="text-[#7043A0] shrink-0" />}
+                    {isSelected && <CheckCircle2 size={16} className="text-[#7043A0] shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end items-center gap-3 pt-3 border-t border-[#DFD0EC]">
               <button
                 type="button"
-                onClick={() => setStatusModalOrder(null)}
+                onClick={() => {
+                  setStatusModalOrder(null);
+                  setSelectedStatusInModal(null);
+                }}
                 className="text-xs font-bold px-5 py-2.5 rounded-2xl border border-[#DFD0EC] bg-white hover:bg-[#F8F5FA] text-zinc-700 cursor-pointer"
               >
-                Cerrar
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={
+                  !selectedStatusInModal ||
+                  selectedStatusInModal === statusModalOrder.status ||
+                  updatingId === statusModalOrder.id
+                }
+                onClick={() => {
+                  if (selectedStatusInModal && selectedStatusInModal !== statusModalOrder.status) {
+                    handleStatusChange(statusModalOrder.id, selectedStatusInModal);
+                  }
+                }}
+                className={`text-xs font-bold px-6 py-2.5 rounded-2xl transition cursor-pointer ${
+                  selectedStatusInModal && selectedStatusInModal !== statusModalOrder.status && updatingId !== statusModalOrder.id
+                    ? 'btn-purple-diamond shadow-md hover:scale-105 active:scale-95'
+                    : 'bg-zinc-200 text-zinc-400 cursor-not-allowed border border-zinc-300'
+                }`}
+              >
+                {updatingId === statusModalOrder.id ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </div>

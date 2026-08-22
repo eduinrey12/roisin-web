@@ -3,6 +3,7 @@ import {
   getCollections,
   getMaterials,
   getCategorySizes,
+  getJewelryColors,
 } from '@/services/catalog.service';
 import ProductCreateForm from './ProductCreateForm';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
@@ -10,11 +11,12 @@ import RoisinDiamond from '@/components/branding/RoisinDiamond';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminNewProductPage() {
-  const [categories, collections, materials, categorySizes] = await Promise.all([
+  const [categories, collections, materials, categorySizes, jewelryColors] = await Promise.all([
     getCategories(),
     getCollections(),
     getMaterials(),
     getCategorySizes(),
+    getJewelryColors(),
   ]);
 
   return (
@@ -36,6 +38,7 @@ export default async function AdminNewProductPage() {
         collections={collections}
         materials={materials}
         categorySizes={categorySizes}
+        jewelryColors={jewelryColors}
       />
     </div>
   );

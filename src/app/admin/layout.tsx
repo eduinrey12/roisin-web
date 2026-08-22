@@ -15,6 +15,9 @@ import {
   ExternalLink,
   Gift,
   LayoutTemplate,
+  Layers,
+  Ruler,
+  Palette,
 } from 'lucide-react';
 import RoisinDiamond from '@/components/branding/RoisinDiamond';
 import RoisinLogo from '@/components/branding/RoisinLogo';
@@ -70,6 +73,30 @@ export default async function AdminLayout({
           >
             <PackageCheck size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
             <span>Catálogo de Joyas</span>
+          </Link>
+
+          <Link
+            href="/admin/materiales"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <Layers size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Materiales de Joyería</span>
+          </Link>
+
+          <Link
+            href="/admin/tallas"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <Ruler size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Tallas por Categoría</span>
+          </Link>
+
+          <Link
+            href="/admin/colores"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-[#2B1B3A] hover:text-[#DFD0EC] transition text-zinc-300 group border border-transparent hover:border-[#4B2F66]"
+          >
+            <Palette size={17} className="text-[#C2A3DF] group-hover:scale-110 transition-transform" />
+            <span>Colores & Acabados</span>
           </Link>
 
           <Link

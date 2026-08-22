@@ -86,7 +86,7 @@ export async function getFeaturedProducts(limit = 6) {
       },
     });
 
-    // Compute dynamic popularity ranking: Top Sales (weight 5x) + Cart Activity (weight 2x) + isFeatured flag (weight 3x)
+    // Compute dynamic popularity ranking: Top Sales (weight 5x) + Cart Activity (weight 2x)
     const scoredProducts = products.map((p) => {
       let salesCount = 0;
       let cartCount = 0;
@@ -100,7 +100,7 @@ export async function getFeaturedProducts(limit = 6) {
         }
       }
 
-      const popularityScore = salesCount * 5 + cartCount * 2 + (p.isFeatured ? 3 : 0);
+      const popularityScore = salesCount * 5 + cartCount * 2;
 
       return {
         product: p,
@@ -158,44 +158,32 @@ export async function getNewArrivals(limit = 8) {
 }
 
 export async function getRelatedProducts(params: {
-  currentProductId: string;
+  currentProductId?: string;
   categoryId?: string;
   categorySlug?: string;
   collectionIds?: string[];
   limit?: number;
 }) {
-  const limit = params.limit || 8;
+  const limit = params.limit || 4;
   const currentId = params.currentProductId;
 
   const productInclude = {
+    category: true,
+    collections: {
+      include: { collection: true },
+    },
     images: { orderBy: { sortOrder: 'asc' as const } },
     variants: {
       where: { isActive: true },
       include: { inventory: true },
     },
-    category: true,
-    collections: {
-      include: { collection: true },
-    },
   };
 
   try {
-    const wherePrimary: Prisma.ProductWhereInput = {
+    const wherePrimary: any = {
       isActive: true,
-      id: { not: currentId },
-      OR: [
-        ...(params.collectionIds && params.collectionIds.length > 0
-          ? [
-              {
-                collections: {
-                  some: {
-                    collectionId: { in: params.collectionIds },
-                    collection: { isActive: true },
-                  },
-                },
-              },
-            ]
-          : []),
+      ...(currentId ? { id: { not: currentId } } : {}),
+      AND: [
         ...(params.categoryId
           ? [{ categoryId: params.categoryId, category: { isActive: true } }]
           : params.categorySlug
@@ -208,11 +196,11 @@ export async function getRelatedProducts(params: {
       where: wherePrimary,
       include: productInclude,
       take: limit,
-      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      orderBy: { createdAt: 'desc' },
     });
 
     if (related.length < limit) {
-      const existingIds = [currentId, ...related.map((p) => p.id)];
+      const existingIds: string[] = (currentId ? [currentId, ...related.map((p) => p.id)] : related.map((p) => p.id));
       const fallbackProducts = await prisma.product.findMany({
         where: {
           isActive: true,
@@ -220,7 +208,7 @@ export async function getRelatedProducts(params: {
         },
         include: productInclude,
         take: limit - related.length,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        orderBy: { createdAt: 'desc' },
       });
 
       related = [...related, ...fallbackProducts];
@@ -461,7 +449,6 @@ export interface AdminProductCreateInput {
   categoryId: string;
   collectionId?: string | null;
   collectionIds?: string[];
-  isFeatured?: boolean;
   materials?: {
     materialName: string;
     basePrice: number;
@@ -610,7 +597,6 @@ export async function adminCreateProduct(data: AdminProductCreateInput) {
       compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
       discountPercent: data.discountPercent || null,
       categoryId: data.categoryId,
-      isFeatured: data.isFeatured ?? false,
       images: {
         create: data.images.map((img, idx) => ({
           url: img.url,
@@ -792,6 +778,22 @@ export async function adminCreateMaterial(data: {
   });
 }
 
+export async function adminUpdateMaterial(
+  id: string,
+  data: { name?: string; description?: string; sortOrder?: number; isActive?: boolean }
+) {
+  return prisma.material.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function adminDeleteMaterial(id: string) {
+  return prisma.material.delete({
+    where: { id },
+  });
+}
+
 // -----------------------------------------------------------------------------
 // Category Sizes Admin Operations
 // -----------------------------------------------------------------------------
@@ -874,6 +876,20 @@ export async function getCategorySizes(categoryId?: string) {
   }
 }
 
+export async function adminGetAllCategorySizes() {
+  try {
+    if (!prisma.categorySize) return [];
+    return await prisma.categorySize.findMany({
+      include: {
+        category: true,
+      },
+      orderBy: [{ category: { name: 'asc' } }, { sortOrder: 'asc' }],
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function adminCreateCategorySize(data: {
   categoryId: string;
   name: string;
@@ -888,6 +904,130 @@ export async function adminCreateCategorySize(data: {
       sortOrder: data.sortOrder ?? 0,
       isActive: true,
     },
+  });
+}
+
+export async function adminUpdateCategorySize(
+  id: string,
+  data: { categoryId?: string; name?: string; isAdjustable?: boolean; sortOrder?: number; isActive?: boolean }
+) {
+  return prisma.categorySize.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function adminDeleteCategorySize(id: string) {
+  return prisma.categorySize.delete({
+    where: { id },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Jewelry Colors & Finishes Admin Operations
+// -----------------------------------------------------------------------------
+
+export const DEFAULT_JEWELRY_COLORS = [
+  { id: 'c-plat', name: 'Plateado Rodio', type: 'METAL' as const, hexCode: '#E5E7EB', sortOrder: 0, isActive: true },
+  { id: 'c-oro18', name: 'Baño de Oro 18k (Dorado)', type: 'METAL' as const, hexCode: '#F59E0B', sortOrder: 1, isActive: true },
+  { id: 'c-ororosa', name: 'Oro Rosa 18k', type: 'METAL' as const, hexCode: '#F472B6', sortOrder: 2, isActive: true },
+  { id: 'c-acero', name: 'Acero Inoxidable Plateado', type: 'METAL' as const, hexCode: '#9CA3AF', sortOrder: 3, isActive: true },
+  { id: 'c-amat', name: 'Amatista Morada (Sello Roisin)', type: 'GEM' as const, hexCode: '#7043A0', sortOrder: 0, isActive: true },
+  { id: 'c-circ', name: 'Circonia Blanca Brillante', type: 'GEM' as const, hexCode: '#FFFFFF', sortOrder: 1, isActive: true },
+  { id: 'c-esmer', name: 'Esmeralda Verde', type: 'GEM' as const, hexCode: '#10B981', sortOrder: 2, isActive: true },
+  { id: 'c-rubi', name: 'Rubí Rojo Pasión', type: 'GEM' as const, hexCode: '#EF4444', sortOrder: 3, isActive: true },
+  { id: 'c-zaf', name: 'Zafiro Azul Profundo', type: 'GEM' as const, hexCode: '#3B82F6', sortOrder: 4, isActive: true },
+  { id: 'c-lisa', name: 'Sin Gema / Lisa', type: 'GEM' as const, hexCode: '#6B7280', sortOrder: 5, isActive: true },
+];
+
+export async function getJewelryColors() {
+  try {
+    if (!prisma.jewelryColor) return DEFAULT_JEWELRY_COLORS;
+    let colors = await prisma.jewelryColor.findMany({
+      where: { isActive: true },
+      orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }],
+    });
+
+    if (!colors || colors.length === 0) {
+      await prisma.jewelryColor.createMany({
+        data: DEFAULT_JEWELRY_COLORS.map((c, idx) => ({
+          name: c.name,
+          type: c.type,
+          hexCode: c.hexCode,
+          sortOrder: idx,
+          isActive: true,
+        })),
+        skipDuplicates: true,
+      });
+      colors = await prisma.jewelryColor.findMany({
+        where: { isActive: true },
+        orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }],
+      });
+    }
+    return colors;
+  } catch {
+    return DEFAULT_JEWELRY_COLORS;
+  }
+}
+
+export async function adminGetAllJewelryColors() {
+  try {
+    if (!prisma.jewelryColor) return DEFAULT_JEWELRY_COLORS;
+    let colors = await prisma.jewelryColor.findMany({
+      orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }],
+    });
+
+    if (!colors || colors.length === 0) {
+      await prisma.jewelryColor.createMany({
+        data: DEFAULT_JEWELRY_COLORS.map((c, idx) => ({
+          name: c.name,
+          type: c.type,
+          hexCode: c.hexCode,
+          sortOrder: idx,
+          isActive: true,
+        })),
+        skipDuplicates: true,
+      });
+      colors = await prisma.jewelryColor.findMany({
+        orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }],
+      });
+    }
+    return colors;
+  } catch {
+    return DEFAULT_JEWELRY_COLORS;
+  }
+}
+
+export async function adminCreateJewelryColor(data: {
+  name: string;
+  type: 'METAL' | 'GEM';
+  hexCode?: string;
+  sortOrder?: number;
+}) {
+  return prisma.jewelryColor.create({
+    data: {
+      name: data.name,
+      type: data.type,
+      hexCode: data.hexCode || null,
+      sortOrder: data.sortOrder ?? 0,
+      isActive: true,
+    },
+  });
+}
+
+export async function adminUpdateJewelryColor(
+  id: string,
+  data: { name?: string; type?: 'METAL' | 'GEM'; hexCode?: string; sortOrder?: number; isActive?: boolean }
+) {
+  return prisma.jewelryColor.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function adminDeleteJewelryColor(id: string) {
+  return prisma.jewelryColor.delete({
+    where: { id },
   });
 }
 

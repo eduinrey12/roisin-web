@@ -17,7 +17,7 @@ function createPrismaClient(): PrismaClient {
       user: decodeURIComponent(parsed.username || 'root'),
       password: decodeURIComponent(parsed.password || ''),
       database: parsed.pathname.replace(/^\//, '') || 'roisin_db',
-      connectionLimit: 20,
+      connectionLimit: 10,
       connectTimeout: 20000,
       acquireTimeout: 20000,
       allowPublicKeyRetrieval: true,

@@ -55,6 +55,7 @@ async function main() {
   await prisma.cart.deleteMany({});
   await prisma.categorySize.deleteMany({});
   await prisma.material.deleteMany({});
+  await prisma.jewelryColor.deleteMany({});
   await prisma.collectionProduct.deleteMany({});
   await prisma.productOptionGroupAssignment.deleteMany({});
   await prisma.productOption.deleteMany({});
@@ -253,6 +254,25 @@ async function main() {
       { categoryId: catPulseras.id, name: 'Ajustable 16-19 cm', isAdjustable: true, sortOrder: 5 },
       // Aretes
       { categoryId: catAretes.id, name: 'Talla Única / Estándar', isAdjustable: false, sortOrder: 1 },
+    ],
+  });
+
+  // 4.3 Acabados y Colores Oficiales (Metales y Gemas)
+  console.log('🎨 Creando catálogo de colores y acabados...');
+  await prisma.jewelryColor.createMany({
+    data: [
+      // Metales
+      { name: 'Plateado Rodio', type: 'METAL', hexCode: '#E5E7EB', sortOrder: 0, isActive: true },
+      { name: 'Baño de Oro 18k (Dorado)', type: 'METAL', hexCode: '#F59E0B', sortOrder: 1, isActive: true },
+      { name: 'Oro Rosa 18k', type: 'METAL', hexCode: '#F472B6', sortOrder: 2, isActive: true },
+      { name: 'Acero Inoxidable Plateado', type: 'METAL', hexCode: '#9CA3AF', sortOrder: 3, isActive: true },
+      // Gemas
+      { name: 'Amatista Morada (Sello Roisin)', type: 'GEM', hexCode: '#7043A0', sortOrder: 0, isActive: true },
+      { name: 'Circonia Blanca Brillante', type: 'GEM', hexCode: '#FFFFFF', sortOrder: 1, isActive: true },
+      { name: 'Esmeralda Verde', type: 'GEM', hexCode: '#10B981', sortOrder: 2, isActive: true },
+      { name: 'Rubí Rojo Pasión', type: 'GEM', hexCode: '#EF4444', sortOrder: 3, isActive: true },
+      { name: 'Zafiro Azul Profundo', type: 'GEM', hexCode: '#3B82F6', sortOrder: 4, isActive: true },
+      { name: 'Sin Gema / Lisa', type: 'GEM', hexCode: '#6B7280', sortOrder: 5, isActive: true },
     ],
   });
 
@@ -684,7 +704,6 @@ async function main() {
       compareAtPrice: 50.00,
       discountPercent: 24,
       isActive: true,
-      isFeatured: true,
       categoryId: catCollares.id,
       collections: {
         create: [
@@ -758,7 +777,6 @@ async function main() {
       compareAtPrice: 55.00,
       discountPercent: 24,
       isActive: true,
-      isFeatured: true,
       categoryId: catAnillos.id,
       collections: {
         create: [
@@ -844,7 +862,6 @@ async function main() {
       compareAtPrice: 70.00,
       discountPercent: 21,
       isActive: true,
-      isFeatured: true,
       categoryId: catPulseras.id,
       collections: {
         create: [
@@ -905,7 +922,6 @@ async function main() {
       compareAtPrice: 38.00,
       discountPercent: 26,
       isActive: true,
-      isFeatured: true,
       categoryId: catAretes.id,
       collections: {
         create: [{ collectionId: colPromesa.id, sortOrder: 0 }],
@@ -954,7 +970,6 @@ async function main() {
       compareAtPrice: 48.00,
       discountPercent: 25,
       isActive: true,
-      isFeatured: true,
       categoryId: catAnillos.id,
       collections: {
         create: [{ collectionId: colPromesa.id, sortOrder: 0 }],
@@ -1023,7 +1038,6 @@ async function main() {
       description: 'El toque de sofisticación perfecto para el día a día. Una circonia solitaria suspendida en una fina cadena veneciana que reposa con gracia en el escote.',
       basePrice: 29.00,
       isActive: true,
-      isFeatured: false,
       categoryId: catCollares.id,
       images: {
         create: IMAGES.necklace2.map((img, idx) => ({
@@ -1074,7 +1088,6 @@ async function main() {
       description: 'Símbolo eterno de fortuna, esperanza y amor. Cada dije de trébol está tallado en nácar legítimo enmarcado con ribete perlado de oro.',
       basePrice: 45.00,
       isActive: true,
-      isFeatured: false,
       categoryId: catPulseras.id,
       collections: {
         create: [{ collectionId: colReal.id, sortOrder: 0 }],
@@ -1117,7 +1130,6 @@ async function main() {
       description: 'Pureza y elegancia atemporal. Perlas seleccionadas de lustre nacarado intenso con montura hipoalergénica de alta durabilidad.',
       basePrice: 32.00,
       isActive: true,
-      isFeatured: false,
       categoryId: catAretes.id,
       images: {
         create: IMAGES.earrings2.map((img, idx) => ({
@@ -1152,7 +1164,6 @@ async function main() {
       description: 'Una pieza de impacto audaz y lujoso. Eslabones pulidos a mano que brindan una caída perfecta sobre el cuello con brillo imponente.',
       basePrice: 52.00,
       isActive: true,
-      isFeatured: false,
       categoryId: catCollares.id,
       collections: {
         create: [{ collectionId: colReal.id, sortOrder: 0 }],
@@ -1195,7 +1206,6 @@ async function main() {
       description: 'Un recordatorio constante de que el amor no tiene principio ni fin. Dos aros independientes que se unen para formar un diseño orgánico sublime.',
       basePrice: 39.00,
       isActive: true,
-      isFeatured: false,
       categoryId: catAnillos.id,
       collections: {
         create: [{ collectionId: colPromesa.id, sortOrder: 0 }],
@@ -1263,7 +1273,6 @@ async function main() {
       discountPercent: 20,
       tag: 'Exclusivo',
       isActive: true,
-      isFeatured: false,
       categoryId: catAnillos.id,
       collections: {
         create: [{ collectionId: colDiamanteMorado.id, sortOrder: 0 }],
@@ -1321,7 +1330,6 @@ async function main() {
       compareAtPrice: 45.00,
       tag: 'Nuevo',
       isActive: true,
-      isFeatured: false,
       categoryId: catCollares.id,
       images: {
         create: IMAGES.necklace2.map((img, idx) => ({
@@ -1364,7 +1372,6 @@ async function main() {
       compareAtPrice: 70.00,
       tag: 'Más Vendido',
       isActive: true,
-      isFeatured: false,
       categoryId: catPulseras.id,
       collections: {
         create: [{ collectionId: colReal.id, sortOrder: 0 }],
@@ -1410,7 +1417,6 @@ async function main() {
       compareAtPrice: 32.00,
       tag: 'Nuevo',
       isActive: true,
-      isFeatured: false,
       categoryId: catAretes.id,
       images: {
         create: IMAGES.earrings1.map((img, idx) => ({
@@ -1449,7 +1455,6 @@ async function main() {
       discountPercent: 20,
       tag: 'Edición Limitada',
       isActive: true,
-      isFeatured: false,
       categoryId: catCollares.id,
       collections: {
         create: [{ collectionId: colDiamanteMorado.id, sortOrder: 0 }],
@@ -1496,7 +1501,6 @@ async function main() {
       discountPercent: 16,
       tag: 'Oferta',
       isActive: true,
-      isFeatured: false,
       categoryId: catAnillos.id,
       collections: {
         create: [{ collectionId: colPromesa.id, sortOrder: 0 }],

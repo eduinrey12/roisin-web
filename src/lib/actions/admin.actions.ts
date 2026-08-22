@@ -652,4 +652,149 @@ export async function adminResetHomeSectionsOrderAction() {
   }
 }
 
+// ==================== MATERIALS ACTIONS ====================
+export async function adminCreateMaterialAction(data: {
+  name: string;
+  description?: string;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const { adminCreateMaterial } = await import('@/services/catalog.service');
+    const material = await adminCreateMaterial(data);
+    revalidatePath('/admin/materiales');
+    revalidatePath('/admin/productos/nuevo');
+    revalidatePath('/productos');
+    return { success: true, material: serializePlain(material) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear material' };
+  }
+}
+
+export async function adminUpdateMaterialAction(
+  id: string,
+  data: { name?: string; description?: string; sortOrder?: number; isActive?: boolean }
+) {
+  try {
+    await requireAdmin();
+    const { adminUpdateMaterial } = await import('@/services/catalog.service');
+    const material = await adminUpdateMaterial(id, data);
+    revalidatePath('/admin/materiales');
+    revalidatePath('/admin/productos/nuevo');
+    revalidatePath('/productos');
+    return { success: true, material: serializePlain(material) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar material' };
+  }
+}
+
+export async function adminDeleteMaterialAction(id: string) {
+  try {
+    await requireAdmin();
+    const { adminDeleteMaterial } = await import('@/services/catalog.service');
+    await adminDeleteMaterial(id);
+    revalidatePath('/admin/materiales');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar material' };
+  }
+}
+
+// ==================== CATEGORY SIZES ACTIONS ====================
+export async function adminCreateCategorySizeAction(data: {
+  categoryId: string;
+  name: string;
+  isAdjustable?: boolean;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const { adminCreateCategorySize } = await import('@/services/catalog.service');
+    const size = await adminCreateCategorySize(data);
+    revalidatePath('/admin/tallas');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true, size: serializePlain(size) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear talla' };
+  }
+}
+
+export async function adminUpdateCategorySizeAction(
+  id: string,
+  data: { categoryId?: string; name?: string; isAdjustable?: boolean; sortOrder?: number; isActive?: boolean }
+) {
+  try {
+    await requireAdmin();
+    const { adminUpdateCategorySize } = await import('@/services/catalog.service');
+    const size = await adminUpdateCategorySize(id, data);
+    revalidatePath('/admin/tallas');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true, size: serializePlain(size) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar talla' };
+  }
+}
+
+export async function adminDeleteCategorySizeAction(id: string) {
+  try {
+    await requireAdmin();
+    const { adminDeleteCategorySize } = await import('@/services/catalog.service');
+    await adminDeleteCategorySize(id);
+    revalidatePath('/admin/tallas');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar talla' };
+  }
+}
+
+// ==================== JEWELRY COLORS & FINISHES ACTIONS ====================
+export async function adminCreateJewelryColorAction(data: {
+  name: string;
+  type: 'METAL' | 'GEM';
+  hexCode?: string;
+  sortOrder?: number;
+}) {
+  try {
+    await requireAdmin();
+    const { adminCreateJewelryColor } = await import('@/services/catalog.service');
+    const color = await adminCreateJewelryColor(data);
+    revalidatePath('/admin/colores');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true, color: serializePlain(color) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al crear acabado/color' };
+  }
+}
+
+export async function adminUpdateJewelryColorAction(
+  id: string,
+  data: { name?: string; type?: 'METAL' | 'GEM'; hexCode?: string; sortOrder?: number; isActive?: boolean }
+) {
+  try {
+    await requireAdmin();
+    const { adminUpdateJewelryColor } = await import('@/services/catalog.service');
+    const color = await adminUpdateJewelryColor(id, data);
+    revalidatePath('/admin/colores');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true, color: serializePlain(color) };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al actualizar acabado/color' };
+  }
+}
+
+export async function adminDeleteJewelryColorAction(id: string) {
+  try {
+    await requireAdmin();
+    const { adminDeleteJewelryColor } = await import('@/services/catalog.service');
+    await adminDeleteJewelryColor(id);
+    revalidatePath('/admin/colores');
+    revalidatePath('/admin/productos/nuevo');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error al eliminar acabado/color' };
+  }
+}
+
 

@@ -70,7 +70,6 @@ model Product {
   compareAtPrice   Decimal?                       @db.Decimal(10, 2)
   discountPercent  Int?                           // e.g., 20 para 20% OFF
   isActive         Boolean                        @default(true)
-  isFeatured       Boolean                        @default(false)
   categoryId       String
   category         Category                       @relation(fields: [categoryId], references: [id])
   collections      CollectionProduct[]
@@ -84,7 +83,6 @@ model Product {
   @@index([slug])
   @@index([categoryId])
   @@index([isActive])
-  @@index([isFeatured])
 }
 
 model ProductImage {
@@ -175,6 +173,26 @@ model CategorySize {
   updatedAt    DateTime @updatedAt
 
   @@index([categoryId])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+enum JewelryColorType {
+  METAL
+  GEM
+}
+
+model JewelryColor {
+  id        String           @id @default(uuid())
+  name      String           @unique // e.g. "Plateado Rodio", "Baño de Oro 18k", "Amatista Morada", "Circonia Blanca"
+  type      JewelryColorType @default(METAL)
+  hexCode   String?          // e.g. "#E5E7EB", "#F59E0B", "#7043A0"
+  sortOrder Int              @default(0)
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([type])
   @@index([isActive])
   @@index([sortOrder])
 }
